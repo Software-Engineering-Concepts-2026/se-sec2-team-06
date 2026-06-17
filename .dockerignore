@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Python virtual environment
+.venv/
+venv/
+env/
+.supercharged/
+
+# IDE / OS specific
+.vscode/
+.idea/
+*.DS_Store
+
+# Documentation and prototypes (not needed in production image)
+docs/
+prototypes/
+
+# Local development files
+*.pyc
+__pycache__/

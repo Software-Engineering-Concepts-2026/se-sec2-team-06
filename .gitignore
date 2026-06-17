@@ -1,0 +1,20 @@
+# Environments
+.env
+.env.local
+.env.development.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+
+# Node.js
+node_modules/
+.next/
+dist/
+
+# OS Header files
+.DS_Store
+Thumbs.db
