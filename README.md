@@ -2,7 +2,7 @@
 _A brief, one-sentence description of what your project does._
 
 ## Team: [ชื่อทีมของคุณ]
-- [ชื่อ-นามสกุล], GitHub: `[github_username]`
+- [67026023 : ฐากร - ใจพล], GitHub: `[@THAKORN-MK]`
 - [ชื่อ-นามสกุล], GitHub: `[github_username]`
 - [ชื่อ-นามสกุล], GitHub: `[github_username]`
 
