@@ -1,7 +1,7 @@
-# Project: [ชื่อโปรเจกต์ของคุณ]
+# Project: [SynapseSync]
 _A brief, one-sentence description of what your project does._
 
-## Team: [ชื่อทีมของคุณ]
+## Team: [Brainlink Co.]
 - [67026023 ฐากร - ใจพล], GitHub: `[@THAKORN-MK]`
 - [67026012 ไชยวัฒน์ - แซ่ว้าง ], GitHub: `[@Chaiwat2005]`
 - [67026146 สุวิชาดา  - วงพีระ], GitHub: `[@67026146]`
