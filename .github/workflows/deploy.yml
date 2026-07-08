@@ -2,7 +2,7 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: ["main"]   # เปลี่ยนเป็นชื่อ branch หลักของคุณ ถ้าไม่ใช่ main
+    branches: ["main", "feat/add-reflection-Thakorn"]
 
 permissions:
   contents: read
