@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ - SynapseSync Prototype</title>
+  <link rel="stylesheet" href="login_style.css">
+</head>
+<body>
+
+  <main class="app-frame">
+
+    <header class="app-header">
+      <h1>เข้าสู่ระบบ SynapseSync</h1>
+    </header>
+
+    <form id="login-form" novalidate>
+
+      <div class="field-row">
+        <label for="login-email">University Email</label>
+        <input type="email" id="login-email" name="login-email" placeholder="name@university.ac.th">
+      </div>
+
+      <div class="field-row">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="login-password" placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="login-btn" class="btn-primary">เข้าสู่ระบบ</button>
+
+    </form>
+
+    <p class="switch-link">ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิก</a></p>
+
+    <p class="hint-text">Prototype: ยังไม่เชื่อมต่อฐานข้อมูลจริง กรอกอะไรก็ได้เพื่อสาธิต Flow การเข้าสู่ระบบ</p>
+
+  </main>
+
+  <script src="login_script.js"></script>
+</body>
+</html>

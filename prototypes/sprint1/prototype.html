@@ -1,1 +1,263 @@
-...
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator - AI-Powered Quiz Creation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- SECTION 1: Upload Screen -->
+    <div id="upload-screen" class="screen active">
+        <!-- Header -->
+        <header class="header">
+            <button class="back-btn" aria-label="Back">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h1 class="header-title">สร้างแบบทดสอบด้วย AI</h1>
+            <button class="menu-btn" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="12" cy="5" r="2"/>
+                    <circle cx="12" cy="12" r="2"/>
+                    <circle cx="12" cy="19" r="2"/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="upload-content">
+            <!-- Upload Dropzone -->
+            <div class="upload-dropzone" id="dropzone">
+                <svg class="dropzone-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <p class="dropzone-text">ลากไฟล์มาวาง หรือแตะเพื่อเลือกไฟล์ (PDF, DOCX, TXT)</p>
+            </div>
+
+            <!-- File Chip -->
+            <div id="file-chip" class="file-chip" style="display: none;">
+                <span id="file-name" class="file-name"></span>
+                <button id="remove-file-btn" class="remove-file-btn" aria-label="Remove file">✕</button>
+            </div>
+
+            <!-- Quiz Options Section -->
+            <section class="quiz-options">
+                <h2 class="section-title">ตัวเลือกแบบทดสอบ</h2>
+
+                <!-- Question Type Dropdown -->
+                <div class="form-group">
+                    <label for="question-type" class="form-label">รูปแบบคำถาม</label>
+                    <select id="question-type" class="form-select">
+                        <option value="multiple-choice">Multiple choice</option>
+                        <option value="true-false">True/False</option>
+                        <option value="short-answer">Short answer</option>
+                    </select>
+                </div>
+
+                <!-- Number of Questions Input -->
+                <div class="form-group">
+                    <label for="num-questions" class="form-label">จำนวนข้อ</label>
+                    <input id="num-questions" type="number" class="form-input" min="1" max="100" value="10">
+                </div>
+
+                <!-- Difficulty Dropdown -->
+                <div class="form-group">
+                    <label for="difficulty" class="form-label">ระดับความยาก</label>
+                    <select id="difficulty" class="form-select">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Generate Button -->
+            <button id="generate-btn" class="btn btn-primary">สร้างแบบทดสอบ</button>
+            <p class="helper-text">AI จะสร้างคำถามจากเนื้อหาที่อัปโหลด เพื่อช่วยประเมินความเข้าใจของคุณ</p>
+        </main>
+    </div>
+
+    <!-- SECTION 2: Quiz Screen -->
+    <div id="quiz-screen" class="screen">
+        <!-- Header -->
+        <header class="quiz-header">
+            <div class="quiz-progress-info">
+                <span id="question-counter">ข้อ 1 จาก 10</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 10%;"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="quiz-content">
+            <!-- Question Box -->
+            <div class="question-box">
+                <p id="question-text" class="question-text">
+                    ข้อใดต่อไปนี้เป็นการกำหนดตัวแปรที่ถูกต้องในภาษา Python?
+                </p>
+            </div>
+
+            <!-- Multiple Choice Options -->
+            <div class="options-container">
+                <label class="radio-option">
+                    <input type="radio" name="answer" value="A">
+                    <span class="option-label">A</span>
+                    <span class="option-text">my_var = 10</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="answer" value="B">
+                    <span class="option-label">B</span>
+                    <span class="option-text">my-var = 10</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="answer" value="C">
+                    <span class="option-label">C</span>
+                    <span class="option-text">10 = my_var</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="answer" value="D">
+                    <span class="option-label">D</span>
+                    <span class="option-text">my_var == 10</span>
+                </label>
+            </div>
+
+            <!-- Explanation Toggle -->
+            <button id="explanation-toggle" class="btn btn-secondary">ดูคำอธิบาย</button>
+
+            <!-- Explanation Text -->
+            <div id="explanation-box" class="explanation-box" style="display: none;">
+                <p>คำตอบที่ถูกต้องคือ <strong>A: my_var = 10</strong></p>
+                <p>เหตุผล: ในภาษา Python ตัวแปรต้องเริ่มต้นด้วยตัวอักษรหรือเครื่องหมายขีดเส้นใต้ และสามารถมีตัวเลขได้ แต่ไม่สามารถมีเครื่องหมายพิเศษเช่นขีดกลาง (-) ได้</p>
+            </div>
+
+            <!-- Score Summary -->
+            <div class="score-summary">
+                <p id="score-text">ผลคะแนน: 7/10 (ถูก 70%)</p>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="navigation-buttons">
+                <button id="prev-btn" class="btn btn-secondary">ก่อนหน้า</button>
+                <button id="next-btn" class="btn btn-primary">ถัดไป</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Elements
+        const uploadScreen = document.getElementById('upload-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const generateBtn = document.getElementById('generate-btn');
+        const dropzone = document.getElementById('dropzone');
+        const fileChip = document.getElementById('file-chip');
+        const fileName = document.getElementById('file-name');
+        const removeFileBtn = document.getElementById('remove-file-btn');
+        const explanationToggle = document.getElementById('explanation-toggle');
+        const explanationBox = document.getElementById('explanation-box');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        // State
+        let uploadedFile = null;
+
+        // Event Listeners
+
+        // Dropzone click to upload
+        dropzone.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.docx,.txt';
+            input.onchange = (e) => handleFileSelect(e.target.files[0]);
+            input.click();
+        });
+
+        // Dropzone drag and drop
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File selection handler
+        function handleFileSelect(file) {
+            if (file && (file.type === 'application/pdf' || 
+                         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                         file.type === 'text/plain')) {
+                uploadedFile = file;
+                fileName.textContent = file.name;
+                fileChip.style.display = 'flex';
+                dropzone.style.display = 'none';
+            }
+        }
+
+        // Remove file
+        removeFileBtn.addEventListener('click', () => {
+            uploadedFile = null;
+            fileChip.style.display = 'none';
+            dropzone.style.display = 'flex';
+            explanationBox.style.display = 'none';
+        });
+
+        // Generate quiz button
+        generateBtn.addEventListener('click', () => {
+            if (uploadedFile) {
+                // Switch to quiz screen
+                uploadScreen.classList.remove('active');
+                quizScreen.classList.add('active');
+                // Reset explanation
+                explanationBox.style.display = 'none';
+                explanationToggle.textContent = 'ดูคำอธิบาย';
+            } else {
+                alert('กรุณาอัปโหลดไฟล์ก่อน');
+            }
+        });
+
+        // Explanation toggle
+        explanationToggle.addEventListener('click', () => {
+            if (explanationBox.style.display === 'none') {
+                explanationBox.style.display = 'block';
+                explanationToggle.textContent = 'ซ่อนคำอธิบาย';
+            } else {
+                explanationBox.style.display = 'none';
+                explanationToggle.textContent = 'ดูคำอธิบาย';
+            }
+        });
+
+        // Navigation buttons
+        prevBtn.addEventListener('click', () => {
+            alert('ไปหน้าก่อนหน้า');
+        });
+
+        nextBtn.addEventListener('click', () => {
+            alert('ไปหน้าถัดไป');
+        });
+
+        // Back button
+        document.querySelector('.back-btn').addEventListener('click', () => {
+            if (quizScreen.classList.contains('active')) {
+                // Switch back to upload screen
+                quizScreen.classList.remove('active');
+                uploadScreen.classList.add('active');
+            } else {
+                alert('กลับไปยังหน้าหลัก');
+            }
+        });
+    </script>
+</body>
+</html>

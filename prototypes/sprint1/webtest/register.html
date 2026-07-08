@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สมัครสมาชิก - SynapseSync Prototype</title>
+  <link rel="stylesheet" href="register_style.css">
+</head>
+<body>
+
+  <main class="app-frame">
+
+    <header class="app-header">
+      <a href="login.html" class="icon-link" aria-label="กลับหน้าเข้าสู่ระบบ">&lt;</a>
+      <h1>Create Your SynapseSync Account</h1>
+      <span class="icon-spacer"></span>
+    </header>
+
+    <form id="signup-form" novalidate>
+
+      <div class="field-row">
+        <label for="full-name">Full Name</label>
+        <input type="text" id="full-name" name="full-name" placeholder="ชื่อ-นามสกุล">
+      </div>
+
+      <div class="field-row">
+        <label for="email">University Email</label>
+        <input type="email" id="email" name="email" placeholder="name@university.ac.th">
+      </div>
+
+      <div class="field-row">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••">
+      </div>
+
+      <div class="field-row">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••">
+      </div>
+
+      <button type="submit" id="signup-btn" class="btn-primary">Sign Up</button>
+
+    </form>
+
+    <p class="switch-link">มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบ</a></p>
+
+    <p class="hint-text">Prototype: การสมัครสมาชิกนี้ยังไม่เชื่อมต่อฐานข้อมูลจริง ใช้เพื่อสาธิต Flow และ Validation เท่านั้น</p>
+
+  </main>
+
+  <script src="register_script.js"></script>
+</body>
+</html>
