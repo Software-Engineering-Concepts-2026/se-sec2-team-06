@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คลังเอกสาร</title>
+<link rel="stylesheet" href="library.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="library-page">
+
+  <!-- Header -->
+  <header class="lib-header">
+    <div class="lib-heading">
+      <h1>คลังเอกสารของฉัน</h1>
+      <p class="lib-sub">เก็บทุกไฟล์การเรียนไว้ที่เดียว จะได้ไม่หายอีกต่อไป 📚</p>
+    </div>
+    <label class="upload-btn" for="fileInput">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>อัปโหลดไฟล์ใหม่</span>
+    </label>
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" multiple hidden>
+  </header>
+
+  <!-- Dropzone -->
+  <section class="dropzone" id="dropzone">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <p><strong>ลากไฟล์มาวางตรงนี้ได้เลย</strong> รองรับ PDF, Word, PowerPoint และรูปภาพ</p>
+    <button class="dropzone-btn" id="dropzoneBtn">เลือกไฟล์จากเครื่อง</button>
+  </section>
+
+  <!-- Subject filter -->
+  <nav class="subject-filter" id="subjectFilter">
+    <button class="subject-chip active" data-subject="all">ทั้งหมด</button>
+  </nav>
+
+  <!-- Document grid -->
+  <main class="doc-grid" id="docGrid">
+    <!-- empty state -->
+    <div class="grid-empty" id="gridEmpty">
+      <span class="grid-empty-icon">🗂️</span>
+      <p>ยังไม่มีเอกสารเลย ลองอัปโหลดไฟล์แรกกันเถอะ!</p>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<!-- Upload subject-assign modal -->
+<div class="modal-overlay" id="subjectModal" hidden>
+  <div class="modal-box">
+    <h2>ไฟล์นี้เป็นวิชาอะไร?</h2>
+    <p class="modal-filename" id="modalFileName"></p>
+    <div class="modal-subject-options" id="modalSubjectOptions">
+      <button data-subject="ฟิสิกส์">🧪 ฟิสิกส์</button>
+      <button data-subject="เคมี">⚗️ เคมี</button>
+      <button data-subject="คณิตศาสตร์">📐 คณิตศาสตร์</button>
+      <button data-subject="ชีววิทยา">🧬 ชีววิทยา</button>
+      <button data-subject="อื่นๆ">📁 อื่นๆ</button>
+    </div>
+    <div class="modal-custom-row">
+      <input type="text" id="customSubjectInput" placeholder="หรือพิมพ์ชื่อวิชาเอง...">
+      <button id="customSubjectConfirm">ใช้ชื่อนี้</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteModal" hidden>
+  <div class="modal-box small">
+    <h2>ลบเอกสารนี้เลยไหม?</h2>
+    <p class="modal-hint" id="deleteFileName"></p>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="cancelDeleteBtn">ไม่ลบดีกว่า</button>
+      <button class="btn-danger" id="confirmDeleteBtn">ลบเลย</button>
+    </div>
+  </div>
+</div>
+
+<script src="library.js"></script>
+</body>
+</html>
