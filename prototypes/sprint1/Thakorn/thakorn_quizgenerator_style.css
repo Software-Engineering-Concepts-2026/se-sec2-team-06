@@ -1,0 +1,389 @@
+/* ============================================
+   Minimal style — pastel black / gray / white
+   Functional-first: plain surfaces, light borders,
+   no heavy decoration. Still reads as a prototype.
+   Responsive: scales up smoothly from mobile to desktop
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* base font-size scales gently with viewport width,
+     so all rem-based sizing grows on larger screens */
+  font-size: clamp(15px, 0.9vw + 11px, 22px);
+}
+
+body {
+  margin: 0;
+  padding: clamp(16px, 4vw, 56px) 16px;
+  background: #f2f2f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #262626;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-frame {
+  width: 100%;
+  /* narrower on mobile, but grows much further on desktop
+     so it doesn't look like a tiny island on a wide monitor */
+  max-width: clamp(360px, 42vw, 860px);
+  border: 1px solid #e0e0dc;
+  border-radius: 12px;
+  padding: clamp(20px, 3vw, 48px);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.6vw, 22px);
+}
+
+/* Must come after the rule above so it wins the cascade —
+   otherwise the browser's built-in [hidden] { display:none }
+   gets overridden by .screen's own display:flex, and every
+   screen renders stacked on top of each other at once. */
+.screen[hidden] {
+  display: none;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ececea;
+  padding-bottom: 0.7rem;
+}
+
+.app-header h1 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+  color: #262626;
+}
+
+.app-header .icon {
+  font-size: 1.1rem;
+  width: 1.6rem;
+  text-align: center;
+  color: #9a9a95;
+  text-decoration: none;
+}
+
+.app-header a.icon:hover {
+  color: #262626;
+}
+
+/* ---------- Upload dropzone ---------- */
+.upload-dropzone {
+  border: 1px solid #e5e5e1;
+  background: #fafaf8;
+  border-radius: 10px;
+  padding: clamp(24px, 4vw, 48px) 12px;
+  text-align: center;
+  cursor: pointer;
+  display: block;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.drag-over {
+  background: #f3f3f0;
+  border-color: #d4d4ce;
+}
+
+.upload-dropzone .plus {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  color: #b5b5ae;
+  font-weight: 300;
+}
+
+.upload-dropzone p {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+  color: #4d4d47;
+}
+
+.muted {
+  color: #a3a39c;
+}
+
+/* ---------- File chip ---------- */
+.file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #ececea;
+  background: #fafaf8;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.8rem;
+  color: #4d4d47;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #a3a39c;
+}
+
+.chip-remove:hover {
+  color: #262626;
+}
+
+/* ---------- Options block ---------- */
+.options-block h2 {
+  font-size: 0.85rem;
+  margin: 0 0 0.6rem;
+  font-weight: 600;
+  color: #6b6b64;
+  text-transform: none;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.field-row label {
+  font-size: 0.8rem;
+  flex: 1;
+  color: #4d4d47;
+}
+
+.field-row select,
+.field-row input[type="number"] {
+  flex: 1;
+  border: 1px solid #e5e5e1;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  background: #fafaf8;
+  color: #262626;
+}
+
+.field-row select:focus,
+.field-row input[type="number"]:focus {
+  outline: none;
+  border-color: #b5b5ae;
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  border: 1px solid #262626;
+  border-radius: 8px;
+  background: #262626;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #404040;
+}
+
+.hint-text {
+  font-size: 0.7rem;
+  color: #a3a39c;
+  text-align: center;
+  margin: 0;
+}
+
+.error-text {
+  font-size: 0.75rem;
+  color: #6b6b64;
+  background: #f5f5f2;
+  border: 1px solid #ececea;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* ---------- Quiz screen ---------- */
+.progress-track {
+  width: 100%;
+  height: 0.4rem;
+  background: #ececea;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #262626;
+  transition: width 0.2s ease;
+}
+
+.question-box {
+  border: 1px solid #ececea;
+  background: #fafaf8;
+  border-radius: 10px;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  color: #262626;
+}
+
+.question-box p {
+  margin: 0;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.choice-option {
+  text-align: left;
+  border: 1px solid #e5e5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #262626;
+  font-size: 0.85rem;
+  font-family: inherit;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.choice-option:hover {
+  background: #fafaf8;
+  border-color: #d4d4ce;
+}
+
+.choice-option.selected {
+  border-color: #262626;
+}
+
+.choice-option.correct {
+  border-color: #262626;
+  background: #f0f0ee;
+  font-weight: 600;
+}
+
+.choice-option.incorrect {
+  border-color: #d4d4ce;
+  color: #a3a39c;
+  text-decoration: line-through;
+}
+
+.feedback-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: 0;
+  color: #4d4d47;
+}
+
+.explain-toggle {
+  align-self: flex-start;
+  border: 1px solid #e5e5e1;
+  border-radius: 8px;
+  background: #fafaf8;
+  color: #4d4d47;
+  font-size: 0.75rem;
+  font-family: inherit;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+}
+
+.explain-toggle:hover {
+  background: #f3f3f0;
+}
+
+.explain-text {
+  font-size: 0.8rem;
+  color: #6b6b64;
+  border-left: 2px solid #ececea;
+  padding-left: 0.7rem;
+  margin: 0;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.nav-buttons button {
+  flex: 1;
+  border: 1px solid #e5e5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4d4d47;
+  font-size: 0.8rem;
+  font-family: inherit;
+  padding: 0.7rem;
+  cursor: pointer;
+}
+
+.nav-buttons button:hover:not(:disabled) {
+  background: #fafaf8;
+}
+
+.nav-buttons .next-btn {
+  border-color: #262626;
+  background: #262626;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.nav-buttons .next-btn:hover:not(:disabled) {
+  background: #404040;
+}
+
+.nav-buttons button:disabled {
+  color: #d4d4ce;
+  border-color: #ececea;
+  cursor: not-allowed;
+}
+
+/* ---------- Results screen ---------- */
+.result-box {
+  border: 1px solid #ececea;
+  background: #fafaf8;
+  border-radius: 10px;
+  padding: clamp(20px, 3vw, 36px);
+  text-align: center;
+}
+
+.result-score {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+  color: #262626;
+}
+
+.result-percent {
+  font-size: 1rem;
+  color: #a3a39c;
+  margin: 0;
+}
+
+/* ---------- Extra breathing room on large desktop screens ---------- */
+@media (min-width: 1000px) {
+  .app-frame {
+    padding: 2.2rem;
+  }
+}
