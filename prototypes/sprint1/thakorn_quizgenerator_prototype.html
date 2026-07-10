@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สร้างแบบทดสอบด้วย AI - SynapseSync Prototype</title>
+  <link rel="stylesheet" href="thakorn_quizgenerator_style.css">
+</head>
+<body>
+
+  <main class="app-frame">
+
+    <!-- ================= SCREEN 1: UPLOAD ================= -->
+    <section id="upload-screen" class="screen">
+
+      <header class="app-header">
+        <a href="webtest/home.html" class="icon" aria-label="กลับหน้าแรก">&lt;</a>
+        <h1>สร้างแบบทดสอบด้วย AI</h1>
+        <span class="icon">&#8942;</span>
+      </header>
+
+      <label for="file-input" class="upload-dropzone" id="dropzone">
+        <div class="plus">+</div>
+        <p>ลากไฟล์มาวาง หรือแตะเพื่อเลือกไฟล์</p>
+        <p class="muted">(PDF, DOCX, TXT)</p>
+      </label>
+      <input type="file" id="file-input" accept=".pdf,.doc,.docx,.txt" hidden>
+
+      <div class="file-chip" id="file-chip" hidden>
+        <span id="file-name">&#128196; ไม่มีไฟล์</span>
+        <button class="chip-remove" id="chip-remove" aria-label="ลบไฟล์" type="button">&#10005;</button>
+      </div>
+
+      <div class="options-block">
+        <h2>ตัวเลือกแบบทดสอบ</h2>
+
+        <div class="field-row">
+          <label for="qtype">รูปแบบคำถาม</label>
+          <select id="qtype">
+            <option>ปรนัย (Multiple choice)</option>
+            <option>ถูก/ผิด (True-False)</option>
+            <option>เติมคำตอบสั้น (Short answer)</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <label for="qnum">จำนวนข้อ</label>
+          <input type="number" id="qnum" value="5" min="1" max="15">
+        </div>
+
+        <div class="field-row">
+          <label for="qdiff">ระดับความยาก</label>
+          <select id="qdiff">
+            <option>ง่าย</option>
+            <option selected>ปานกลาง</option>
+            <option>ยาก</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="error-text" id="upload-error" hidden>กรุณาอัปโหลดไฟล์ก่อนสร้างแบบทดสอบ</p>
+
+      <button id="generate-btn" class="btn-primary" type="button">&#10022; สร้างแบบทดสอบ</button>
+
+      <p class="hint-text">Prototype: ยังไม่อ่านเนื้อหาไฟล์จริง คำถามที่สร้างเป็นคำถามตัวอย่างแบบสุ่ม เพื่อสาธิต Flow การใช้งาน</p>
+
+    </section>
+
+    <!-- ================= SCREEN 2: QUIZ ================= -->
+    <section id="quiz-screen" class="screen" hidden>
+
+      <header class="app-header">
+        <span class="icon">&lt;</span>
+        <h1 class="question-label">ข้อ 1 จาก 5</h1>
+        <span class="icon">&#8942;</span>
+      </header>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:20%"></div>
+      </div>
+
+      <div class="question-box">
+        <p id="question-text">คำถามตัวอย่าง</p>
+      </div>
+
+      <div class="choice-list" id="choice-list">
+        <!-- choices injected by JS -->
+      </div>
+
+      <p class="feedback-text" id="feedback-text" hidden></p>
+
+      <button class="explain-toggle" id="explain-toggle" type="button">&#128161; ดูคำอธิบาย</button>
+      <p class="explain-text" id="explain-text" hidden></p>
+
+      <div class="nav-buttons">
+        <button class="prev-btn" id="prev-btn" type="button" disabled>&larr; ก่อนหน้า</button>
+        <button class="next-btn" id="next-btn" type="button">ถัดไป &rarr;</button>
+      </div>
+
+    </section>
+
+    <!-- ================= SCREEN 3: RESULTS ================= -->
+    <section id="result-screen" class="screen" hidden>
+
+      <header class="app-header">
+        <span class="icon">&lt;</span>
+        <h1>ผลคะแนน</h1>
+        <span class="icon">&#8942;</span>
+      </header>
+
+      <div class="result-box">
+        <p class="result-score" id="result-score">0/0</p>
+        <p class="result-percent" id="result-percent">0%</p>
+      </div>
+
+      <p class="hint-text">นี่คือ Prototype — คำถามถูกสุ่มขึ้นมาเพื่อสาธิต ยังไม่ใช่การประเมินจากเนื้อหาไฟล์จริง</p>
+
+      <button class="btn-primary" id="restart-btn" type="button">&#8635; ทำแบบทดสอบใหม่</button>
+
+    </section>
+
+  </main>
+
+  <script src="thakorn_quizgenerator_script.js"></script>
+</body>
+</html>

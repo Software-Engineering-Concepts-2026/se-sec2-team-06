@@ -1,27 +1,32 @@
-name: Deploy to GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
-    branches:
-      - main  # หรือ master ขึ้นอยู่กับว่าคุณใช้ branch ไหนเป็นหลัก
+    branches: ["main", "feat/add-reflection-Thakorn"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'prototypes/sprint1'  # ระบุโฟลเดอร์ที่มีไฟล์ index.html ของคุณ
+          path: prototypes/sprint1   # << path เต็มไปยังโฟลเดอร์ที่มี index.html
 
       - name: Deploy to GitHub Pages
         id: deployment
