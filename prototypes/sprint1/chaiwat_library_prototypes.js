@@ -198,7 +198,7 @@
         // File too large for sessionStorage — still hand off metadata without the preview
         sessionStorage.setItem('activeDocument', JSON.stringify({ ...payload, dataUrl: null }));
       }
-      window.location.href = 'index.html';
+      window.location.href = 'chaiwat_View_Document_prototypes.html';
     }
 
     if (canPreview) {
