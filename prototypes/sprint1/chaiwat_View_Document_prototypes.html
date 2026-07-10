@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Viewer</title>
+<link rel="stylesheet" href="chaiwat_View_Document_prototypes.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="viewer-page">
+
+  <!-- Header -->
+  <header class="topbar">
+    <button class="icon-btn" id="backBtn" aria-label="ย้อนกลับ">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+
+    <div class="file-info">
+      <p class="file-name" id="fileName">บทที่ 4 การเคลื่อนที่แบบโพรเจกไทล์.pdf</p>
+      <span class="subject-tag">🧪 ฟิสิกส์</span>
+    </div>
+
+    <div class="topbar-actions">
+      <label class="upload-btn" for="fileUploadInput">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>อัปโหลดไฟล์ใหม่</span>
+      </label>
+      <input type="file" id="fileUploadInput" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*" hidden>
+
+      <div class="menu-wrap">
+        <button class="icon-btn" id="shareBtn" aria-label="แชร์">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+        </button>
+      </div>
+      <div class="menu-wrap hover-menu">
+        <button class="icon-btn" id="moreBtn" aria-label="ตัวเลือกเพิ่มเติม">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        </button>
+        <div class="dropdown" id="moreMenu">
+          <button data-action="rename">เปลี่ยนชื่อไฟล์</button>
+          <button data-action="subject">เปลี่ยนวิชา</button>
+          <button data-action="delete">ลบไฟล์</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Main content: viewer + AI panel -->
+  <main class="main-grid">
+
+    <!-- Left: Content Viewer -->
+    <section class="viewer-zone">
+      <div class="viewer-toolbar">
+        <button class="tool-btn" id="zoomInBtn" aria-label="ซูมเข้า">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="tool-btn" id="zoomOutBtn" aria-label="ซูมออก">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="tool-btn" id="highlightBtn" aria-label="ไฮไลต์ข้อความ" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l6 6M4 20l4-1 9.5-9.5a2.1 2.1 0 0 0-3-3L5 16l-1 4z"/></svg>
+        </button>
+        <span class="page-indicator"><button class="page-nav" id="prevPage" aria-label="หน้าก่อนหน้า">‹</button> หน้า <span id="pageNum">3</span> / 12 <button class="page-nav" id="nextPage" aria-label="หน้าถัดไป">›</button></span>
+      </div>
+
+      <div class="doc-content" id="docContent">
+        <div class="doc-empty" id="docEmpty">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p class="doc-placeholder" id="docText">ลากไฟล์มาวางตรงนี้ หรือกด "อัปโหลดไฟล์ใหม่" ด้านบนได้เลย เดี๋ยวช่วยจัดให้เอง 📂</p>
+          <button class="dropzone-btn" id="dropzoneBtn">เลือกไฟล์จากเครื่อง</button>
+        </div>
+        <div class="doc-preview" id="docPreview" hidden></div>
+        <button class="ask-ai-float" id="askAiFloat" hidden>✨ ถาม AI</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:38%"></div></div>
+        <span class="progress-label" id="progressLabel">อ่านไปแล้ว 38%</span>
+      </div>
+    </section>
+
+    <!-- Right: AI Assistant Panel -->
+    <aside class="ai-panel">
+      <div class="ai-tabs" id="aiTabs">
+        <button class="tab active" data-mode="summary">สรุปให้หน่อย</button>
+        <button class="tab" data-mode="explain">แปลเป็นภาษาคน</button>
+        <button class="tab" data-mode="ask">ถามอะไรก็ได้</button>
+      </div>
+
+      <div class="ai-answer-card" id="aiAnswer">
+        <p>โพรเจกไทล์คือการเคลื่อนที่ที่มีทั้งแนวราบและแนวดิ่งพร้อมกัน ลองนึกถึงลูกบอลที่ถูกโยนออกไปแล้วโค้งตกลงพื้น... ถ้ายังงงตรงไหนอยู่ ถามต่อได้เลยนะ 😊</p>
+      </div>
+
+      <div class="ai-actions">
+        <button class="chip-btn" id="saveBtn" aria-pressed="false">📌 บันทึกลงสมุดสรุป</button>
+        <button class="chip-btn" id="regenBtn">🔄 อธิบายอีกแบบ</button>
+        <button class="chip-btn icon-only" id="thumbUp" aria-label="ชอบคำตอบนี้" aria-pressed="false">👍</button>
+        <button class="chip-btn icon-only" id="thumbDown" aria-label="ไม่ชอบคำตอบนี้" aria-pressed="false">👎</button>
+      </div>
+
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="งงตรงไหน บอกได้เลยนะ" aria-label="พิมพ์คำถาม">
+        <button class="send-btn" id="sendBtn" aria-label="ส่งข้อความ">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Footer shortcuts -->
+  <footer class="footer-bar">
+    <button class="footer-link" id="quickModeBtn">⚡ โหมดงานด่วน</button>
+    <button class="footer-link" id="quizBtn">📝 สร้าง Quiz สั้นๆ</button>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  const toastEl = document.getElementById('toast');
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  /* ---------- Header: back / share / more menu ---------- */
+  document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'library.html'; });
+  document.getElementById('shareBtn').addEventListener('click', () => showToast('คัดลอกลิงก์แชร์แล้ว'));
+
+  const moreMenu = document.getElementById('moreMenu');
+  moreMenu.querySelectorAll('button').forEach(b => b.addEventListener('click', (e) => {
+    const action = b.dataset.action;
+    const msgs = { rename: 'เปลี่ยนชื่อไฟล์แล้ว', subject: 'เปลี่ยนวิชาแล้ว', delete: 'ลบไฟล์แล้ว' };
+    showToast(msgs[action] || '');
+  }));
+
+  /* ---------- Upload file ---------- */
+  const docContent = document.getElementById('docContent');
+  const fileUploadInput = document.getElementById('fileUploadInput');
+  const dropzoneBtn = document.getElementById('dropzoneBtn');
+  const docEmpty = document.getElementById('docEmpty');
+  const docPreview = document.getElementById('docPreview');
+  const fileNameEl = document.getElementById('fileName');
+
+  dropzoneBtn.addEventListener('click', () => fileUploadInput.click());
+
+  function iconFor(type, name){
+    if (type.startsWith('image/')) return '🖼️';
+    if (type === 'application/pdf' || name.endsWith('.pdf')) return '📕';
+    if (name.endsWith('.doc') || name.endsWith('.docx')) return '📄';
+    if (name.endsWith('.ppt') || name.endsWith('.pptx')) return '📊';
+    return '📁';
+  }
+
+  function handleFile(file){
+    if (!file) return;
+    fileNameEl.textContent = file.name;
+    docEmpty.hidden = true;
+    docPreview.hidden = false;
+
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      docPreview.innerHTML = '<img src="' + url + '" alt="ตัวอย่างรูปภาพที่อัปโหลด">';
+    } else if (file.type === 'application/pdf') {
+      const url = URL.createObjectURL(file);
+      docPreview.innerHTML = '<iframe src="' + url + '" title="ตัวอย่าง PDF"></iframe>';
+    } else {
+      docPreview.innerHTML =
+        '<div class="doc-file-card">' +
+          '<span class="doc-file-icon">' + iconFor(file.type, file.name) + '</span>' +
+          '<p class="doc-file-name">' + file.name + '</p>' +
+          '<p class="doc-file-hint">ไฟล์นี้ยังพรีวิวในเบราว์เซอร์ไม่ได้ แต่พร้อมให้ AI ช่วยสรุป/อธิบายได้เลย</p>' +
+        '</div>';
+    }
+    showToast('อัปโหลด "' + file.name + '" สำเร็จแล้ว ✨');
+  }
+
+  fileUploadInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+  ['dragover', 'dragleave', 'drop'].forEach(evt => {
+    docContent.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); });
+  });
+  docContent.addEventListener('dragover', () => docContent.classList.add('drag-over'));
+  docContent.addEventListener('dragleave', () => docContent.classList.remove('drag-over'));
+  docContent.addEventListener('drop', (e) => {
+    docContent.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+  });
+
+  /* ---------- Load document handed off from the Library page ---------- */
+  const subjectTagEl = document.querySelector('.subject-tag');
+  function loadHandoffDocument(){
+    const raw = sessionStorage.getItem('activeDocument');
+    if (!raw) return;
+    let doc;
+    try { doc = JSON.parse(raw); } catch (err) { return; }
+
+    fileNameEl.textContent = doc.name;
+    if (subjectTagEl && doc.subject) subjectTagEl.textContent = '📘 ' + doc.subject;
+    docEmpty.hidden = true;
+    docPreview.hidden = false;
+
+    if (doc.dataUrl && doc.type.startsWith('image/')) {
+      docPreview.innerHTML = '<img src="' + doc.dataUrl + '" alt="เอกสารที่เปิดจากคลัง">';
+    } else if (doc.dataUrl && doc.type === 'application/pdf') {
+      docPreview.innerHTML = '<iframe src="' + doc.dataUrl + '" title="ตัวอย่าง PDF"></iframe>';
+    } else {
+      docPreview.innerHTML =
+        '<div class="doc-file-card">' +
+          '<span class="doc-file-icon">' + iconFor(doc.type, doc.name) + '</span>' +
+          '<p class="doc-file-name">' + doc.name + '</p>' +
+          '<p class="doc-file-hint">ไฟล์นี้ยังพรีวิวในเบราว์เซอร์ไม่ได้ แต่พร้อมให้ AI ช่วยสรุป/อธิบายได้เลย</p>' +
+        '</div>';
+    }
+    // Consume it once so a manual refresh falls back to the empty/upload state.
+    sessionStorage.removeItem('activeDocument');
+  }
+  loadHandoffDocument();
+
+  /* ---------- Zoom ---------- */
+  const docText = document.getElementById('docText');
+  let zoomLevel = 100;
+  function applyZoom(){ docText.style.fontSize = (13 * zoomLevel / 100) + 'px'; }
+  document.getElementById('zoomInBtn').addEventListener('click', () => { zoomLevel = Math.min(zoomLevel + 10, 160); applyZoom(); });
+  document.getElementById('zoomOutBtn').addEventListener('click', () => { zoomLevel = Math.max(zoomLevel - 10, 60); applyZoom(); });
+
+  /* ---------- Highlight tool + ask AI float button ---------- */
+  const highlightBtn = document.getElementById('highlightBtn');
+  const askAiFloat = document.getElementById('askAiFloat');
+  let highlightMode = false;
+  highlightBtn.addEventListener('click', () => {
+    highlightMode = !highlightMode;
+    highlightBtn.setAttribute('aria-pressed', String(highlightMode));
+    highlightBtn.classList.toggle('active', highlightMode);
+    docContent.classList.toggle('highlight-cursor', highlightMode);
+    if (!highlightMode) askAiFloat.hidden = true;
+  });
+  docContent.addEventListener('click', () => {
+    if (highlightMode) {
+      askAiFloat.hidden = false;
+    }
+  });
+  askAiFloat.addEventListener('click', () => {
+    switchTab('ask');
+    document.getElementById('chatInput').focus();
+    askAiFloat.hidden = true;
+  });
+
+  /* ---------- Page navigation + reading progress ---------- */
+  const pageNumEl = document.getElementById('pageNum');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  let page = 3;
+  const totalPages = 12;
+  function updateProgress(){
+    const pct = Math.round((page / totalPages) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = 'อ่านไปแล้ว ' + pct + '%';
+  }
+  document.getElementById('prevPage').addEventListener('click', () => { page = Math.max(1, page - 1); pageNumEl.textContent = page; updateProgress(); });
+  document.getElementById('nextPage').addEventListener('click', () => { page = Math.min(totalPages, page + 1); pageNumEl.textContent = page; updateProgress(); });
+
+  /* ---------- AI panel: tabs, answer, save, regen, feedback, chat ---------- */
+  const aiAnswer = document.getElementById('aiAnswer');
+  const tabs = document.querySelectorAll('#aiTabs .tab');
+  const answers = {
+    summary: 'สรุปสั้นๆ ให้เพื่อนแบบนี้นะ: โพรเจกไทล์ = การเคลื่อนที่แนวราบ + แนวดิ่งพร้อมกัน แนวราบความเร็วคงที่ แนวดิ่งมีแรงโน้มถ่วงมากระทำ 🎯',
+    explain: 'พูดง่ายๆ เลยคือ ลองนึกภาพขว้างลูกบอลออกไป มันจะ "ลอย" ไปข้างหน้าเรื่อยๆ พร้อมกับ "ตก" ลงเรื่อยๆ สองอย่างนี้เกิดพร้อมกัน แค่นั้นเอง ไม่ต้องงงแล้วนะ 😊',
+    ask: 'พิมพ์คำถามด้านล่างได้เลย เดี๋ยวช่วยตอบให้ทันที!'
+  };
+  function switchTab(mode){
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    aiAnswer.innerHTML = '<p>' + answers[mode] + '</p>';
+  }
+  tabs.forEach(t => t.addEventListener('click', () => switchTab(t.dataset.mode)));
+
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.addEventListener('click', () => {
+    const saved = saveBtn.getAttribute('aria-pressed') === 'true';
+    saveBtn.setAttribute('aria-pressed', String(!saved));
+    saveBtn.classList.toggle('active', !saved);
+    saveBtn.textContent = !saved ? '✅ บันทึกแล้ว' : '📌 บันทึกลงสมุดสรุป';
+    showToast(!saved ? 'เก็บไว้ในสมุดสรุปให้แล้ว' : 'เอาออกจากสมุดสรุปแล้ว');
+  });
+
+  document.getElementById('regenBtn').addEventListener('click', () => {
+    aiAnswer.innerHTML = '<p class="loading">กำลังลองอธิบายอีกแบบให้...</p>';
+    setTimeout(() => {
+      aiAnswer.innerHTML = '<p>ลองอีกแบบนะ: จินตนาการว่ามีสองคนช่วยกันดันลูกบอล คนแรกดันไปข้างหน้าตลอด (แนวราบ) อีกคนดึงลงตลอด (แรงโน้มถ่วง) รวมกันแล้วออกมาเป็นเส้นทางโค้งๆ นั่นแหละคือโพรเจกไทล์ 🏀</p>';
+    }, 700);
+  });
+
+  const thumbUp = document.getElementById('thumbUp');
+  const thumbDown = document.getElementById('thumbDown');
+  function setThumb(btn, other){
+    const pressed = btn.getAttribute('aria-pressed') === 'true';
+    btn.setAttribute('aria-pressed', String(!pressed));
+    btn.classList.toggle('active', !pressed);
+    other.setAttribute('aria-pressed', 'false');
+    other.classList.remove('active');
+    if (!pressed) showToast('ขอบคุณสำหรับฟีดแบ็กนะ');
+  }
+  thumbUp.addEventListener('click', () => setThumb(thumbUp, thumbDown));
+  thumbDown.addEventListener('click', () => setThumb(thumbDown, thumbUp));
+
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  function sendQuestion(){
+    const q = chatInput.value.trim();
+    if (!q) return;
+    switchTab.__skip = true;
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === 'ask'));
+    aiAnswer.innerHTML = '<p class="loading">กำลังอ่านคำถามให้เพื่อน...</p>';
+    chatInput.value = '';
+    setTimeout(() => {
+      aiAnswer.innerHTML = '<p><strong>คำถาม:</strong> ' + q + '<br><br>เดี๋ยวช่วยอธิบายให้เข้าใจง่ายๆ นะ: ลองอ่านทวนตรงย่อหน้าที่ 2 ดูอีกที ถ้ายังงงจุดไหนอยู่ บอกเพิ่มได้เลย 🙌</p>';
+    }, 700);
+  }
+  sendBtn.addEventListener('click', sendQuestion);
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendQuestion(); });
+
+  /* ---------- Footer shortcuts ---------- */
+  document.getElementById('quickModeBtn').addEventListener('click', () => {
+    switchTab('summary');
+    aiAnswer.innerHTML = '<p><strong>สรุป 3 บรรทัดด่วน:</strong><br>1) โพรเจกไทล์ = แนวราบ + แนวดิ่งพร้อมกัน<br>2) แนวราบความเร็วคงที่<br>3) แนวดิ่งมีแรงโน้มถ่วงกระทำ ⏱️</p>';
+  });
+  document.getElementById('quizBtn').addEventListener('click', () => {
+    switchTab.__skip = true;
+    tabs.forEach(t => t.classList.remove('active'));
+    aiAnswer.innerHTML = '<p><strong>ลองทำดูสิ 📝</strong><br>1. โพรเจกไทล์มีการเคลื่อนที่กี่แนว อะไรบ้าง?<br>2. แนวไหนที่ความเร็วคงที่ตลอดการเคลื่อนที่?</p>';
+  });
+
+  applyZoom();
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
