@@ -1,0 +1,66 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EFF6FF',
+    'primaryBorderColor': '#3B82F6',
+    'primaryTextColor': '#1E293B',
+    'lineColor': '#64748B',
+    'secondaryColor': '#F0FDF4',
+    'secondaryBorderColor': '#10B981',
+    'tertiaryColor': '#FFF7ED',
+    'tertiaryBorderColor': '#F59E0B',
+    'fontSize': '14px',
+    'fontFamily': 'Loma, Noto Sans Thai, Inter, sans-serif'
+  },
+  'flowchart': {
+    'curve': 'basis',
+    'padding': 28,
+    'nodeSpacing': 80,
+    'rankSpacing': 90,
+    'htmlLabels': true,
+    'wrappingWidth': 200
+  }
+}}%%
+flowchart LR
+    %% --- Actor ---
+    Student(["<b>Student</b><br/>[Person]<br/><br/>นักศึกษาที่ใช้ web app<br/>จัดการโน้ต, quiz, และ<br/>to-do การเรียน"])
+
+    %% --- System Boundary ---
+    subgraph SynapseSync["<b>SynapseSync Platform</b>"]
+        direction TB
+
+        WebApp["<b>Web Application</b><br/>[Container: React + Vite]<br/><br/>Single-page application ให้ UI ทั้งหมด:<br/>note editor, file uploader,<br/>to-do list, และ quiz view"]
+
+        API["<b>Backend API</b><br/>[Container: Python + FastAPI]<br/><br/>REST API จัดการ business logic:<br/>auth, note CRUD, AI orchestration,<br/>quiz generation, to-do management<br/>(Swagger docs อัตโนมัติที่ /docs)"]
+
+        DB[("<b>Primary Database</b><br/>[Container: PostgreSQL]<br/><br/>เก็บ users, courses, notes,<br/>quizzes, questions, attempts,<br/>และ to-dos (มี JSONB column<br/>สำหรับ AI metadata)")]
+
+        ObjectStore[("<b>Document Store</b><br/>[Container: S3-compatible<br/>Object Storage]<br/><br/>เก็บไฟล์ PDF/DOCX ดิบ<br/>และ text artifact ที่ extract")]
+    end
+
+    %% --- External Systems ---
+    LLM["<b>LLM Provider API</b><br/>[External System]<br/><br/>OpenAI GPT-4o-mini API"]
+    LMS["<b>University LMS API</b><br/>[External System]<br/><br/>Moodle REST API"]
+
+    %% --- Student interactions ---
+    Student -->|"ใช้ผ่าน browser<br/>(HTTPS/JSON)"| WebApp
+    WebApp -->|"เรียก REST API<br/>(HTTPS/JSON)"| API
+
+    %% --- Internal container interactions ---
+    API -->|"อ่าน/เขียนข้อมูล<br/>(SQL/TCP)"| DB
+    API -->|"เก็บ/ดึงไฟล์<br/>(HTTPS)"| ObjectStore
+
+    %% --- External system interactions ---
+    API -.->|"ส่ง prompt ขอ summary<br/>และ quiz questions<br/>(HTTPS/JSON)"| LLM
+    API -.->|"ดึง course catalog<br/>(HTTPS/JSON)"| LMS
+
+    %% --- Styling ---
+    classDef person fill:#FFF7ED,stroke:#F59E0B,stroke-width:2px,color:#1E293B
+    classDef container fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px,color:#1E293B
+    classDef database fill:#F0FDF4,stroke:#10B981,stroke-width:2px,color:#1E293B
+    classDef external fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px,color:#1E293B,stroke-dasharray: 5 5
+
+    class Student person
+    class WebApp,API container
+    class DB,ObjectStore database
+    class LLM,LMS external
