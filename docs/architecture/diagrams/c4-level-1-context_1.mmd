@@ -1,0 +1,55 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#EFF6FF',
+    'primaryBorderColor': '#3B82F6',
+    'primaryTextColor': '#1E293B',
+    'lineColor': '#64748B',
+    'secondaryColor': '#F0FDF4',
+    'secondaryBorderColor': '#10B981',
+    'tertiaryColor': '#FFF7ED',
+    'tertiaryBorderColor': '#F59E0B',
+    'fontSize': '15px',
+    'fontFamily': 'Loma, Noto Sans Thai, Inter, sans-serif'
+  },
+  'flowchart': {
+    'curve': 'basis',
+    'padding': 32,
+    'nodeSpacing': 90,
+    'rankSpacing': 110,
+    'htmlLabels': true,
+    'wrappingWidth': 200
+  }
+}}%%
+flowchart LR
+    %% --- Actors (Persons) ---
+    Student(["<b>Student</b><br/>[Person]<br/><br/>นักศึกษาที่ต้องการจัดการ<br/>โน้ตการเรียน, อัปโหลดเอกสาร,<br/>ใช้ AI สร้าง quiz และสรุปเนื้อหา,<br/>และติดตาม to-do การเรียน"])
+
+    %% --- The System Under Design ---
+    System["<b>SynapseSync Platform</b><br/>[Software System]<br/><br/>เว็บแอป All-in-One Learning Platform<br/>ให้นักศึกษาสร้าง/จัดการโน้ต,<br/>อัปโหลดเอกสาร, ใช้ AI สร้าง<br/>คำถามฝึกหัดและสรุปเนื้อหา,<br/>และจัดการ to-do ในที่เดียว"]
+
+    %% --- External Systems ---
+    %% หมายเหตุ: Cloud Object Storage ไม่แสดงในระดับ Context อีกต่อไป
+    %% เพราะเป็น infrastructure ที่ทีมเลือกใช้เอง (deploy/config เอง)
+    %% ไม่ใช่ระบบอิสระที่มีเจ้าของ/พฤติกรรมแยกต่างหากแบบ LLM หรือ LMS
+    %% จึงแสดงเป็น Container "Document Store" ใน C2 เท่านั้น เพื่อให้
+    %% สอดคล้องกับ README ที่ไม่ได้จัดให้ Storage เป็น "ภายนอก"
+    LLM["<b>LLM Provider API</b><br/>[External System]<br/><br/>Cloud-hosted large language model<br/>สำหรับสร้างคำถามและสรุปเนื้อหา<br/>เช่น OpenAI GPT-4o-mini"]
+    LMS["<b>University LMS API</b><br/>[External System]<br/><br/>ให้ course catalog และข้อมูล<br/>การลงทะเบียนเพื่อ auto-tag<br/>เอกสารที่อัปโหลด เช่น Moodle"]
+
+    %% --- Interactions ---
+    Student -->|"อัปโหลดไฟล์, เขียนโน้ต,<br/>สร้าง to-do, ขอ quiz และสรุป"| System
+    System -->|"ส่งโน้ต, คำถาม quiz,<br/>สรุปเนื้อหา, และแจ้ง to-do"| Student
+    System -.->|"ส่งเนื้อหาเอกสาร,<br/>ขอคำถามและสรุป"| LLM
+    LLM -.->|"ส่งคำถามและสรุปเนื้อหากลับ"| System
+    System -.->|"ดึงรายวิชาและการลงทะเบียน"| LMS
+    LMS -.->|"ส่ง course catalog กลับ"| System
+
+    %% --- Styling (dashed border for external systems) ---
+    classDef person fill:#FFF7ED,stroke:#F59E0B,stroke-width:2px,color:#1E293B
+    classDef system fill:#EFF6FF,stroke:#3B82F6,stroke-width:2.5px,color:#1E293B
+    classDef external fill:#F8FAFC,stroke:#64748B,stroke-width:1.5px,color:#1E293B,stroke-dasharray: 5 5
+
+    class Student person
+    class System system
+    class LLM,LMS external
