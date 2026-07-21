@@ -28,6 +28,8 @@
 - **ฟีเจอร์ที่เน้น AI:** ต้องเรียก LLM API (เช่น OpenAI หรือ Claude) เพื่อสร้างคำถามและสรุปเนื้อหา รวมถึงการ parse ไฟล์ PDF/DOCX
 - **ความต้องการด้าน Course Metadata:** ทีมต้องการให้เอกสารที่ผู้ใช้อัปโหลด ถูก auto-tag ด้วยชื่อวิชา/รายวิชาที่เกี่ยวข้องโดยอัตโนมัติ เพื่อให้ระบบ AI Quiz Generator แนะนำเนื้อหาได้ตรงบริบทมากขึ้น และลดภาระผู้ใช้ที่ต้องกรอกข้อมูลวิชาเอง จึงต้องพึ่งพา course catalog และข้อมูลการลงทะเบียนจากระบบ LMS ของมหาวิทยาลัย (เช่น Moodle) ซึ่งเป็นระบบที่มีอยู่แล้วและนักศึกษาทุกคนมีบัญชีอยู่แล้ว
 - **ความต้องการด้านการสื่อสาร API:** ต้องมีเอกสาร API ที่อัปเดตอัตโนมัติ เพื่อให้ทีม Frontend และ Backend คุยกันผ่าน contract ได้ชัดเจน
+- **ผู้ใช้มีหลาย Role ที่ต้องการเห็นข้อมูลต่างกัน:** จาก Persona ที่ทีมทำไว้ (`student_learner.md`, `teacher_mentor.md`) และ user story ใน `main_scenario.md` ระบบต้องรองรับผู้ใช้ 4 กลุ่ม ได้แก่ **นักเรียน** (ปันปัน — ถามคำถาม/ฝึกโจทย์), **ครู** (ครูสมชาย — ดูแดชบอร์ดภาพรวมนักเรียนหลายคน), **ผู้เรียนผู้ใหญ่** (พี่เอิร์ธ — ทบทวนเนื้อหา/ดูความคืบหน้าของตัวเอง), และ **ผู้ปกครอง** (คุณแม่มล — ดูสรุปและรับแจ้งเตือนของบุตรหลาน) แต่ละ Role เห็นข้อมูลและสิทธิ์การใช้งานต่างกัน จึงต้องมีระบบ Role-based Access Control (RBAC) ไม่ใช่แค่ authentication ธรรมดา *(หมายเหตุ: Persona พี่เอิร์ธและคุณแม่มล ยังไม่มีไฟล์ Persona ฉบับเต็ม อ้างอิงจาก user story 7-10 ใน `main_scenario.md` เท่านั้น)*
+- **ความต้องการด้าน Notification:** จาก user story ของพี่เอิร์ธ (แจ้งเตือนให้กลับมาทบทวน) และคุณแม่มล (แจ้งเตือนล่วงหน้าหากบุตรหลานเริ่มมีปัญหาต่อเนื่อง) ระบบต้องส่งการแจ้งเตือนออกไปนอกแอปได้ (email หรือ push notification) ไม่ใช่แค่แสดงผลใน UI เมื่อผู้ใช้เปิดแอปเท่านั้น
 
 ทีมได้ประเมินมิติหลัก 4 ด้าน ได้แก่ Frontend framework, Backend language/framework, Database และ Deployment platform โดยเทียบกับเกณฑ์ที่ชัดเจน ได้แก่ ความคุ้นเคยของทีม, ความเหมาะสมของ ecosystem กับฟีเจอร์ของระบบ, ต้นทุนระหว่างพัฒนา และความเรียบง่ายในการดูแลระบบ
 
@@ -45,6 +47,8 @@
 | **File Storage** | S3-compatible object storage (เช่น Cloudflare R2 หรือ AWS S3 free tier) |
 | **AI Service** | OpenAI GPT-4o-mini (หรือ Anthropic Claude Haiku) ผ่าน official Python SDK |
 | **Course Metadata Integration** | University LMS API (Moodle REST API) เรียกจาก Backend เพื่อดึง course catalog และการลงทะเบียน |
+| **Access Control** | Role-based Access Control (RBAC) ใน Backend ด้วย JWT ที่มี role claim (`student` / `teacher` / `parent`) |
+| **Notification** | Notification Service ภายนอก (เช่น Resend สำหรับ email, Firebase Cloud Messaging สำหรับ push) เรียกจาก Backend |
 | **Deployment** | Vercel (Frontend) + Render หรือ Railway (Backend) — รองรับ Docker ที่ทีมมีอยู่แล้ว |
 
 ---
@@ -173,6 +177,28 @@ PostgreSQL รองรับ `JSONB` column type ทำให้เก็บข
 
 ---
 
+### Access Control: Role-based Access Control (RBAC) ด้วย JWT
+
+เนื่องจากระบบมีผู้ใช้ 4 กลุ่มที่เห็นข้อมูลต่างกัน (นักเรียน, ครู, ผู้เรียนผู้ใหญ่, ผู้ปกครอง) ทีมเลือกทำ RBAC แบบง่ายที่ระดับ Backend แทนการแยก Service ตาม Role ด้วยเหตุผล:
+
+1. **ความซับซ้อนเหมาะสมกับ scope ของโปรเจกต์วิชาเรียน** — การแยก Microservice ตาม Role จะเพิ่ม operational overhead เกินความจำเป็นสำหรับทีมนักศึกษาที่มี timeline จำกัด การฝัง role claim ไว้ใน JWT (`student` / `teacher` / `parent`) แล้วเช็กสิทธิ์ที่ endpoint level ผ่าน FastAPI dependency ทำได้เร็วกว่าและยังคง testable
+2. **Backend เดียวรองรับ Web Application เดียว** — ทั้ง 4 Persona ใช้ Web Application (React SPA) ตัวเดียวกัน แต่ UI จะ render ต่างกันตาม role ที่ decode ได้จาก JWT ฝั่ง Frontend (เช่น ครูเห็นแดชบอร์ด, ผู้ปกครองเห็นหน้าสรุป) โดยไม่ต้องแยก deploy target
+3. **ต้องมี Parent-Child Account Linking** — กรณีของคุณแม่มลต้องผูกบัญชีผู้ปกครองกับบัญชีนักเรียน (บุตรหลาน) ทีมจะเก็บความสัมพันธ์นี้เป็นตารางแยกใน PostgreSQL (`parent_student_links`) พร้อม flow ยืนยันตัวตนแบบ opt-in จากฝั่งนักเรียนก่อน เพื่อป้องกันการเชื่อมบัญชีโดยไม่ได้รับความยินยอม
+
+---
+
+### Notification: External Notification Service (Resend / Firebase Cloud Messaging)
+
+ทีมเลือกเรียกใช้ Notification Service ภายนอกแทนการสร้างระบบส่ง email/push เอง ด้วยเหตุผล:
+
+1. **ไม่ต้องดูแล Infrastructure การส่ง Email/Push เอง** — การรัน SMTP server หรือ push notification gateway เองมีความซับซ้อนด้าน deliverability (SPF/DKIM, spam filtering) ที่ไม่คุ้มกับ timeline ของโปรเจกต์วิชาเรียน บริการอย่าง Resend (email) มี free tier เพียงพอสำหรับ demo และมี API ที่เรียกง่ายจาก FastAPI
+2. **รองรับ Use Case ที่ต่างกันของ 2 Persona** — พี่เอิร์ธต้องการการแจ้งเตือนแบบ "reminder" (ทบทวนเนื้อหา) ซึ่งเหมาะกับ email หรือ push แบบ schedule ล่วงหน้า ส่วนคุณแม่มลต้องการแจ้งเตือนแบบ "alert" เมื่อ threshold บางอย่างถูกกระตุ้น (เช่น ผิดซ้ำ 3 ครั้งในหัวข้อเดียว ตาม user story 10) ซึ่งเป็น event-driven — ทั้งสองแบบเรียกผ่าน Notification Service ตัวเดียวกันได้ โดย Backend เป็นผู้ตัดสินใจ trigger เงื่อนไข
+3. **Decouple จาก Backend หลัก** — หาก Notification Service ล่มหรือช้า จะไม่กระทบ core feature อื่น (login, quiz generation) เพราะเรียกแบบ asynchronous/best-effort ไม่ block response หลักของ API
+
+**ขอบเขตในเฟสนี้:** เริ่มจาก Email เท่านั้น (ผ่าน Resend) ยังไม่ทำ Push Notification เพราะต้องมี mobile app หรือ service worker เพิ่มเติมซึ่งอยู่นอก scope ของเว็บแอปในเฟส Prototype/MVP นี้
+
+---
+
 ### Deployment: Vercel + Render/Railway
 
 - **Vercel** สำหรับ Frontend เพราะ zero-config deployment สำหรับ Vite/React, automatic HTTPS, และ global CDN
@@ -193,6 +219,8 @@ PostgreSQL รองรับ `JSONB` column type ทำให้เก็บข
 - **PostgreSQL ตอบโจทย์ทั้ง relational และ semi-structured** — โครงสร้าง User → Quiz → Question → Choice เป็น relational ที่ชัดเจน ในขณะที่ JSONB รองรับ metadata ของ AI response ได้โดยไม่ต้องเปลี่ยน DB
 - **Cost ใกล้ศูนย์ระหว่างพัฒนา** — ทุก service ที่เลือกมี free tier ที่เพียงพอสำหรับ dev/demo workload ของโปรเจกต์วิชาเรียน
 - **ลดภาระผู้ใช้และเพิ่มความแม่นยำของ Quiz Generator** — การดึง course metadata จาก LMS อัตโนมัติ ทำให้ผู้ใช้ไม่ต้องกรอกข้อมูลวิชาเอง และช่วยให้ AI สร้างคำถามที่ตรงบริบทวิชามากขึ้น
+- **รองรับผู้ใช้ 4 กลุ่มโดยไม่เพิ่ม Service ใหม่** — RBAC แบบ JWT role claim ทำให้ Web Application และ Backend ตัวเดียวรองรับทั้งนักเรียน ครู ผู้เรียนผู้ใหญ่ และผู้ปกครองได้ โดยไม่ต้องแยก deploy target ตาม role
+- **Notification แยกส่วนจาก core flow** — การเรียก Notification Service แบบ asynchronous ทำให้ปัญหาการส่ง email/push ไม่กระทบ availability ของฟีเจอร์หลัก (login, quiz generation)
 
 ### ผลกระทบเชิงลบ
 
@@ -203,6 +231,8 @@ PostgreSQL รองรับ `JSONB` column type ทำให้เก็บข
 - **LLM API cost variability** — pricing เป็นแบบ per-token PDF ที่ยาวผิดปกติหรือ prompt ที่ซับซ้อนอาจทำให้ credit หมดเร็ว ทีมต้อง enforce per-user rate limit และ daily token budget ใน backend
 - **Single region สำหรับ backend** — free tier backend มักอยู่ใน region เดียว (มักเป็น US-East) ทำให้ผู้ใช้ใน region อื่นประสบ latency ที่สังเกตได้ ยอมรับได้สำหรับโปรเจกต์วิชาเรียน แต่ต้องประเมินใหม่หาก launch จริง
 - **พึ่งพาสิทธิ์เข้าถึง LMS ของมหาวิทยาลัย** — การเชื่อมต่อ Moodle REST API ต้องขอ API credential จากฝ่าย IT มหาวิทยาลัยก่อน ซึ่งอยู่นอกเหนือการควบคุมของทีมและอาจใช้เวลานานกว่าที่คาด หากขอสิทธิ์ไม่ทันตาม timeline ทีมมีแผนสำรองคือให้ผู้ใช้กรอกชื่อวิชาเอง (manual tagging) ไปก่อนในช่วง demo
+- **ความซับซ้อนด้าน Privacy ของ Parent-Child Linking** — ต้องออกแบบ consent flow ให้นักเรียนเป็นผู้ยินยอมผูกบัญชีกับผู้ปกครองเอง ไม่ใช่ผู้ปกครองผูกบัญชีได้เองฝ่ายเดียว เพิ่มความซับซ้อนของ onboarding flow และต้องระวังเรื่องข้อมูลส่วนบุคคลของผู้เยาว์ (ปันปันอายุ 16 ปี) เป็นพิเศษ
+- **Notification Service เพิ่ม external dependency อีกจุด** — หาก Resend หรือ FCM มีปัญหา อาจทำให้แจ้งเตือนล่าช้าหรือไม่ถึงผู้ใช้ ทีมต้อง log สถานะการส่งไว้เพื่อ debug และอาจต้องมี retry mechanism เบื้องต้น
 
 ---
 
@@ -256,6 +286,17 @@ PostgreSQL รองรับ `JSONB` column type ทำให้เก็บข
 1. ผู้ใช้ต้องกรอกชื่อ/รหัสวิชาเองทุกครั้ง เสี่ยงพิมพ์ผิดหรือใช้ชื่อไม่สม่ำเสมอ ทำให้ข้อมูลไม่สะอาดในระยะยาว
 2. ระบบไม่สามารถแนะนำ/จัดกลุ่มเนื้อหาให้อัตโนมัติได้ ลดคุณค่าของฟีเจอร์ AI Quiz Generator ที่ต้องการ context ของวิชา
 3. ทีมยังคงเลือก LMS Integration เป็นทางหลัก แต่หากขอสิทธิ์เข้าถึง Moodle API จากมหาวิทยาลัยไม่ทันตาม timeline ของภาคเรียน จะ fallback มาใช้ manual tagging ชั่วคราวสำหรับ demo แล้วค่อยเปลี่ยนกลับภายหลัง
+
+---
+
+### In-app Notification เท่านั้น (ไม่เรียก Notification Service ภายนอก) แทน Email/Push
+
+**ผลประโยชน์:** ไม่ต้องพึ่ง external dependency เพิ่ม, ไม่มีค่าใช้จ่ายหรือ rate limit จากผู้ให้บริการภายนอก, พัฒนาได้เร็วกว่า
+
+**เหตุผลที่ปฏิเสธ:**
+1. Persona พี่เอิร์ธและคุณแม่มล มีพฤติกรรมไม่ได้เปิดแอปทุกวัน (พี่เอิร์ธ: "เวลาเรียนไม่แน่นอน", คุณแม่มล: ไม่ได้ใช้แอปเรียนเอง แค่ต้องการติดตามลูก) การแจ้งเตือนในแอปอย่างเดียวจะไม่ถึงผู้ใช้กลุ่มนี้เลยหากไม่ได้เปิดแอป ทำให้ฟีเจอร์ที่ Persona ต้องการ (reminder, alert ล่วงหน้า) ไม่เกิดประโยชน์จริง
+2. คุณแม่มลอาจไม่ได้เป็นผู้ใช้แอปโดยตรง (ไม่มี Persona บ่งชี้ว่าเธอ log-in บ่อย) จึงจำเป็นต้องมีช่องทางแจ้งเตือนที่อยู่นอกแอป เช่น email
+3. ทีมจึงเลือกใช้ Notification Service ภายนอกเป็นทางหลัก แต่ยังคงแสดงแจ้งเตือนในแอปควบคู่ไปด้วยสำหรับผู้ใช้ที่เปิดแอปอยู่แล้ว (เช่น ปันปัน, ครูสมชาย) เพื่อลดต้นทุนการส่ง email/push ในกรณีที่ไม่จำเป็น
 
 ---
 
