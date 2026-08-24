@@ -3,21 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive prototype สำหรับสร้างและทำแบบทดสอบใน SynapseSync">
   <title>สร้างแบบทดสอบด้วย AI - SynapseSync Prototype</title>
-  <link rel="stylesheet" href="thakorn_quizgenerator_style.css">
+  <link rel="stylesheet" href="../webtest/shared.css?v=20260824-6">
+  <link rel="stylesheet" href="../webtest/navbar.css?v=20260824-6">
+  <link rel="stylesheet" href="thakorn_quizgenerator_style.css?v=20260824-4">
+  <script src="../webtest/navbar.js?v=20260824-5" defer></script>
 </head>
-<body>
+<body class="quiz-page">
 
-  <main class="app-frame">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+
+  <div data-navbar-root data-page="quiz"></div>
+
+  <div class="page-shell quiz-shell">
+  <main class="app-frame" id="main-content">
 
     <!-- ================= SCREEN 1: UPLOAD ================= -->
     <section id="upload-screen" class="screen">
 
-      <header class="app-header">
-        <a href="../webtest/home.html" class="icon" aria-label="กลับหน้าแรก">&lt;</a>
+      <div class="screen-heading">
+        <span class="screen-kicker">Practice generator</span>
         <h1>สร้างแบบทดสอบด้วย AI</h1>
-        <span class="icon">&#8942;</span>
-      </header>
+      </div>
 
       <label for="file-input" class="upload-dropzone" id="dropzone">
         <div class="plus">+</div>
@@ -69,11 +77,10 @@
     <!-- ================= SCREEN 2: QUIZ ================= -->
     <section id="quiz-screen" class="screen" hidden>
 
-      <header class="app-header">
-        <span class="icon">&lt;</span>
+      <div class="screen-heading screen-heading--compact">
+        <span class="screen-kicker">Quiz in progress</span>
         <h1 class="question-label">ข้อ 1 จาก 5</h1>
-        <span class="icon">&#8942;</span>
-      </header>
+      </div>
 
       <div class="progress-track">
         <div class="progress-fill" id="progress-fill" style="width:20%"></div>
@@ -102,11 +109,10 @@
     <!-- ================= SCREEN 3: RESULTS ================= -->
     <section id="result-screen" class="screen" hidden>
 
-      <header class="app-header">
-        <span class="icon">&lt;</span>
+      <div class="screen-heading screen-heading--compact">
+        <span class="screen-kicker">Practice summary</span>
         <h1>ผลคะแนน</h1>
-        <span class="icon">&#8942;</span>
-      </header>
+      </div>
 
       <div class="result-box">
         <p class="result-score" id="result-score">0/0</p>
@@ -120,7 +126,8 @@
     </section>
 
   </main>
+  </div>
 
-  <script src="thakorn_quizgenerator_script.js"></script>
+  <script src="thakorn_quizgenerator_script.js?v=20260824-1"></script>
 </body>
 </html>

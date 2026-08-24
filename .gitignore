@@ -7,8 +7,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
 venv/
 ENV/
+coverage/
+htmlcov/
 
 # Node.js
 node_modules/

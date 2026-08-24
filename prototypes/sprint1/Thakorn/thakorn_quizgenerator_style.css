@@ -1,42 +1,34 @@
-/* ============================================
-   Minimal style — pastel black / gray / white
-   Functional-first: plain surfaces, light borders,
-   no heavy decoration. Still reads as a prototype.
-   Responsive: scales up smoothly from mobile to desktop
-   ============================================ */
+/* Quiz-specific presentation. Shared brand and bar live in ../webtest/navbar.css. */
 
 * {
   box-sizing: border-box;
 }
 
-html {
-  /* base font-size scales gently with viewport width,
-     so all rem-based sizing grows on larger screens */
-  font-size: clamp(15px, 0.9vw + 11px, 22px);
+.quiz-page {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(circle at 88% 15%, rgba(89, 89, 214, 0.09), transparent 28rem),
+    var(--page-bg, #f2f2f0);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink, #262626);
+  min-height: 100vh;
 }
 
-body {
-  margin: 0;
-  padding: clamp(16px, 4vw, 56px) 16px;
-  background: #f2f2f0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #262626;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+.quiz-shell {
+  max-width: 980px;
 }
 
 .app-frame {
   width: 100%;
-  /* narrower on mobile, but grows much further on desktop
-     so it doesn't look like a tiny island on a wide monitor */
-  max-width: clamp(360px, 42vw, 860px);
-  border: 1px solid #e0e0dc;
-  border-radius: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: clamp(15px, 0.9vw + 11px, 22px);
+  border: 1px solid var(--line, #e0e0dc);
+  border-radius: 22px;
   padding: clamp(20px, 3vw, 48px);
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-lg, 0 24px 60px rgba(0, 0, 0, 0.08));
 }
 
 .screen {
@@ -53,41 +45,39 @@ body {
   display: none;
 }
 
-/* ---------- Header ---------- */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #ececea;
-  padding-bottom: 0.7rem;
+/* ---------- Screen heading ---------- */
+.screen-heading {
+  display: grid;
+  gap: 0.16rem;
+  border-bottom: 1px solid var(--line, #ececea);
+  padding-bottom: 0.9rem;
+  text-align: left;
 }
 
-.app-header h1 {
-  font-size: 1rem;
-  font-weight: 600;
+.screen-kicker {
+  color: var(--accent, #5959d6);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.screen-heading h1 {
+  font-size: 1.08rem;
+  font-weight: 720;
   margin: 0;
-  text-align: center;
-  flex: 1;
   color: #262626;
 }
 
-.app-header .icon {
-  font-size: 1.1rem;
-  width: 1.6rem;
-  text-align: center;
-  color: #9a9a95;
-  text-decoration: none;
-}
-
-.app-header a.icon:hover {
-  color: #262626;
+.screen-heading--compact {
+  padding-bottom: 0.7rem;
 }
 
 /* ---------- Upload dropzone ---------- */
 .upload-dropzone {
-  border: 1px solid #e5e5e1;
-  background: #fafaf8;
-  border-radius: 10px;
+  border: 1px dashed var(--line-strong, #d5d5cf);
+  background: linear-gradient(145deg, #fafaf8, #f5f5ff);
+  border-radius: 15px;
   padding: clamp(24px, 4vw, 48px) 12px;
   text-align: center;
   cursor: pointer;
@@ -97,15 +87,15 @@ body {
 
 .upload-dropzone:hover,
 .upload-dropzone.drag-over {
-  background: #f3f3f0;
-  border-color: #d4d4ce;
+  background: var(--accent-soft, #eeeeff);
+  border-color: var(--accent, #5959d6);
 }
 
 .upload-dropzone .plus {
   font-size: 1.6rem;
   line-height: 1;
   margin-bottom: 0.5rem;
-  color: #b5b5ae;
+  color: var(--accent, #5959d6);
   font-weight: 300;
 }
 
@@ -130,6 +120,10 @@ body {
   padding: 0.6rem 0.8rem;
   font-size: 0.8rem;
   color: #4d4d47;
+}
+
+.file-chip[hidden] {
+  display: none;
 }
 
 .chip-remove {
@@ -385,5 +379,16 @@ body {
 @media (min-width: 1000px) {
   .app-frame {
     padding: 2.2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .quiz-shell {
+    width: min(100% - 1rem, 980px);
+  }
+
+  .app-frame {
+    border-radius: 18px;
+    padding: 1.1rem;
   }
 }

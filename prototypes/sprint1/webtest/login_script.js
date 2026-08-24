@@ -1,27 +1,62 @@
-// ============================================
-// Login form — prototype only, no real auth.
-// Checks that fields aren't empty, then redirects to home.html
-// ============================================
-
+// Login prototype: the values are validated only in this page and are not stored.
 const loginForm = document.getElementById('login-form');
 const loginEmail = document.getElementById('login-email');
 const loginPassword = document.getElementById('login-password');
+const loginStatus = document.getElementById('login-status');
+const loginButton = document.getElementById('login-btn');
 
-loginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
+const loginFields = [loginEmail, loginPassword];
+const loginEmailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const fields = [loginEmail, loginPassword];
-  fields.forEach(field => field.classList.remove('field-error'));
+function clearLoginErrors() {
+  loginFields.forEach((field) => {
+    field.classList.remove('field-error');
+    field.removeAttribute('aria-invalid');
+  });
+  loginStatus.textContent = '';
+  loginStatus.removeAttribute('data-state');
+}
 
-  const hasEmptyField = fields.some(field => field.value.trim() === '');
-  if (hasEmptyField) {
-    fields.forEach(field => {
-      if (field.value.trim() === '') field.classList.add('field-error');
-    });
-    alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบ');
+function showLoginError(message, fields) {
+  fields.forEach((field) => {
+    field.classList.add('field-error');
+    field.setAttribute('aria-invalid', 'true');
+  });
+  loginStatus.textContent = message;
+  loginStatus.dataset.state = 'error';
+  fields[0].focus();
+}
+
+loginFields.forEach((field) => {
+  field.addEventListener('input', () => {
+    field.classList.remove('field-error');
+    field.removeAttribute('aria-invalid');
+    loginStatus.textContent = '';
+    loginStatus.removeAttribute('data-state');
+  });
+});
+
+loginForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  clearLoginErrors();
+
+  const emptyFields = loginFields.filter((field) => field.value.trim() === '');
+  if (emptyFields.length > 0) {
+    showLoginError('กรุณากรอกอีเมลและรหัสผ่านให้ครบ', emptyFields);
     return;
   }
 
-  // Prototype: no real authentication — any non-empty input logs in.
-  window.location.href = 'home.html';
+  if (!loginEmailPattern.test(loginEmail.value.trim())) {
+    showLoginError('กรุณากรอกอีเมลในรูปแบบที่ถูกต้อง', [loginEmail]);
+    return;
+  }
+
+  loginForm.reset();
+  loginButton.disabled = true;
+  loginStatus.textContent = 'เข้าสู่ระบบจำลองสำเร็จ กำลังเปิดหน้าหลัก…';
+  loginStatus.dataset.state = 'success';
+
+  window.setTimeout(() => {
+    window.location.replace('home.html?v=20260824-5');
+  }, 450);
 });
