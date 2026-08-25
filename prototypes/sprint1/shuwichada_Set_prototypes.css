@@ -1,0 +1,264 @@
+<<<<<<< HEAD
+=======
+:root{
+    --black:#000000;
+    --dark:#333333;
+    --mid:#666666;
+    --light:#999999;
+    --border:#cccccc;
+    --border-light:#e5e5e5;
+    --bg-muted:#f5f5f5;
+    --white:#ffffff;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Sarabun','Segoe UI',sans-serif;
+    background:var(--bg-muted);
+    display:flex;
+    justify-content:center;
+    padding:40px 16px;
+    color:var(--black);
+}
+
+.phone{
+    position:relative;
+    width:360px;
+    background:var(--white);
+    border:2px solid var(--black);
+    border-radius:24px;
+    overflow:hidden;
+    margin-top:40px;
+}
+
+.caption{
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:14px;
+    font-weight:700;
+}
+
+/* Header */
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 20px;
+    border-bottom:1px solid var(--black);
+}
+
+header h1{
+    font-size:16px;
+    font-weight:700;
+}
+
+.add-btn{
+    background:none;
+    border:none;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    color:var(--black);
+}
+
+main{
+    padding:20px;
+}
+
+section{
+    margin-bottom:24px;
+}
+
+h2{
+    font-size:13px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+/* Row title */
+
+.row-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+}
+
+.sort{
+    font-size:10px;
+    color:var(--mid);
+}
+
+/* Form */
+
+.form-box{
+    border:1px dashed var(--light);
+    border-radius:8px;
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.field{
+    border:1px solid var(--light);
+    border-radius:8px;
+    padding:9px 12px;
+    font-size:11px;
+    background:white;
+}
+
+.placeholder{
+    color:var(--light);
+}
+
+.field-row{
+    display:flex;
+    gap:10px;
+}
+
+.field-row .field{
+    flex:1;
+}
+
+.radio-group{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+}
+
+.radio-group span{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.radio-dot{
+    width:10px;
+    height:10px;
+    border:1.5px solid var(--black);
+    border-radius:50%;
+    display:inline-block;
+}
+
+.radio-dot.filled{
+    background:black;
+}
+
+.save-btn{
+    margin-top:4px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:black;
+    color:white;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* Cards */
+
+.card{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border:1px solid black;
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:12px;
+}
+
+.card.done{
+    background:var(--bg-muted);
+    border-color:var(--border-light);
+}
+
+.card-title{
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.card.done .card-title{
+    color:var(--light);
+    text-decoration:line-through;
+}
+
+.card-sub{
+    font-size:10px;
+    color:var(--mid);
+}
+
+.card.done .card-sub{
+    color:var(--light);
+}
+
+.card-right{
+    text-align:right;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:10px;
+    white-space:nowrap;
+}
+
+.card-time{
+    font-size:10px;
+    font-weight:700;
+}
+
+.checkbox{
+    width:16px;
+    height:16px;
+    border:1.5px solid var(--light);
+    border-radius:50%;
+    display:inline-block;
+}
+
+.checkbox.done{
+    border:none;
+    font-size:15px;
+    font-weight:bold;
+}
+
+/* Planner */
+
+.planner-box{
+    display:flex;
+    justify-content:space-between;
+    text-align:center;
+    border:1px dashed var(--light);
+    border-radius:8px;
+    padding:14px 10px;
+}
+
+.day{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    flex:1;
+    font-size:11px;
+}
+
+.dot{
+    width:6px;
+    height:6px;
+    background:black;
+    border-radius:50%;
+}
+
+.dot.empty{
+    background:transparent;
+}
+>>>>>>> feat/add-reflection-Shuwichada
