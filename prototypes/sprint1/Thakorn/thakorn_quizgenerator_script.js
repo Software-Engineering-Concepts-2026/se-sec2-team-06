@@ -4,6 +4,8 @@
 // so "generate" picks random sample questions instead.
 // ============================================
 
+const { buildQuestionViewModel } = window.QuizViewModel;
+
 // ---------- Sample question bank (mock data) ----------
 const QUESTION_BANK = [
   {
@@ -188,54 +190,55 @@ function shuffleArray(arr) {
 
 // ---------- 3. Render current question ----------
 function renderQuestion() {
-  const total = quizQuestions.length;
-  const q = quizQuestions[currentIndex];
+  const view = buildQuestionViewModel(
+    quizQuestions[currentIndex],
+    currentIndex,
+    quizQuestions.length,
+    userAnswers[currentIndex]
+  );
 
-  questionLabel.textContent = `ข้อ ${currentIndex + 1} จาก ${total}`;
-  progressFill.style.width = `${((currentIndex + 1) / total) * 100}%`;
-  questionText.textContent = q.question;
+  renderQuestionHeader(view);
+  renderChoiceList(view.choices);
+  renderFeedback(view.feedback);
+  renderExplanation(view.explanation);
+  renderQuestionNavigation(view);
+}
 
+function renderQuestionHeader(view) {
+  questionLabel.textContent = view.label;
+  progressFill.style.width = `${view.progressPercent}%`;
+  questionText.textContent = view.questionText;
+}
+
+function renderChoiceList(choices) {
   choiceList.innerHTML = '';
-  q.choices.forEach((choiceText, idx) => {
+  choices.forEach((choice) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'choice-option';
-    btn.textContent = `${String.fromCharCode(65 + idx)}. ${choiceText}`;
-    btn.dataset.index = idx;
+    btn.textContent = choice.label;
+    btn.dataset.index = choice.index;
+    choice.classes.forEach((className) => btn.classList.add(className));
 
-    const savedAnswer = userAnswers[currentIndex];
-    if (savedAnswer !== null) {
-      applyAnswerStyles(btn, idx, savedAnswer, q.correctIndex);
-    }
-
-    btn.addEventListener('click', () => selectAnswer(idx));
+    btn.addEventListener('click', () => selectAnswer(choice.index));
     choiceList.appendChild(btn);
   });
-
-  feedbackText.hidden = userAnswers[currentIndex] === null;
-  if (userAnswers[currentIndex] !== null) {
-    feedbackText.textContent =
-      userAnswers[currentIndex] === q.correctIndex ? 'ถูกต้อง!' : 'ยังไม่ถูก ลองดูคำอธิบายด้านล่าง';
-  }
-
-  explainText.textContent = q.explanation;
-  explainText.hidden = true;
-  explainToggle.textContent = '\u{1F4A1} ดูคำอธิบาย';
-
-  prevBtn.disabled = currentIndex === 0;
-  nextBtn.textContent = currentIndex === total - 1 ? 'ดูผลคะแนน' : 'ถัดไป →';
 }
 
-function applyAnswerStyles(btn, idx, savedAnswer, correctIndex) {
-  if (idx === correctIndex) {
-    btn.classList.add('correct');
-  }
-  if (idx === savedAnswer && savedAnswer !== correctIndex) {
-    btn.classList.add('incorrect');
-  }
-  if (idx === savedAnswer) {
-    btn.classList.add('selected');
-  }
+function renderFeedback(feedback) {
+  feedbackText.hidden = !feedback.visible;
+  feedbackText.textContent = feedback.text;
+}
+
+function renderExplanation(explanation) {
+  explainText.textContent = explanation;
+  explainText.hidden = true;
+  explainToggle.textContent = '\u{1F4A1} ดูคำอธิบาย';
+}
+
+function renderQuestionNavigation(view) {
+  prevBtn.disabled = view.previousDisabled;
+  nextBtn.textContent = view.nextLabel;
 }
 
 // ---------- 4. Select an answer ----------

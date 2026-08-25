@@ -211,3 +211,40 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 - หลังติดตั้ง Docker Desktop แล้ว `docker build -t synapsesync-api:v0.1.0 .` สำเร็จ และ image มีขนาด `52,513,980` bytes (ประมาณ 50.1 MiB) ต่ำกว่าเป้าหมาย 500 MB
 - ทดสอบ `docker run` และ `GET /health` ได้ HTTP 200 พร้อม `status=healthy`; `docker inspect` ยืนยัน runtime user เป็น `appuser:appgroup` และ health status เป็น `healthy`
 - ยังไม่ได้ push image ไป registry เพราะยังไม่มีการยืนยัน namespace/credentials; คำสั่งและหลักฐานที่ต้องแนบใน PR ระบุไว้ใน `docker/README.md`
+
+---
+
+## Lab 7 — Refactoring Milestone 1 Usage
+
+### Tools and tasks
+
+- ผมอ่าน chapter 7 และ rubric Lab 7 ก่อน แล้วใช้ ChatGPT/Codex เป็นผู้ช่วยแยก deliverables, ตรวจ code smell และวางขอบเขต refactor ที่ไม่ปะปนกับ feature ใหม่
+- ใช้ Node.js built-in test runner ตรวจ pure view model และใช้ Playwright/Chrome ตรวจ browser flow ของ prototype จริง
+- ใช้ AI ช่วยเสนอวิธีแยก Long Method ใน `renderQuestion()` เป็น view model กับ DOM rendering helpers โดยคง behavior เดิม
+- ใช้ AI ช่วยตรวจ wording ของ `docs/refactoring-journal.md` และ Post-quiz 7 หลังจากผมตรวจ diff และผล test เอง
+
+### Prompts used and purposes
+
+1. “อ่าน `prototypes/sprint1/Thakorn/thakorn_quizgenerator_script.js` แล้วระบุ code smell ที่ชัดเจน 5 จุด พร้อม file/line/reason โดยไม่เสนอ feature ใหม่”
+2. “ช่วยเสนอ refactor ของ `renderQuestion()` แบบ behavior-preserving โดยแยก logic ข้อมูลคำถามออกจาก DOM และบอกความเสี่ยงที่ต้องทดสอบ”
+3. “ช่วยออกแบบ test fixture แบบ test-first สำหรับ feedback ของคำตอบ, class ของ choice และสถานะปุ่ม navigation โดย expected value ต้องกำหนดจาก fixture เอง”
+4. “ช่วยตรวจ journal/reflection ให้สื่อว่า AI เป็นผู้ช่วย แต่ทีมเป็นผู้ตัดสินใจและผู้ตรวจโค้ดจริง”
+
+### AI-assisted content accepted after review
+
+- แนวคิดแยก `buildQuestionViewModel()` ออกจาก `renderQuestion()` และรายชื่อ helper ที่ใช้จัด DOM
+- โครงร่าง test fixture และ wording ของ smell, before/after และ lesson learned
+- คำแนะนำด้าน naming และการตรวจ regression ของ upload, generate, answer selection และ result flow
+
+### Human review and responsibility
+
+- ผมเป็นผู้เลือก smell **Long Method**, กำหนด branch `feature/lab7-refactor-render-question` และกำหนดว่า refactor ต้องอยู่ในงานของ Thakorn เท่านั้น
+- ผมเขียน/ปรับ test ก่อน implementation, ตรวจ failure รอบ RED, แก้ source รอบ GREEN และรัน browser tests หลัง refactor ด้วยตัวเอง
+- ผมตรวจว่า label, feedback, selected/correct/incorrect classes และ navigation เหมือนเดิม และไม่ได้แก้ไฟล์งานของ Chaiwat หรือ shuwichada
+- ไม่ส่ง credential, token, ข้อมูลส่วนบุคคล หรือไฟล์ลับเข้า prompt
+
+### Verification status
+
+- Focused unit test ของ view model ผ่าน 1 test
+- Prototype/navbar browser suite ผ่าน 14 tests เพิ่มเติม รวม 15 tests ผ่านและไม่มี failure
+- Refactor แยก pure view model และ DOM rendering helpers โดยไม่มี feature ใหม่หรือการเปลี่ยน persistence/backend

@@ -49,3 +49,19 @@ Prompt ที่กว้างเกินไป เช่น “ช่วย�
 ## 3. REST health endpoint คือ operational contract
 
 `GET /health` ที่คืน HTTP 200 และ JSON ที่มี version, service และ architecture ทำให้เครื่องมือภายนอกตรวจสถานะ container ได้โดยไม่ต้องรู้รายละเอียดภายใน ส่วน `GET /` ช่วยให้คนหรือระบบค้นพบ service และเอกสาร OpenAPI ได้ง่ายขึ้น การเขียน tests ก่อน source ทำให้ contract นี้ไม่หายไประหว่าง refactor บทเรียนที่นำไปใช้ต่อคือ endpoint สำหรับ health/readiness ต้องมี response ที่เสถียร วัดผลได้ และแยกจาก business logic ตั้งแต่เริ่มทำ service
+
+---
+
+# Post-quiz 7 — Reflection on Refactoring
+
+## 1. Refactor ต้องเริ่มจาก behavior ที่ตรวจได้
+
+การเขียน test ของ view model ก่อนแก้ `renderQuestion()` ทำให้ผมเห็น contract ที่ต้องรักษาไว้จริง ๆ คือ label, progress, feedback, choice state และ navigation ไม่ใช่แค่ทำให้โค้ดสั้นลง เมื่อ test รอบ RED ล้มเหลวเพราะ module ยังไม่มี ผมจึงรู้ว่า test กำลังตรวจ behavior ของส่วนที่จะแยกออกมา ไม่ใช่ตรวจข้อความใน source
+
+## 2. แยก logic กับ DOM ช่วยลด coupling
+
+ก่อนหน้านี้ logic คำตอบกับการสร้างปุ่มอยู่ในฟังก์ชันเดียว การแยก `buildQuestionViewModel()` ทำให้กติกาคำตอบเป็นข้อมูลที่ทดสอบได้ด้วย Node ส่วน helper rendering รับผิดชอบ DOM อย่างเดียว บทเรียนที่นำไปใช้ต่อคือเมื่อฟังก์ชันเริ่มรู้ทั้ง business rule และรายละเอียดหน้าจอ ควรหาขอบเขตที่แยกได้ก่อนเพิ่ม feature
+
+## 3. AI ช่วยเสนอทางเลือก แต่การตัดสินใจและ verification เป็นของทีม
+
+AI ช่วยชี้ smell และเสนอชื่อ helper ได้เร็ว แต่ผมต้องเลือก scope เองเพื่อไม่แตะงานสมาชิกและไม่เปลี่ยน behavior การรัน unit test, browser flow และการตรวจ diff ทำให้มั่นใจว่าการ refactor เป็น Milestone 1 ที่อธิบายได้ ไม่ใช่การรับโค้ดจาก AI โดยไม่ตรวจสอบ
