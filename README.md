@@ -1,10 +1,12 @@
-# Project: [SynapseSync]
-_A brief, one-sentence description of what your project does._
+# Project: SynapseSync
+เว็บแอปพลิเคชันการเรียนรู้ที่เชื่อมคำถาม คำอธิบาย แบบฝึกหัด และความก้าวหน้าของผู้เรียนไว้ใน flow เดียว
 
 ## Team: [Brainlink Co.]
 - [67026023 ฐากร - ใจพล], GitHub: `[@THAKORN-MK]`
 - [67026012 ไชยวัฒน์ - แซ่ว้าง ], GitHub: `[@Chaiwat2005]`
 - [67026146 สุวิชาดา  - วงพีระ], GitHub: `[@67026146]`
+
+**Theme:** Tools for Modern Learners
 
 ---
 
