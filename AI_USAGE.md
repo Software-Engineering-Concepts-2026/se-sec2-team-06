@@ -208,4 +208,6 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 
 - Contract tests ของ `/` และ `/health` ผ่านด้วย `pytest` จำนวน 2 tests และ ASGI smoke check ได้ HTTP 200 พร้อม `status=healthy`
 - ตรวจ static Dockerfile/.dockerignore และ `git diff --check` ในเครื่องพัฒนาแล้ว
-- Docker CLI ไม่พร้อมใช้งานใน environment นี้ จึงยังไม่มีหลักฐาน image size, `docker run` หรือ registry push; รายการที่ยังต้องตรวจถูกระบุไว้ใน `docker/README.md`
+- หลังติดตั้ง Docker Desktop แล้ว `docker build -t synapsesync-api:v0.1.0 .` สำเร็จ และ image มีขนาด `52,513,980` bytes (ประมาณ 50.1 MiB) ต่ำกว่าเป้าหมาย 500 MB
+- ทดสอบ `docker run` และ `GET /health` ได้ HTTP 200 พร้อม `status=healthy`; `docker inspect` ยืนยัน runtime user เป็น `appuser:appgroup` และ health status เป็น `healthy`
+- ยังไม่ได้ push image ไป registry เพราะยังไม่มีการยืนยัน namespace/credentials; คำสั่งและหลักฐานที่ต้องแนบใน PR ระบุไว้ใน `docker/README.md`
