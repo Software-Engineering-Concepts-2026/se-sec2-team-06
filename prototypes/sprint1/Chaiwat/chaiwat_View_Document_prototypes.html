@@ -3,13 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document Viewer</title>
-<link rel="stylesheet" href="chaiwat_View_Document_prototypes.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Document Viewer — SynapseSync</title>
+<link rel="stylesheet" href="../webtest/shared.css?v=lab4">
+<link rel="stylesheet" href="../webtest/navbar.css?v=lab4">
+<link rel="stylesheet" href="chaiwat_View_Document_prototypes.css?v=20260826-theme-1">
+<script src="../webtest/navbar.js?v=lab4" defer></script>
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+<div data-navbar-root data-page="library"></div>
+
+<main class="page-shell feature-shell" id="main-content">
 <div class="viewer-page">
 
   <!-- Header -->
@@ -52,7 +57,7 @@
   <div class="toast" id="toast"></div>
 
   <!-- Main content: viewer + AI panel -->
-  <main class="main-grid">
+  <div class="main-grid">
 
     <!-- Left: Content Viewer -->
     <section class="viewer-zone">
@@ -112,7 +117,7 @@
       </div>
     </aside>
 
-  </main>
+  </div>
 
   <!-- Footer shortcuts -->
   <footer class="footer-bar">
@@ -121,6 +126,7 @@
   </footer>
 
 </div>
+</main>
 
 <script>
 (() => {
@@ -133,7 +139,7 @@
   }
 
   /* ---------- Header: back / share / more menu ---------- */
-  document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'library.html'; });
+  document.getElementById('backBtn').addEventListener('click', () => { window.location.href = 'chaiwat_library_prototypes.html'; });
   document.getElementById('shareBtn').addEventListener('click', () => showToast('คัดลอกลิงก์แชร์แล้ว'));
 
   const moreMenu = document.getElementById('moreMenu');
@@ -197,35 +203,24 @@
     handleFile(file);
   });
 
-  /* ---------- Load document handed off from the Library page ---------- */
+  /* ---------- Load document metadata from the local viewer URL ---------- */
   const subjectTagEl = document.querySelector('.subject-tag');
-  function loadHandoffDocument(){
-    const raw = sessionStorage.getItem('activeDocument');
-    if (!raw) return;
-    let doc;
-    try { doc = JSON.parse(raw); } catch (err) { return; }
-
-    fileNameEl.textContent = doc.name;
-    if (subjectTagEl && doc.subject) subjectTagEl.textContent = '📘 ' + doc.subject;
+  const handoffParams = new URLSearchParams(window.location.search);
+  const handoffName = handoffParams.get('name');
+  const handoffType = handoffParams.get('type') || 'application/octet-stream';
+  const handoffSubject = handoffParams.get('subject');
+  if (handoffName) {
+    fileNameEl.textContent = handoffName;
+    if (subjectTagEl && handoffSubject) subjectTagEl.textContent = '📘 ' + handoffSubject;
     docEmpty.hidden = true;
     docPreview.hidden = false;
-
-    if (doc.dataUrl && doc.type.startsWith('image/')) {
-      docPreview.innerHTML = '<img src="' + doc.dataUrl + '" alt="เอกสารที่เปิดจากคลัง">';
-    } else if (doc.dataUrl && doc.type === 'application/pdf') {
-      docPreview.innerHTML = '<iframe src="' + doc.dataUrl + '" title="ตัวอย่าง PDF"></iframe>';
-    } else {
-      docPreview.innerHTML =
-        '<div class="doc-file-card">' +
-          '<span class="doc-file-icon">' + iconFor(doc.type, doc.name) + '</span>' +
-          '<p class="doc-file-name">' + doc.name + '</p>' +
-          '<p class="doc-file-hint">ไฟล์นี้ยังพรีวิวในเบราว์เซอร์ไม่ได้ แต่พร้อมให้ AI ช่วยสรุป/อธิบายได้เลย</p>' +
-        '</div>';
-    }
-    // Consume it once so a manual refresh falls back to the empty/upload state.
-    sessionStorage.removeItem('activeDocument');
+    docPreview.innerHTML =
+      '<div class="doc-file-card">' +
+        '<span class="doc-file-icon">' + iconFor(handoffType, handoffName) + '</span>' +
+        '<p class="doc-file-name">' + handoffName + '</p>' +
+        '<p class="doc-file-hint">เปิดจากคลังเอกสารแล้ว เลือกไฟล์อีกครั้งหากต้องการดูตัวอย่างใน browser</p>' +
+      '</div>';
   }
-  loadHandoffDocument();
 
   /* ---------- Zoom ---------- */
   const docText = document.getElementById('docText');

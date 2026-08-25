@@ -1,44 +1,91 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้าแรก - SynapseSync Prototype</title>
-  <link rel="stylesheet" href="home_style.css">
+  <meta name="description" content="หน้าหลักของ SynapseSync Prototype สำหรับเข้าถึงเครื่องมือช่วยเรียนของทีม">
+  <title>หน้าหลัก - SynapseSync Prototype</title>
+  <link rel="stylesheet" href="shared.css?v=20260824-6">
+  <link rel="stylesheet" href="navbar.css?v=20260824-6">
+  <link rel="stylesheet" href="home_style.css?v=20260824-1">
+  <script src="navbar.js?v=20260824-5" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
 
-  <main class="app-frame">
+  <div data-navbar-root data-page="home"></div>
 
-    <header class="app-header">
-      <h1>SynapseSync</h1>
-    </header>
+  <main class="page-shell home-shell" id="main-content">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="home-hero__content">
+        <span class="prototype-pill prototype-pill--dark">Sprint 1 · Interactive flow</span>
+        <p class="home-hero__eyebrow">Your learning workspace</p>
+        <h1 id="home-title">เปลี่ยนสิ่งที่ยังไม่เข้าใจ<br>ให้กลายเป็นความก้าวหน้า</h1>
+        <p>เลือกเครื่องมือที่ต้องการ ทดลอง user flow และตรวจสอบความเข้าใจผ่าน Prototype ของ SynapseSync</p>
+        <div class="home-hero__actions">
+          <a class="hero-button hero-button--primary" href="../Thakorn/thakorn_quizgenerator_prototype.html?v=20260824-5">เริ่มสร้างแบบทดสอบ <span aria-hidden="true">→</span></a>
+          <a class="hero-button hero-button--ghost" href="#learning-tools">ดูเครื่องมือทั้งหมด</a>
+        </div>
+      </div>
+      <div class="home-hero__visual" aria-hidden="true">
+        <div class="orbit orbit--one"></div>
+        <div class="orbit orbit--two"></div>
+        <div class="hero-node hero-node--main"><span>?</span></div>
+        <div class="hero-node hero-node--a"></div>
+        <div class="hero-node hero-node--b"></div>
+        <div class="hero-node hero-node--c"></div>
+      </div>
+    </section>
 
-    <p class="tagline">แพลตฟอร์มช่วยเรียนและทดสอบความเข้าใจด้วย AI</p>
+    <section class="tools-section" id="learning-tools" aria-labelledby="tools-title">
+      <div class="section-heading">
+        <div>
+          <p>Explore the prototype</p>
+          <h2 id="tools-title">เครื่องมือช่วยเรียนของทีม</h2>
+        </div>
+        <span>3 interactive modules</span>
+      </div>
 
-    <div class="menu-list">
-      <a href="../Thakorn/thakorn_quizgenerator_prototype.html" class="menu-card">
-        <span class="menu-title">สร้างแบบทดสอบด้วย AI</span>
-        <span class="menu-desc">อัปโหลดเนื้อหา แล้วให้ AI สร้างข้อสอบให้</span>
-      </a>
+      <div class="feature-grid">
+        <a href="../Thakorn/thakorn_quizgenerator_prototype.html?v=20260824-5" class="feature-card feature-card--featured">
+          <span class="feature-card__number">01</span>
+          <span class="feature-card__icon" aria-hidden="true">✦</span>
+          <span class="feature-card__body">
+            <strong>สร้างแบบทดสอบด้วย AI</strong>
+            <span>เลือกเอกสารและตั้งค่าแบบทดสอบ เพื่อทดลองตอบคำถามพร้อมดูคำอธิบาย</span>
+          </span>
+          <span class="feature-card__arrow" aria-hidden="true">↗</span>
+        </a>
 
-      <a href="../Chaiwat/chaiwat_library_prototypes.html" class="menu-card">
-        <span class="menu-title">ระบบอัปโหลดไฟล์</span>
-        <span class="menu-desc">อัปโหลดและจัดการไฟล์เอกสารการเรียนของคุณ</span>
-      </a>
+        <a href="../Chaiwat/chaiwat_library_prototypes.html" class="feature-card">
+          <span class="feature-card__number">02</span>
+          <span class="feature-card__icon" aria-hidden="true">▤</span>
+          <span class="feature-card__body">
+            <strong>ระบบอัปโหลดไฟล์</strong>
+            <span>อัปโหลดและจัดการไฟล์เอกสารการเรียนของคุณในพื้นที่เดียว</span>
+          </span>
+          <span class="feature-card__arrow" aria-hidden="true">↗</span>
+        </a>
 
-      <a href="../shuwichada/shuwichada_set_prototypes.html" class="menu-card">
-        <span class="menu-title">ระบบแจ้งเตือนเวลาส่งงาน</span>
-        <span class="menu-desc">สร้างงานและระบุวันเวลาส่งงาน และงานที่ใกล้ถึงเวลาส่ง</span>
-      </a>
+        <a href="../shuwichada/shuwichada_set_prototypes.html" class="feature-card">
+          <span class="feature-card__number">03</span>
+          <span class="feature-card__icon" aria-hidden="true">◷</span>
+          <span class="feature-card__body">
+            <strong>ระบบแจ้งเตือนเวลาส่งงาน</strong>
+            <span>สร้างงาน กำหนดวันส่ง และดูรายการที่ใกล้ถึงกำหนด</span>
+          </span>
+          <span class="feature-card__arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
 
-<!-- เพิ่ม menu-card ใหม่ตรงนี้เมื่อทีมคนอื่น push prototype ของตัวเองเข้ามา -->
-    </div>
-
-    <p class="hint-text">Prototype: หน้านี้เป็นทางเข้าเชื่อมระหว่างหน้าต่างๆ ของทีม เพื่อสาธิต Flow การใช้งานเท่านั้น</p>
-    <p class="switch-link"><a href="login.html">&larr; ออกจากระบบ</a></p>
-
+    <aside class="prototype-note" aria-label="ขอบเขตของ Prototype">
+      <div>
+        <span class="prototype-note__mark" aria-hidden="true">i</span>
+        <p><strong>Prototype boundary</strong>หน้าหลักเชื่อม flow ของสมาชิกในทีมเพื่อสาธิตเท่านั้น ยังไม่มีบัญชี ฐานข้อมูล หรือ AI service จริง</p>
+      </div>
+      <a href="register.html?v=20260824-5">เริ่ม flow ใหม่</a>
+    </aside>
   </main>
-
 </body>
 </html>

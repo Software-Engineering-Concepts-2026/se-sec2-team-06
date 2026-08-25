@@ -1,0 +1,139 @@
+.site-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border-bottom: 1px solid rgba(228, 228, 222, 0.9);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 30px rgba(31, 31, 28, 0.035);
+  backdrop-filter: blur(18px);
+}
+
+.site-bar__inner {
+  width: min(1180px, calc(100% - 2rem));
+  min-height: 80px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.site-brand__mark {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 14px;
+  background: var(--ink);
+  box-shadow: 0 9px 22px rgba(34, 34, 32, 0.18);
+}
+
+.site-brand__mark::before,
+.site-brand__mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 12px 7px 0 #b9b9ff, 4px 17px 0 #ffffff;
+}
+
+.site-brand__mark::before {
+  top: 8px;
+  left: 8px;
+  width: 5px;
+  height: 5px;
+}
+
+.site-brand__mark::after {
+  right: 8px;
+  bottom: 8px;
+  width: 4px;
+  height: 4px;
+  opacity: 0.85;
+}
+
+.site-brand__name {
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.site-bar__tools {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.site-bar__status {
+  padding: 0.44rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-bar__action {
+  padding: 0.62rem 0.92rem;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.site-bar__action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 18px rgba(34, 34, 32, 0.16);
+}
+
+@media (max-width: 520px) {
+  .site-bar__inner {
+    width: min(100% - 1rem, 1180px);
+    min-height: 70px;
+    gap: 0.5rem;
+  }
+
+  .site-brand {
+    gap: 0.5rem;
+  }
+
+  .site-brand__mark {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .site-brand__name {
+    font-size: 0.92rem;
+  }
+
+  .site-bar__tools {
+    gap: 0.35rem;
+  }
+
+  .site-bar__status {
+    padding: 0.32rem 0.48rem;
+    font-size: 0.56rem;
+    letter-spacing: 0.04em;
+  }
+
+  .site-bar__action {
+    padding: 0.46rem 0.58rem;
+    font-size: 0.72rem;
+  }
+}

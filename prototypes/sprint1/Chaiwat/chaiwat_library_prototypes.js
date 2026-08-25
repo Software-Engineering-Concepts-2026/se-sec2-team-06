@@ -184,31 +184,12 @@
 
   /* ---------- Hand off to full-page Document Viewer ---------- */
   function goToViewer(doc){
-    // Small/previewable files (image, pdf): convert to a data URL so the
-    // viewer page can read it back out of sessionStorage after navigation.
-    // Word/PPT files can't be rendered in-browser without a backend, so we
-    // just hand off the name/type/subject and the viewer shows a fallback card.
-    const canPreview = (doc.type.startsWith('image/') || doc.type === 'application/pdf') && doc.fileObj;
-
-    function saveAndGo(dataUrl){
-      const payload = { name: doc.name, type: doc.type, subject: doc.subject, dataUrl: dataUrl || null };
-      try {
-        sessionStorage.setItem('activeDocument', JSON.stringify(payload));
-      } catch (err) {
-        // File too large for sessionStorage — still hand off metadata without the preview
-        sessionStorage.setItem('activeDocument', JSON.stringify({ ...payload, dataUrl: null }));
-      }
-      window.location.href = 'chaiwat_View_Document_prototypes.html';
-    }
-
-    if (canPreview) {
-      const reader = new FileReader();
-      reader.onload = () => saveAndGo(reader.result);
-      reader.onerror = () => saveAndGo(null);
-      reader.readAsDataURL(doc.fileObj);
-    } else {
-      saveAndGo(null);
-    }
+    const query = new URLSearchParams({
+      name: doc.name,
+      type: doc.type || 'application/octet-stream',
+      subject: doc.subject,
+    });
+    window.location.href = `chaiwat_View_Document_prototypes.html?${query.toString()}`;
   }
 
   /* ---------- Delete confirm modal ---------- */
