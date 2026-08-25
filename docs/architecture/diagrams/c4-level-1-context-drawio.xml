@@ -1,93 +1,22 @@
-<mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+<mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
   <root>
     <mxCell id="0" />
     <mxCell id="1" parent="0" />
-
-    <!-- ================= PERSONS (left column) ================= -->
-
-    <mxCell id="pun" value="&lt;b&gt;ปันปัน (ปาริชาติ)&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;นักเรียน ม.5 สายวิทย์-คณิต&lt;br&gt;ต้องการพื้นที่ถามคำถามซ้ำได้&lt;br&gt;โดยไม่อาย และฝึกทำโจทย์&lt;br&gt;จนมั่นใจก่อนสอบ" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="40" y="20" width="240" height="160" as="geometry" />
+    <mxCell id="student" value="&lt;b&gt;Student Learner&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ถามคำถาม ทำแบบฝึกหัด&lt;br&gt;และติดตามความก้าวหน้า" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="40" y="150" width="240" height="130" as="geometry" />
     </mxCell>
-
-    <mxCell id="teacher" value="&lt;b&gt;ครูสมชาย&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ครูคณิตศาสตร์ ม.ปลาย&lt;br&gt;ดูแลนักเรียน 120+ คน&lt;br&gt;ต้องการเห็นภาพรวมว่าใคร&lt;br&gt;ตามไม่ทันก่อนสายเกินไป" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="40" y="220" width="240" height="160" as="geometry" />
+    <mxCell id="teacher" value="&lt;b&gt;Teacher Mentor&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ดู learning-gap summary&lt;br&gt;ตามสิทธิ์ที่ได้รับ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="40" y="400" width="240" height="130" as="geometry" />
     </mxCell>
-
-    <mxCell id="earth" value="&lt;b&gt;พี่เอิร์ธ&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ผู้เรียนผู้ใหญ่ เวลาเรียน&lt;br&gt;ไม่แน่นอน ต้องการตัวเตือน&lt;br&gt;ให้กลับมาทบทวน และเห็น&lt;br&gt;ความคืบหน้าการเรียนของตัวเอง" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="40" y="420" width="240" height="160" as="geometry" />
+    <mxCell id="system" value="&lt;b&gt;SynapseSync&lt;/b&gt;&lt;br&gt;[Software System]&lt;br&gt;&lt;br&gt;ช่วยอธิบายจุดที่ไม่เข้าใจ&lt;br&gt;สร้างแบบฝึกหัด และบันทึกผล" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=3;align=center;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="460" y="260" width="300" height="180" as="geometry" />
     </mxCell>
-
-    <mxCell id="mom" value="&lt;b&gt;คุณแม่มล&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ผู้ปกครอง ต้องการสรุปสั้นๆ&lt;br&gt;ว่าลูกเรียนตามทันหรือไม่&lt;br&gt;และแจ้งเตือนล่วงหน้าหาก&lt;br&gt;ลูกเริ่มมีปัญหาต่อเนื่อง" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="40" y="620" width="240" height="160" as="geometry" />
+    <mxCell id="llm" value="&lt;b&gt;LLM Provider API&lt;/b&gt;&lt;br&gt;[External Software System]&lt;br&gt;&lt;br&gt;สร้างคำอธิบายและแบบฝึกหัด" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=2;dashed=1;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="920" y="280" width="240" height="140" as="geometry" />
     </mxCell>
-
-    <!-- ================= SYSTEM (center) ================= -->
-
-    <mxCell id="system" value="&lt;b&gt;SynapseSync Platform&lt;/b&gt;&lt;br&gt;[Software System]&lt;br&gt;&lt;br&gt;เว็บแอป All-in-One Learning&lt;br&gt;Platform ให้ผู้เรียนถามคำถาม&lt;br&gt;กับ AI, ฝึกโจทย์, และติดตาม&lt;br&gt;ความเข้าใจอัตโนมัติ พร้อม&lt;br&gt;แดชบอร์ดสำหรับครูและผู้ปกครอง" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=3;align=center;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
-      <mxGeometry x="480" y="320" width="320" height="200" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EXTERNAL SYSTEMS (right column) ================= -->
-
-    <mxCell id="llm" value="&lt;b&gt;LLM Provider API&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Cloud-hosted large language&lt;br&gt;model สำหรับตอบคำถาม&lt;br&gt;สร้างโจทย์ฝึก และสรุปเนื้อหา&lt;br&gt;เช่น OpenAI GPT-4o-mini" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="960" y="180" width="260" height="180" as="geometry" />
-    </mxCell>
-
-    <mxCell id="lms" value="&lt;b&gt;University LMS API&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;ให้ course catalog และ&lt;br&gt;ข้อมูลการลงทะเบียนเพื่อ&lt;br&gt;auto-tag เอกสารที่อัปโหลด&lt;br&gt;เช่น Moodle" style="rounded=1;arcSize=10;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="960" y="480" width="260" height="180" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: ปันปัน ================= -->
-
-    <mxCell id="e-pun-out" value="ถามคำถามที่ไม่เข้าใจ,&lt;br&gt;ทำโจทย์ฝึกเพิ่ม" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="pun" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-pun-in" value="อธิบายทีละขั้น, ส่งโจทย์คล้ายกัน,&lt;br&gt;บันทึกว่าเข้าใจหัวข้อไหนแล้ว" style="endArrow=block;html=1;fontSize=11;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="system" target="pun">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: ครูสมชาย ================= -->
-
-    <mxCell id="e-teacher-out" value="ดูแดชบอร์ดภาพรวม&lt;br&gt;ความเข้าใจของนักเรียน" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="teacher" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-teacher-in" value="อัปเดตอัตโนมัติว่านักเรียนติดขัด&lt;br&gt;เรื่องใดและแก้ไขได้เองหรือยัง" style="endArrow=block;html=1;fontSize=11;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="system" target="teacher">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: พี่เอิร์ธ ================= -->
-
-    <mxCell id="e-earth-out" value="ทบทวนเนื้อหาที่เรียนไปแล้ว" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="earth" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-earth-in" value="แจ้งเตือนให้กลับมาทบทวน,&lt;br&gt;แสดงกราฟความคืบหน้า" style="endArrow=block;html=1;fontSize=11;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="system" target="earth">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: คุณแม่มล ================= -->
-
-    <mxCell id="e-mom-out" value="ติดตามการเรียนของลูก" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="mom" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-mom-in" value="ส่งสรุปสั้นๆ ว่าลูกเรียนทันหรือไม่,&lt;br&gt;แจ้งเตือนล่วงหน้าหากมีปัญหาต่อเนื่อง" style="endArrow=block;html=1;fontSize=11;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="system" target="mom">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: External Systems ================= -->
-
-    <mxCell id="e-llm-out" value="ส่งคำถาม/เนื้อหา&lt;br&gt;ขอคำอธิบายและโจทย์ฝึก" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="system" target="llm">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-llm-in" value="ส่งคำอธิบายและโจทย์ฝึกกลับ" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="llm" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <mxCell id="e-lms-out" value="ดึงรายวิชาและการลงทะเบียน" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.3;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="system" target="lms">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-lms-in" value="ส่ง course catalog กลับ" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="lms" target="system">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
+    <mxCell id="e-student" value="เรียนและฝึกผ่าน Web UI&lt;br&gt;HTTPS" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.35;curved=0;" edge="1" parent="1" source="student" target="system"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-teacher" value="ดู summary&lt;br&gt;HTTPS" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.7;curved=0;" edge="1" parent="1" source="teacher" target="system"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-llm-out" value="ส่ง prompt&lt;br&gt;HTTPS/JSON" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.4;entryX=0;entryY=0.4;curved=0;" edge="1" parent="1" source="system" target="llm"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-llm-in" value="ส่งผลลัพธ์ AI&lt;br&gt;HTTPS/JSON" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=0;exitY=0.7;entryX=1;entryY=0.7;curved=0;" edge="1" parent="1" source="llm" target="system"><mxGeometry relative="1" as="geometry" /></mxCell>
   </root>
 </mxGraphModel>

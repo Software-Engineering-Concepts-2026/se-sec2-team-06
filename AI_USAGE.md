@@ -131,3 +131,44 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 - ข้อมูลทั้งหมดเป็น mock หรือ in-memory state และจะหายเมื่อ refresh
 - ไม่มีการสร้างบัญชีจริง ไม่มีการอ่านเนื้อหาไฟล์จริง ไม่มีการส่งข้อมูลไป server และไม่มีการแจ้งเตือนจริง
 - ผลการทดสอบนี้ยืนยัน technical flow เท่านั้น ยังไม่ใช่ผล usability test กับ Persona จริง
+
+---
+
+## Lab 5 — Architectural Artifacts Usage
+
+### Tools and tasks
+
+- ผมอ่านใบงาน Lab 5 และ chapter note ก่อน แล้วใช้ ChatGPT/Codex เป็นผู้ช่วยจัด checklist ของ C4 Level 1, C4 Level 2, Technology Stack และ ADR
+- ใช้ AI ช่วยเปรียบเทียบ Modular Monolith, layered monolith และการแยก service โดยยึดขนาดทีม, เวลาในหนึ่งภาคการศึกษา, จำนวนผู้ใช้เริ่มต้น และ NFR ของ SynapseSync
+- ใช้ AI ช่วยจัดโครงสร้างคำอธิบายและตรวจความสอดคล้องระหว่าง `c4-context.md`, `c4-container.md`, `tech_stack.md`, ADR และ diagram source
+- ใช้ AI ช่วยร่าง wording ของ trade-offs, alternatives, review triggers และคำตอบสำหรับ `Request_ARCH.md`
+- ใช้ Mermaid CLI ช่วย render diagram เพื่อตรวจ syntax และดูว่าชื่อ actor, container และ protocol อ่านได้จริง
+
+### Example prompts
+
+1. “ช่วยตรวจว่า C4 Level 1 แสดงผู้ใช้ ระบบหลัก และ external system โดยไม่ลงรายละเอียด container เกินขอบเขตหรือไม่”
+2. “ช่วยเปรียบเทียบ Modular Monolith กับ Microservices สำหรับทีมเล็กที่มี MVP หนึ่งภาคการศึกษา โดยให้ระบุ NFR, operational cost และเงื่อนไขที่ควรทบทวน ADR”
+3. “ช่วยตรวจว่า C4 Level 2 มี internal containers 3–4 ตัว เทคโนโลยีและ protocol ตรงกับ technology stack หรือไม่”
+4. “ช่วยตรวจ ADR ให้มี Status, Context, Decision, Consequences และ Alternatives Considered ครบ โดยไม่อ้างว่า AI เป็นผู้ตัดสินใจแทนทีม”
+
+### AI-assisted content accepted after review
+
+- โครงร่างตาราง technology stack, C4 element descriptions, requirement traceability และ ADR headings
+- ข้อเสนอแนะเรื่องการแยก module ภายใน FastAPI ได้แก่ Authentication, Learning Assistant, Practice/Quiz, Progress และ Document Context
+- ร่างคำอธิบาย trade-off ของ PostgreSQL, S3-compatible Object Storage, REST/OpenAPI และ provider adapter
+- ร่างคำตอบใน `docs/architecture/Request_ARCH.md` และ reflection ของ Lab 5
+
+### Human review and decisions
+
+- ผมเป็นผู้ตัดสินใจเลือก **Modular Monolith** สำหรับ MVP และกำหนดว่า backend deploy เป็นหน่วยเดียว แต่แบ่ง capability modules ด้วย in-process interfaces
+- ทีมเป็นผู้ยืนยันจำนวน internal containers, technology labels, NFR priorities, scope ของ LMS/Notification และเงื่อนไขที่จะทบทวน decision ในอนาคต
+- ผมตรวจและแก้ทุกไฟล์ให้ตรงกับ requirements/prototype ที่มีจริง แยก target architecture ออกจาก current prototype และตรวจว่าเอกสารเก่าที่ขัดแย้งกันไม่มีข้อความ Microservices เป็น baseline
+- AI ไม่ได้สร้าง credential, secret, hostname, account identifier หรือข้อมูลส่วนบุคคล และไม่มีการส่งข้อมูลลับเข้า prompt
+
+### Verification status
+
+- สร้าง canonical artifacts: `docs/architecture/c4-context.md`, `c4-container.md`, `tech_stack.md` และ ADR-0001/0002
+- ปรับ `README.md`, `Request_ARCH.md`, `uml_models.md`, Mermaid/draw.io sources และ legacy ADR pointers ให้ชี้ไปยังชุด canonical เดียวกัน
+- Render Mermaid C4 diagrams สำเร็จเป็น PNG และตรวจจำนวน internal containers/ชื่อ technology กับตาราง stack
+- เตรียม handoff folders แยก C4 และ ADR สำหรับสมาชิก โดยไม่มี `.git` หรือไฟล์งานอื่นปะปน
+- การ review/merge/push เป็นขั้นตอนของทีมหลังตรวจ diff และหลักฐานครบ ไม่ใช่การตัดสินใจโดย AI

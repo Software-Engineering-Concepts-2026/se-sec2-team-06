@@ -1,21 +1,7 @@
-# ADR-001: Use RESTful APIs for Internal Service Communication
+# Legacy filename — REST API Communication
 
-**Status:** Accepted
+**Status:** Superseded by [`0002-rest-api-communication.md`](./0002-rest-api-communication.md)
 
-**Context:**
-Our system is being designed with a Microservices architecture. We need a standardized, well-understood mechanism for synchronous communication between services. The development team has experience with both RESTful APIs (using HTTP/JSON) and gRPC.
+ไฟล์นี้เก็บไว้เพื่อไม่ให้ลิงก์หรือการอ้างอิงจาก draft เดิมเสีย แต่ไม่มี decision แยกต่างหากอีกต่อไป โปรดอ่าน [ADR-0002 — ใช้ REST และ OpenAPI ระหว่าง Web กับ Backend](./0002-rest-api-communication.md) ซึ่งอธิบาย protocol ของ Web-to-Backend ใน Modular Monolith ปัจจุบัน
 
-**Decision:**
-We will use RESTful APIs with JSON payloads as the primary mechanism for synchronous, request-response communication between our internal microservices. All services must expose their capabilities through a well-defined OpenAPI (Swagger) specification.
-
-**Consequences:**
-*   **Positive:**
-    *   Leverages existing team skills in HTTP and JSON, reducing the learning curve.
-    *   Easy to debug and test using common tools like Postman, Insomnia, or even a web browser.
-    *   A wide range of libraries and frameworks support REST, making implementation straightforward.
-    *   The OpenAPI specification will serve as a form of "enforceable contract" between services.
-*   **Negative:**
-    *   REST over HTTP/JSON is more verbose and may have slightly higher latency compared to binary protocols like gRPC.
-    *   We lose the benefits of strong typing across service boundaries that gRPC provides.
-    *   We will need to implement our own mechanisms for features like service discovery and client-side load balancing.```
-
+เอกสารฉบับปัจจุบันใช้ in-process interfaces ระหว่าง module ภายใน monolith และไม่สร้าง network hop ที่ไม่จำเป็น
