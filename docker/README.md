@@ -71,17 +71,19 @@ Docker image ไม่ใช่ container ที่กำลังรัน แ�
 
 การมี container แรกไม่ได้เปลี่ยน architecture decision ของ Lab 5 เป็น Microservices เพราะการแบ่ง service ต้องมีเหตุผลด้าน boundary, deploy, scale และ operational ownership เพิ่มเติม ทีมยังคงใช้ Modular Monolith สำหรับ MVP ตาม ADR
 
-## Registry tag (ยังไม่ push ในรอบนี้)
+## Registry tag — Docker Hub (verified)
 
-เมื่อทีมยืนยัน registry และ credentials แล้วจึงค่อย tag/push เช่น GHCR:
+Image ถูก tag และ push ขึ้น Docker Hub แล้ว โดยใช้ repository สาธารณะของผู้จัดทำ:
+
+<https://hub.docker.com/r/thakornj/synapsesync-api/tags>
 
 ```bash
-docker tag synapsesync-api:v0.1.0 \
-  ghcr.io/software-engineering-concepts-2026/se-sec2-team-06-api:v0.1.0
-docker push ghcr.io/software-engineering-concepts-2026/se-sec2-team-06-api:v0.1.0
+docker tag synapsesync-api:v0.1.0 thakornj/synapsesync-api:v0.1.0
+docker push thakornj/synapsesync-api:v0.1.0
+docker pull thakornj/synapsesync-api:v0.1.0
 ```
 
-คำสั่งข้างต้นเป็นตัวอย่างสำหรับ PR เท่านั้น การ push จริงยังไม่ดำเนินการเพราะต้องระบุ namespace และสิทธิ์จากผู้ใช้ก่อน ห้ามใช้ token ใน repository หรือ commit ลงไฟล์
+ผลการ push แสดง tag `v0.1.0`, digest และขนาด compressed image บน Docker Hub หลักฐานเก็บไว้ที่ [`docs/evidence/lab06/03-dockerhub-v0.1.0-tags.png`](../docs/evidence/lab06/03-dockerhub-v0.1.0-tags.png) และ [`docs/evidence/lab06/04-dockerhub-push-success.png`](../docs/evidence/lab06/04-dockerhub-push-success.png) ห้ามใส่ token หรือ credential ลง repository
 
 ## Verification checklist
 
@@ -92,5 +94,6 @@ docker push ghcr.io/software-engineering-concepts-2026/se-sec2-team-06-api:v0.1.
 | Runtime health | `curl http://127.0.0.1:8000/health` | HTTP 200, `status=healthy` |
 | Non-root | `docker inspect --format '{{.Config.User}}' synapsesync-api` | `appuser:appgroup` หรือ UID/GID ที่กำหนด |
 | Image size | `docker image inspect --format '{{.Size}}' synapsesync-api:v0.1.0` | ต่ำกว่า 500 MB เป้าหมาย |
+| Registry push | Docker Hub tag page และ push log ใน `docs/evidence/lab06/` | public image `thakornj/synapsesync-api:v0.1.0` |
 
 ใน environment ที่ไม่มี Docker CLI สามารถยืนยัน API contract, Python smoke check และ static diff ได้ แต่ต้องรายงานว่า image build/size/non-root runtime ยังรอการตรวจบนเครื่องที่มี Docker ห้ามเขียนรายงานว่า build สำเร็จโดยไม่มี log หรือ screenshot
