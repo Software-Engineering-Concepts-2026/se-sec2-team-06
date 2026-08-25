@@ -33,3 +33,19 @@ Prompt ที่กว้างเกินไป เช่น “ช่วย�
 ## 3. Technology stack ต้องตาม NFR และข้อจำกัดจริง
 
 การเลือก React + Vite, FastAPI, PostgreSQL, S3-compatible Object Storage และ provider adapter ไม่ได้เกิดจากความนิยมของเครื่องมือ แต่โยงกับ state ของ learning flow, relational integrity, binary file size, LLM failure และทักษะ/เวลาของทีม การเขียน alternatives และ trade-offs ทำให้เห็นว่า Modular Monolith เป็นคำตอบที่เหมาะกับ MVP ตอนนี้ ไม่ใช่คำตอบถาวรสำหรับทุก scale บทเรียนของผมคือก่อนรับคำแนะนำจาก AI ต้องกำหนด NFR, จำนวนผู้ใช้, อายุ product และ compatibility constraints ให้ชัด แล้วตรวจว่า stack ที่เลือกตอบเงื่อนไขเหล่านั้นจริง
+
+---
+
+# Post-quiz 6 — Reflection on the First Container
+
+## 1. Dockerfile เป็นทั้ง build recipe และ security boundary
+
+การทำ multi-stage Dockerfile ทำให้เห็นว่า layer ของ dependency ควรแยกจาก source เพื่อให้ cache กลับมาใช้ได้ และ runtime image ควรมีเฉพาะสิ่งที่ต้องใช้จริง การกำหนด base tag, `.dockerignore` และ `USER appuser` ช่วยลดความเสี่ยงจาก dependency/cache ที่ไม่จำเป็นและการรัน process เป็น root บทเรียนที่นำไปใช้ต่อคือทุกครั้งที่เพิ่ม package ต้องถามทั้งเรื่องขนาด image, reproducibility และสิทธิ์ของ process ไม่ใช่ดูแค่ว่า build ผ่านหรือไม่
+
+## 2. Container ไม่ได้แปลว่า Microservices
+
+การส่ง FastAPI Modular Monolith เป็น image เดียวช่วยย้ำว่า container คือรูปแบบการบรรจุและส่งมอบ runtime ส่วน service boundary เป็นการตัดสินใจด้านสถาปัตยกรรม การแยกเป็นหลาย container ตอนนี้จะเพิ่ม deployment, monitoring และ data-consistency cost โดยยังไม่มีเหตุผลจาก scale หรือ ownership เพียงพอ ขั้นตอนถัดไปคือรอหลักฐานจาก workload จริงก่อนทบทวน ADR ไม่ใช้จำนวน Dockerfile เป็นตัวตัดสิน architecture แทนทีม
+
+## 3. REST health endpoint คือ operational contract
+
+`GET /health` ที่คืน HTTP 200 และ JSON ที่มี version, service และ architecture ทำให้เครื่องมือภายนอกตรวจสถานะ container ได้โดยไม่ต้องรู้รายละเอียดภายใน ส่วน `GET /` ช่วยให้คนหรือระบบค้นพบ service และเอกสาร OpenAPI ได้ง่ายขึ้น การเขียน tests ก่อน source ทำให้ contract นี้ไม่หายไประหว่าง refactor บทเรียนที่นำไปใช้ต่อคือ endpoint สำหรับ health/readiness ต้องมี response ที่เสถียร วัดผลได้ และแยกจาก business logic ตั้งแต่เริ่มทำ service

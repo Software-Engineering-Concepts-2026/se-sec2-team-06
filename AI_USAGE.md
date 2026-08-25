@@ -172,3 +172,42 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 - Render Mermaid C4 diagrams สำเร็จเป็น PNG และตรวจจำนวน internal containers/ชื่อ technology กับตาราง stack
 - เตรียม handoff folders แยก C4 และ ADR สำหรับสมาชิก โดยไม่มี `.git` หรือไฟล์งานอื่นปะปน
 - การ review/merge/push เป็นขั้นตอนของทีมหลังตรวจ diff และหลักฐานครบ ไม่ใช่การตัดสินใจโดย AI
+
+---
+
+## Lab 6 — First Container Usage
+
+### Tools and tasks
+
+- ผมอ่าน chapter 6 และ rubric Lab 6 ก่อน แล้วใช้ ChatGPT/Codex เป็นผู้ช่วยแตก deliverables เป็น Dockerfile, `.dockerignore`, API health contract, Docker guide, registry note และ reflection
+- ใช้ Python virtual environment, pytest และ httpx ตรวจ contract ของ FastAPI ก่อนเขียน application code ตามแนวทาง test-first
+- ใช้ AI ช่วยเสนอ skeleton ของ multi-stage Dockerfile, การจัด dependency layer, non-root user, `EXPOSE` และ `HEALTHCHECK`
+- ใช้ AI ช่วยตรวจ wording ของ Container เทียบกับ Virtual Machine ตาม ESP §5.4 และตรวจว่า container แรกไม่ถูกอธิบายเกินจริงว่าเป็น Microservices
+
+### Example prompts
+
+1. “ช่วยออกแบบ health contract ขั้นต่ำสำหรับ FastAPI Modular Monolith ที่จะใช้เป็น container แรก โดยกำหนด response ของ `/` และ `/health` ให้ตรวจสอบได้”
+2. “ช่วยร่าง multi-stage Dockerfile สำหรับ Python 3.12 slim ที่ pin version, ใช้ non-root user, เปิด port 8000 และมี healthcheck โดยไม่ copy dev dependencies”
+3. “ช่วยตรวจ `.dockerignore` ว่าตัด `.env`, `node_modules`, Git metadata, IDE files, tests และ cache แต่ยังคง requirements กับ application source ที่จำเป็นไว้”
+4. “ช่วยอธิบายความต่างระหว่าง image, container, registry และ Virtual Machine ตาม ESP §5.4 พร้อม trade-off ของการใช้ slim image กับ Alpine”
+
+### AI-assisted content accepted after review
+
+- โครงร่าง `services/api/` และตัวอย่าง test สำหรับ `/` กับ `/health` ซึ่งผมปรับชื่อ field และ response ให้ตรงกับ architecture contract ของทีม
+- โครงสร้าง root `Dockerfile` แบบ builder/runtime, `.dockerignore` และคำสั่ง build/run ใน `docker/README.md`
+- ร่างตาราง Container vs VM, security checklist, registry tag และ Post-quiz 6 ซึ่งผมแก้ภาษาและขอบเขตให้ตรงกับเครื่องมือที่ตรวจได้จริง
+
+### Human review and decisions
+
+- ผมเป็นผู้ตัดสินใจใช้ FastAPI Modular Monolith เป็น container แรก ไม่แยก Microservices และไม่เพิ่ม database/LLM integration ใน Lab 6
+- ผมเลือก Python slim ที่ pin version, production/dev requirements แยกกัน, non-root `appuser`, port `8000` และ `/health` เป็น operational contract
+- ผมเขียนและปรับ code, tests และเอกสารให้เข้ากับ repository เอง ตรวจ diff และตรวจว่าการแก้ไม่ปะปนกับไฟล์ Lab 2 หรือไฟล์ของสมาชิก
+- ไม่มีการส่ง credential, secret, token, hostname จริง หรือข้อมูลส่วนบุคคลเข้า prompt และไม่มีการอ้างว่า image build สำเร็จใน environment ที่ไม่มี Docker CLI
+
+### Verification status
+
+- Contract tests ของ `/` และ `/health` ผ่านด้วย `pytest` จำนวน 2 tests และ ASGI smoke check ได้ HTTP 200 พร้อม `status=healthy`
+- ตรวจ static Dockerfile/.dockerignore และ `git diff --check` ในเครื่องพัฒนาแล้ว
+- หลังติดตั้ง Docker Desktop แล้ว `docker build -t synapsesync-api:v0.1.0 .` สำเร็จ และ image มีขนาด `52,513,980` bytes (ประมาณ 50.1 MiB) ต่ำกว่าเป้าหมาย 500 MB
+- ทดสอบ `docker run` และ `GET /health` ได้ HTTP 200 พร้อม `status=healthy`; `docker inspect` ยืนยัน runtime user เป็น `appuser:appgroup` และ health status เป็น `healthy`
+- ยังไม่ได้ push image ไป registry เพราะยังไม่มีการยืนยัน namespace/credentials; คำสั่งและหลักฐานที่ต้องแนบใน PR ระบุไว้ใน `docker/README.md`

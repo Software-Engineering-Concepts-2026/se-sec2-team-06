@@ -1,6 +1,7 @@
 # Git
 .git
 .gitignore
+.github/
 
 # Python virtual environment
 .venv/
@@ -8,15 +9,36 @@ venv/
 env/
 .supercharged/
 
+# Secrets and local configuration
+.env
+.env.*
+
 # IDE / OS specific
 .vscode/
 .idea/
 *.DS_Store
+*.log
+*.tmp
+
+# Dependency/build caches
+node_modules/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+htmlcov/
 
 # Documentation and prototypes (not needed in production image)
 docs/
 prototypes/
+README.md
+AI_USAGE.md
+reflect.md
 
-# Local development files
-*.pyc
-__pycache__/
+# Development-only API material
+services/api/tests/
+services/api/requirements-dev.txt
+services/stats-service/

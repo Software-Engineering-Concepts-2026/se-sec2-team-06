@@ -18,9 +18,9 @@ This section explains how to get a local copy of the project up and running for 
 
 - Git
 - Python 3.10+
-- Docker & Docker Compose
+- Docker Engine and Docker CLI (optional for local container run)
 
-### Running the Application (with Docker)
+### Running the API container (Lab 6)
 
 1.  **Clone the repository:**
     ```bash
@@ -28,14 +28,18 @@ This section explains how to get a local copy of the project up and running for 
     cd [your-project-folder]
     ```
 
-2.  **Run the services:**
-    *(This section will be updated in later weeks when using Docker Compose)*
+2.  **Build and run from the repository root:**
     ```bash
-    # Example for a single service
-    cd services/stats-service
-    docker build -t your-team/stats-service .
-    docker run -p 5001:5000 your-team/stats-service
+    docker build -t synapsesync-api:v0.1.0 .
+    docker run --rm --name synapsesync-api -p 8000:8000 synapsesync-api:v0.1.0
     ```
+
+3.  **Check the health contract** in a second terminal:
+    ```bash
+    curl http://127.0.0.1:8000/health
+    ```
+
+The first container is the FastAPI Modular Monolith API. It runs as a non-root user and exposes port `8000`; it is not a claim that SynapseSync has been split into Microservices. See the complete build, security, verification and registry notes in [`docker/README.md`](./docker/README.md).
 
 ---
 
