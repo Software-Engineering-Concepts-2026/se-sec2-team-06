@@ -44,7 +44,90 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 
 ### Verification status
 
-- Branch: `feature/lab1-intro-Thakorn` สร้างจาก `origin/main`
+- Branch งานปัจจุบัน: `se-sec2-team-06-lab02-proposal-Thakorn` โดยต่อยอดจาก worktree ที่เริ่มจาก `origin/main`
 - `team/Thakorn.md` มี 4 sections และความยาวอยู่ในช่วง 200–500 คำ
 - README มีคำอธิบายโปรเจกต์ รายชื่อสมาชิก และ Theme แล้ว
 - ก่อนส่งงานยังต้อง commit ด้วย Conventional Commits, push branch, เปิด Pull Request, tag reviewer, ผ่าน review, merge เข้า `main` และย้าย Project Board ไป `Done`
+
+## Lab 2 — Sprint Zero Usage
+
+### Tools and tasks
+
+- ใช้ ChatGPT/Codex ช่วยตรวจ checklist ของ Lab 02 และโครงสร้าง Project Proposal
+- ใช้ AI ช่วยจัดหมวด Theme, Persona, Value Proposition, MoSCoW priorities และ Risks จากข้อมูลโครงการเดิม
+- ใช้ AI ช่วยตรวจว่า Proposal มี 6 sections และมีลิงก์ไปยัง Definition of Done
+- ใช้ AI ช่วยร่าง acceptance criteria และรูปแบบ Issue ได้ แต่การสร้าง Issue, label, milestone และการจัดลำดับ backlog ต้องให้ทีมตัดสินใจเอง
+
+### Human review and decisions
+
+- ทีมเป็นผู้ยืนยัน Theme `Tools for Modern Learners`, ชื่อ SynapseSync และ Persona หลักก่อน merge
+- ทีมเป็นผู้ตัดสินใจ MoSCoW priorities, risks, assumptions, Definition of Done และ Sprint ที่จะนำ Issue ไปทำ
+- เนื้อหาที่นำมาจาก workspace เดิมถูกอ่านและปรับให้ตรงกับ repository ปัจจุบันก่อนนำมาใช้
+- ห้ามใช้ AI ตัดสินใจแทนทีม และห้ามสร้าง Issue หรือ Pull Request โดยที่สมาชิกทีมยังไม่ได้อ่านตรวจ
+
+## Lab 3 — Requirements Documents Usage
+
+### Tools and tasks
+
+- ใช้ ChatGPT/Codex ช่วยตรวจ rubric ของ Lab 3 และแยก Main Scenario เดิมออกเป็น `scenarios.md` กับ `user-stories.md`
+- ใช้ AI ช่วยตรวจว่า Persona แต่ละคนมี Personalization, Job, Education, Relevance และ Frequency of use ครบ
+- ใช้ AI ช่วยปรับ narrative scenarios ให้ครอบคลุม happy path และ edge cases โดยยึดบริบท SynapseSync จากเอกสารเดิม
+- ใช้ AI ช่วยจัดรูปแบบ User Stories เป็น As a / I want / So that และตรวจ Acceptance Criteria แบบ Given/When/Then
+- ใช้ AI ช่วยตรวจ NFR ให้มี metric และวิธีทดสอบ เช่น p95 response time, timeout, uptime, concurrent users และ usability success rate
+
+### Human review and decisions
+
+- ทีมเป็นผู้ยืนยัน Persona หลัก 3 คน ขอบเขต MVP และความสอดคล้องกับ Project Proposal ของ Lab 2
+- Priority (MoSCoW), Estimate (S/M/L), quality bar และการเลือก User Stories ที่จะนำเข้า Sprint เป็น product decisions ของทีม ไม่ใช่การตัดสินใจของ AI
+- เนื้อหาใน `se-sec2-team-06-lab03` ถูกดึงจาก Requirements เดิมแล้วปรับโครงสร้างและลิงก์ให้ตรงกับ repository ปัจจุบัน
+- ทีมต้องอ่าน ตรวจ และแก้เอกสารก่อนสร้าง GitHub Issues หรือเปิด Pull Request ของ Lab 3
+- ไม่ส่งรหัสนิสิต ข้อมูลบัญชี secret หรือข้อมูลส่วนบุคคลจริงของผู้ใช้เข้าไปใน prompt
+
+---
+
+## Lab 4 — Rapid Prototyping with AI
+
+### Tools used
+
+- VS Code และ browser สำหรับเขียน/ตรวจ prototype ด้วยตนเอง
+- OpenAI Codex / ChatGPT ใช้เป็น co-pilot เพื่ออ่าน rubric, เสนอแนวทาง UI, ช่วยตรวจ selector และช่วยไล่ปัญหา JavaScript
+- Node.js built-in test runner และ Playwright/Chrome สำหรับตรวจ flow จริงใน browser
+
+### Prompts used and purposes
+
+1. “ช่วยอ่านเกณฑ์ Lab 4 แล้วสรุปไฟล์ที่ต้องมี พร้อมแยก Tracer Bullet กับ Prototype ให้ชัดเจน”
+2. “ช่วยเสนอ design tokens และ layout ที่ทำให้ Register, Home, Quiz, Document Library และ Deadline Planner ใช้ theme เดียวกัน โดยไม่ใช้ framework”
+3. “ช่วยตรวจ interactive flow ของฟอร์มกำหนดส่งงาน: เพิ่มรายการ, ทำเครื่องหมายเสร็จ, filter และ weekly planner โดยข้อมูลต้องอยู่ใน memory เท่านั้น”
+4. “ช่วยตรวจ test failure จาก Navbar และ browser flow แล้วอธิบายสาเหตุโดยไม่แก้ requirement แทนทีม”
+5. “ช่วยปรับ visual direction ของ Thakorn และ Chaiwat ให้ใช้สีและ Navbar เหมือน Home แต่ยังคง layout และ flow ที่ทดสอบไว้”
+
+### AI-assisted content accepted after review
+
+- โครงร่าง shared Navbar, design tokens และ responsive CSS ที่นำมาปรับให้เข้ากับ SynapseSync
+- แนวทางจัดโครงสร้าง HTML ของ Thakorn, Chaiwat และ shuwichada
+- การ mapping Home palette (`#F3F3F0`, `#B9B9FF`, `#7DD8DA`, `#5959D6`) ถูกใช้เป็น starting point เท่านั้น ผู้จัดทำเป็นผู้เลือกสี layout และรายละเอียด visual เอง
+- ข้อเสนอแนะเรื่อง in-memory state, query-string metadata handoff และ browser test cases
+- ร่าง wording ใน `prototypes/sprint1/README.md`, `webtest/readme.md` และส่วน Lab 4 ของเอกสารนี้
+
+### Human review and decisions
+
+- ผู้จัดทำเป็นผู้เลือก User Story หลัก `US-03`, ตัดสินใจใช้ Prototype แทน Tracer Bullet และกำหนดขอบเขตว่าไม่มี backend/AI service จริง
+- ผู้จัดทำเป็นผู้ตรวจ แก้ และทดสอบ HTML/CSS/JavaScript ก่อนรับคำแนะนำจาก AI เข้า repository โดยต้องเขียน/ปรับ code เองอย่างน้อย 50% ตาม rubric
+- คำขอล่าสุดอนุญาตให้ปรับเฉพาะ prototype ใน `prototypes/sprint1/Chaiwat/` และ `prototypes/sprint1/shuwichada/` เพื่อให้เข้าธีมทีมเดียวกัน ไม่ได้เปลี่ยนเอกสารทีมของสมาชิก
+- ไม่มีการใส่รหัสนิสิต ข้อมูลบัญชี ไฟล์ส่วนตัว หรือ secret ใน prompt
+
+### Verification status
+
+- Branch: `feature/lab4-prototype-synapsesync`
+- ตรวจ shared Navbar ทั้ง 7 route/page ใน desktop/mobile viewport
+- ตรวจ visual system ใหม่ของ Thakorn, Chaiwat Library และ Chaiwat Viewer ว่าใช้ token ชุดเดียวกันและไม่มี horizontal overflow
+- ตรวจ Quiz flow ตั้งแต่ upload simulation ถึงผลคะแนน
+- ตรวจ Library upload/filter/viewer handoff โดยไม่ใช้ browser storage
+- ตรวจ Deadline Planner เพิ่มงาน/ทำเสร็จ/filter/planner
+- ตรวจ JavaScript syntax และ browser tests ก่อนสรุปผล
+
+### Prototype boundaries
+
+- ข้อมูลทั้งหมดเป็น mock หรือ in-memory state และจะหายเมื่อ refresh
+- ไม่มีการสร้างบัญชีจริง ไม่มีการอ่านเนื้อหาไฟล์จริง ไม่มีการส่งข้อมูลไป server และไม่มีการแจ้งเตือนจริง
+- ผลการทดสอบนี้ยืนยัน technical flow เท่านั้น ยังไม่ใช่ผล usability test กับ Persona จริง

@@ -3,169 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wireframe: กำหนดส่งงานของฉัน</title>
-
-  <!-- เชื่อม CSS -->
-  <link rel="stylesheet" href="shuwichada_set_prototypes.css">
+  <meta name="description" content="ต้นแบบวางแผนกำหนดส่งงานของ SynapseSync">
+  <title>กำหนดส่งงาน — SynapseSync</title>
+  <link rel="stylesheet" href="../webtest/shared.css?v=lab4">
+  <link rel="stylesheet" href="../webtest/navbar.css?v=lab4">
+  <link rel="stylesheet" href="shuwichada_set_prototypes.css?v=lab4">
+  <script src="../webtest/navbar.js?v=lab4" defer></script>
+  <script src="shuwichada_set_prototypes.js?v=lab4" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <div data-navbar-root data-page="deadlines"></div>
 
-<div class="phone">
-  <span class="caption">Wireframe: หน้าจัดการกำหนดส่งงาน (ไม่มีเมนู / ขาวดำ)</span>
-
-  <header>
-    <h1>กำหนดส่งงานของฉัน</h1>
-    <button class="add-btn" aria-label="เพิ่มงานใหม่">+</button>
-  </header>
-
-  <main>
-
-    <!-- Form -->
-    <section>
-      <h2>เพิ่มงานใหม่</h2>
-
-      <div class="form-box">
-
-        <div class="field placeholder">
-          ชื่องาน: เช่น การบ้านฟิสิกส์ บทที่ 5
-        </div>
-
-        <div class="field">
-          วิชา: ▾ ฟิสิกส์
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            วันที่ส่ง: 15 / 07 / 2569
-          </div>
-
-          <div class="field">
-            เวลา: 23:59
-          </div>
-        </div>
-
-        <div class="field">
-          <div class="radio-group">
-            ความสำคัญ:
-
-            <span>
-              <span class="radio-dot filled"></span>
-              ด่วน
-            </span>
-
-            <span>
-              <span class="radio-dot"></span>
-              ปานกลาง
-            </span>
-
-            <span>
-              <span class="radio-dot"></span>
-              ไม่ด่วน
-            </span>
-
-          </div>
-        </div>
-
-        <div class="field">
-          แจ้งเตือนล่วงหน้า: ▾ 1 วันก่อน
-        </div>
-
-        <button class="save-btn">
-          บันทึกกำหนดส่ง
-        </button>
-
-      </div>
+  <main class="page-shell deadline-shell" id="main-content">
+    <section class="deadline-intro" aria-labelledby="deadline-title">
+      <span class="prototype-pill">Interactive module · 03</span>
+      <p class="deadline-kicker">Keep your next step visible</p>
+      <h1 id="deadline-title">วางแผนกำหนดส่ง<br>ให้เรียนต่อได้ทัน</h1>
+      <p>เพิ่มงานที่ต้องส่ง ดูรายการที่ใกล้ถึงกำหนด และทำเครื่องหมายเมื่อเสร็จแล้วในหน้าจอเดียว</p>
     </section>
 
-    <!-- Deadline -->
-    <section>
-
-      <div class="row-title">
-        <h2 style="margin:0;">งานที่ใกล้ถึงกำหนด</h2>
-        <span class="sort">เรียงตาม: วันที่ ▾</span>
-      </div>
-
-      <div class="card">
-        <div>
-          <div class="card-title">
-            การบ้านฟิสิกส์ บทที่ 5
+    <section class="deadline-layout" aria-label="จัดการกำหนดส่งงาน">
+      <article class="deadline-card deadline-card--form">
+        <div class="card-heading">
+          <div>
+            <p class="card-kicker">Add a task</p>
+            <h2>เพิ่มงานใหม่</h2>
           </div>
-
-          <div class="card-sub">
-            วิชา: ฟิสิกส์ • ส่ง 15 ก.ค. 23:59 น.
-          </div>
+          <span class="card-icon" aria-hidden="true">＋</span>
         </div>
 
-        <div class="card-right">
-          <div class="card-time">
-            เหลือ 6 ชม.
+        <form id="deadline-form" novalidate>
+          <div class="field-group">
+            <label for="task-title">ชื่องาน</label>
+            <input id="task-title" name="title" type="text" required placeholder="เช่น การบ้านฟิสิกส์ บทที่ 5">
           </div>
-          <span class="checkbox"></span>
+
+          <div class="field-group">
+            <label for="task-subject">วิชา</label>
+            <select id="task-subject" name="subject" required>
+              <option value="">เลือกวิชา</option>
+              <option value="ฟิสิกส์">ฟิสิกส์</option>
+              <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+              <option value="เคมี">เคมี</option>
+              <option value="ชีววิทยา">ชีววิทยา</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+          </div>
+
+          <div class="field-grid">
+            <div class="field-group">
+              <label for="task-date">วันที่ส่ง</label>
+              <input id="task-date" name="date" type="date" required>
+            </div>
+            <div class="field-group">
+              <label for="task-time">เวลา</label>
+              <input id="task-time" name="time" type="time" required>
+            </div>
+          </div>
+
+          <fieldset class="field-group" id="task-priority">
+            <legend>ความสำคัญ</legend>
+            <div class="priority-options">
+              <label class="priority-option priority-option--high">
+                <input type="radio" name="priority" value="high" checked>
+                <span>ด่วน</span>
+              </label>
+              <label class="priority-option priority-option--medium">
+                <input type="radio" name="priority" value="medium">
+                <span>ปานกลาง</span>
+              </label>
+              <label class="priority-option priority-option--low">
+                <input type="radio" name="priority" value="low">
+                <span>ไม่ด่วน</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field-group">
+            <label for="task-reminder">แจ้งเตือนล่วงหน้า</label>
+            <select id="task-reminder" name="reminder">
+              <option value="0">ไม่แจ้งเตือน</option>
+              <option value="1" selected>1 วันก่อน</option>
+              <option value="3">3 วันก่อน</option>
+              <option value="7">1 สัปดาห์ก่อน</option>
+            </select>
+          </div>
+
+          <p class="form-status" id="deadline-status" role="status" aria-live="polite"></p>
+          <button class="deadline-submit" type="submit">
+            <span>บันทึกกำหนดส่ง</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </form>
+      </article>
+
+      <article class="deadline-card deadline-card--list">
+        <div class="card-heading card-heading--list">
+          <div>
+            <p class="card-kicker">Your workload</p>
+            <h2>งานที่ใกล้ถึงกำหนด</h2>
+          </div>
+          <span class="sort-label">เรียงตามวันส่ง</span>
         </div>
-      </div>
 
-      <div class="card">
-        <div>
-          <div class="card-title">
-            โจทย์คณิตศาสตร์ บทที่ 3
-          </div>
-
-          <div class="card-sub">
-            วิชา: คณิตฯ • ส่ง 17 ก.ค. 15:00 น.
-          </div>
+        <div id="filter-buttons" class="filter-buttons" role="group" aria-label="ตัวกรองงาน"></div>
+        <div id="task-list" class="task-list" aria-live="polite"></div>
+        <div id="task-empty" class="task-empty" hidden>
+          <span aria-hidden="true">✦</span>
+          <p>ยังไม่มีงานในตัวกรองนี้</p>
+          <small>เพิ่มงานใหม่ทางด้านซ้ายเพื่อเริ่มวางแผน</small>
         </div>
-
-        <div class="card-right">
-          <div class="card-time">
-            เหลือ 2 วัน
-          </div>
-
-          <span class="checkbox"></span>
-        </div>
-      </div>
-
-      <div class="card done">
-
-        <div>
-          <div class="card-title">
-            รายงานเคมี เรื่องโมล
-          </div>
-
-          <div class="card-sub">
-            วิชา: เคมี • ส่งแล้ว 10 ก.ค.
-          </div>
-        </div>
-
-        <div class="card-right">
-          <span class="checkbox done">✓</span>
-        </div>
-
-      </div>
-
+      </article>
     </section>
 
-    <!-- Planner -->
-    <section style="margin-bottom:0;">
-
-      <h2>แผนสัปดาห์นี้</h2>
-
-      <div class="planner-box">
-
-        <span class="day">จ.<span class="dot empty"></span></span>
-        <span class="day">อ.<span class="dot empty"></span></span>
-        <span class="day">พ.<span class="dot"></span></span>
-        <span class="day">พฤ.<span class="dot empty"></span></span>
-        <span class="day">ศ.<span class="dot"></span></span>
-        <span class="day">ส.<span class="dot empty"></span></span>
-        <span class="day">อา.<span class="dot empty"></span></span>
-
+    <section class="deadline-card planner-card" aria-labelledby="planner-title">
+      <div class="card-heading card-heading--list">
+        <div>
+          <p class="card-kicker">This week</p>
+          <h2 id="planner-title">แผนสัปดาห์นี้</h2>
+        </div>
+        <span class="planner-legend"><i class="legend-dot legend-dot--pending"></i>ยังไม่เสร็จ <i class="legend-dot legend-dot--done"></i>เสร็จแล้ว</span>
       </div>
-
+      <div id="planner" class="planner" aria-label="ปฏิทินกำหนดส่งรายสัปดาห์"></div>
     </section>
 
+    <p class="prototype-boundary">Prototype only · รายการจะหายเมื่อ refresh และยังไม่ส่งการแจ้งเตือนจริง</p>
   </main>
-
-</div>
-
 </body>
 </html>
