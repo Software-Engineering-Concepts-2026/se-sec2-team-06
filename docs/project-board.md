@@ -30,13 +30,28 @@
 
 ## Issue drafts
 
-ไฟล์ `issue-01` ถึง `issue-05` ในโฟลเดอร์เดียวกันเป็นร่าง Issue สำหรับสร้างเป็น GitHub Issue แต่ละไฟล์มี title, persona, goal, benefit, acceptance criteria, labels และ milestone ให้ตรวจทานก่อนเพิ่มเข้า column `Backlog`
+ไฟล์ `issue-01` ถึง `issue-10` ในโฟลเดอร์เดียวกันเป็นร่าง Issue สำหรับสร้างเป็น GitHub Issue แต่ละไฟล์มี title, persona, goal, benefit, acceptance criteria, labels และ milestone ให้ตรวจทานก่อนเพิ่มเข้า column `Backlog`
+
+## Issue tag matrix
+
+| Issue | สรุปงาน | Labels ที่แนะนำ |
+|---|---|---|
+| 01 | สมัครสมาชิกและเข้าสู่ระบบ | `theme:learning`, `priority:high`, `size:M` |
+| 02 | ถามและขอคำอธิบายทีละขั้น | `theme:learning`, `priority:high`, `size:L` |
+| 03 | สร้างแบบฝึกหัดตามหัวข้อ | `theme:learning`, `priority:high`, `size:M` |
+| 04 | ดูประวัติและติดตามความก้าวหน้า | `theme:learning`, `priority:medium`, `size:M` |
+| 05 | สรุปหัวข้อที่ผู้เรียนติดขัดสำหรับครู | `theme:learning`, `priority:medium`, `size:L` |
+| 06 | ตั้งเตือนกลับมาทบทวน | `theme:learning`, `priority:low`, `size:M` |
+| 07 | บันทึกตารางเรียนส่วนตัว | `theme:self`, `priority:low`, `size:M` |
+| 08 | Pomodoro เพิ่มสมาธิ | `theme:self`, `priority:low`, `size:M` |
+| 09 | ค้นหาโน้ตและเอกสารที่บันทึกไว้ | `theme:learning`, `priority:low`, `size:M` |
+| 10 | AI แนะนำหัวข้อทบทวน | `theme:learning`, `priority:low`, `size:L` |
 
 ## Checklist
 
 - [ ] สร้าง Project Board ตามชื่อและ columns ที่กำหนด
 - [ ] เปิด Insights
 - [ ] สร้าง labels และ milestones
-- [ ] สร้าง Issue จากไฟล์ร่างทั้ง 5 รายการ
+- [ ] สร้าง Issue จากไฟล์ร่างทั้ง 10 รายการ
 - [ ] เพิ่ม Issue ทุกอันเข้า column `Backlog`
 - [ ] ให้ทีมตรวจ title, acceptance criteria, labels และ milestone ก่อนปิดงาน
