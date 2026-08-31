@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1100 1308" role="img" aria-labelledby="repo-contributors-title repo-contributors-desc">
+<title id="repo-contributors-title">SynapseSync team repository contributors</title>
+<desc id="repo-contributors-desc">Selected team contributors to Software-Engineering-Concepts-2026/se-sec2-team-06 on the default branch, generated 2026-08-30T23:38:42Z</desc>
+<style>.title{font:700 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}.subtitle{font:400 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#b9c1e7}.section{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}.muted{font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}.name{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}.stat{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#7dd8da}.diff-added{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#4ade80}.diff-removed{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f87171}.diff-separator{font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#b9c1e7}.card-commit-count{font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}.card-date{font:600 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}.label{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}</style>
+<rect width="100%" height="100%" rx="18" fill="#11183f"/>
+<circle cx="1020" cy="45" r="8" fill="#7dd8da" opacity=".9"/>
+<circle cx="1044" cy="45" r="8" fill="#a855f7" opacity=".9"/>
+<text x="52" y="52" class="title">SynapseSync · Team Contributors</text>
+<text x="52" y="79" class="subtitle">Software-Engineering-Concepts-2026/se-sec2-team-06 · default branch · generated 2026-08-30T23:38:42Z</text>
+<text x="52" y="108" class="section">Commits over time</text>
+<rect x="52" y="126" width="996" height="236" rx="14" fill="#171f4d" stroke="#2a3671"/>
+<line x1="70" y1="324.0" x2="1030" y2="324.0" stroke="#344176" stroke-dasharray="3 6"/>
+<text x="80" y="317.0" class="muted">0</text>
+<line x1="70" y1="282.5" x2="1030" y2="282.5" stroke="#344176" stroke-dasharray="3 6"/>
+<text x="80" y="275.5" class="muted">5</text>
+<line x1="70" y1="241.0" x2="1030" y2="241.0" stroke="#344176" stroke-dasharray="3 6"/>
+<text x="80" y="234.0" class="muted">10</text>
+<line x1="70" y1="199.5" x2="1030" y2="199.5" stroke="#344176" stroke-dasharray="3 6"/>
+<text x="80" y="192.5" class="muted">14</text>
+<line x1="70" y1="158.0" x2="1030" y2="158.0" stroke="#344176" stroke-dasharray="3 6"/>
+<text x="80" y="151.0" class="muted">19</text>
+<rect x="125.6" y="324.0" width="51.1" height="0.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<text x="151.2" y="348" text-anchor="middle" class="muted">14 Jun</text>
+<rect x="208.0" y="254.1" width="51.1" height="69.9" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="290.4" y="297.8" width="51.1" height="26.2" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="372.7" y="158.0" width="51.1" height="166.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<text x="398.3" y="348" text-anchor="middle" class="muted">05 Jul</text>
+<rect x="455.1" y="306.5" width="51.1" height="17.5" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="537.5" y="297.8" width="51.1" height="26.2" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="619.8" y="324.0" width="51.1" height="0.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<text x="645.4" y="348" text-anchor="middle" class="muted">26 Jul</text>
+<rect x="702.2" y="324.0" width="51.1" height="0.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="784.6" y="324.0" width="51.1" height="0.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<rect x="866.9" y="324.0" width="51.1" height="0.0" rx="5" fill="#22d3ee" opacity="0.92"/>
+<text x="892.5" y="348" text-anchor="middle" class="muted">16 Aug</text>
+<rect x="949.3" y="175.5" width="51.1" height="148.5" rx="5" fill="#22d3ee" opacity="0.92"/>
+<text x="974.8" y="348" text-anchor="middle" class="muted">23 Aug</text>
+<text x="1024" y="112.0" text-anchor="end" class="stat">52 commits · last 12 weeks</text>
+<rect x="52.0" y="404.0" width="996.0" height="266" rx="14" fill="#171f4d" stroke="#2a3671"/>
+<circle cx="80.0" cy="435.0" r="15" fill="#5959d6"/>
+<text x="80.0" y="440.0" text-anchor="middle" class="name">T</text>
+<text x="106.0" y="434.0" class="name">THAKORN-MK</text>
+<text x="106.0" y="455.0" class="stat">32 commits</text>
+<text x="1028.0" y="434.0" text-anchor="end" class="diff-separator"><tspan class="diff-added">+12,269</tspan><tspan class="diff-separator"> / </tspan><tspan class="diff-removed">−3,992</tspan></text>
+<text x="76.0" y="483.0" class="label">weekly commits · date is week start</text>
+<line x1="76.0" y1="624.0" x2="1024.0" y2="624.0" stroke="#344176"/>
+<rect x="98.1" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="119.1" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="119.1" y="648.0" text-anchor="middle" class="card-date">14 Jun</text>
+<rect x="184.3" y="582.3" width="42.0" height="41.7" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="205.3" y="574.3" text-anchor="middle" class="card-commit-count">5</text>
+<text x="205.3" y="648.0" text-anchor="middle" class="card-date">21 Jun</text>
+<rect x="270.5" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="291.5" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="291.5" y="648.0" text-anchor="middle" class="card-date">28 Jun</text>
+<rect x="356.6" y="540.7" width="42.0" height="83.3" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="377.6" y="532.7" text-anchor="middle" class="card-commit-count">10</text>
+<text x="377.6" y="648.0" text-anchor="middle" class="card-date">05 Jul</text>
+<rect x="442.8" y="607.3" width="42.0" height="16.7" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="463.8" y="599.3" text-anchor="middle" class="card-commit-count">2</text>
+<text x="463.8" y="648.0" text-anchor="middle" class="card-date">12 Jul</text>
+<rect x="529.0" y="599.0" width="42.0" height="25.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="550.0" y="591.0" text-anchor="middle" class="card-commit-count">3</text>
+<text x="550.0" y="648.0" text-anchor="middle" class="card-date">19 Jul</text>
+<rect x="615.2" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="636.2" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="636.2" y="648.0" text-anchor="middle" class="card-date">26 Jul</text>
+<rect x="701.4" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="722.4" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="722.4" y="648.0" text-anchor="middle" class="card-date">02 Aug</text>
+<rect x="787.5" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="808.5" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="808.5" y="648.0" text-anchor="middle" class="card-date">09 Aug</text>
+<rect x="873.7" y="624.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="894.7" y="616.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="894.7" y="648.0" text-anchor="middle" class="card-date">16 Aug</text>
+<rect x="959.9" y="524.0" width="42.0" height="100.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="980.9" y="516.0" text-anchor="middle" class="card-commit-count">12</text>
+<text x="980.9" y="648.0" text-anchor="middle" class="card-date">23 Aug</text>
+<rect x="52.0" y="694.0" width="996.0" height="266" rx="14" fill="#171f4d" stroke="#2a3671"/>
+<circle cx="80.0" cy="725.0" r="15" fill="#5959d6"/>
+<text x="80.0" y="730.0" text-anchor="middle" class="name">C</text>
+<text x="106.0" y="724.0" class="name">Chaiwat2005</text>
+<text x="106.0" y="745.0" class="stat">14 commits</text>
+<text x="1028.0" y="724.0" text-anchor="end" class="diff-separator"><tspan class="diff-added">+3,464</tspan><tspan class="diff-separator"> / </tspan><tspan class="diff-removed">−1,566</tspan></text>
+<text x="76.0" y="773.0" class="label">weekly commits · date is week start</text>
+<line x1="76.0" y1="914.0" x2="1024.0" y2="914.0" stroke="#344176"/>
+<rect x="98.1" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="119.1" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="119.1" y="938.0" text-anchor="middle" class="card-date">14 Jun</text>
+<rect x="184.3" y="899.7" width="42.0" height="14.3" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="205.3" y="891.7" text-anchor="middle" class="card-commit-count">1</text>
+<text x="205.3" y="938.0" text-anchor="middle" class="card-date">21 Jun</text>
+<rect x="270.5" y="871.1" width="42.0" height="42.9" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="291.5" y="863.1" text-anchor="middle" class="card-commit-count">3</text>
+<text x="291.5" y="938.0" text-anchor="middle" class="card-date">28 Jun</text>
+<rect x="356.6" y="814.0" width="42.0" height="100.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="377.6" y="806.0" text-anchor="middle" class="card-commit-count">7</text>
+<text x="377.6" y="938.0" text-anchor="middle" class="card-date">05 Jul</text>
+<rect x="442.8" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="463.8" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="463.8" y="938.0" text-anchor="middle" class="card-date">12 Jul</text>
+<rect x="529.0" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="550.0" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="550.0" y="938.0" text-anchor="middle" class="card-date">19 Jul</text>
+<rect x="615.2" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="636.2" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="636.2" y="938.0" text-anchor="middle" class="card-date">26 Jul</text>
+<rect x="701.4" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="722.4" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="722.4" y="938.0" text-anchor="middle" class="card-date">02 Aug</text>
+<rect x="787.5" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="808.5" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="808.5" y="938.0" text-anchor="middle" class="card-date">09 Aug</text>
+<rect x="873.7" y="914.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="894.7" y="906.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="894.7" y="938.0" text-anchor="middle" class="card-date">16 Aug</text>
+<rect x="959.9" y="871.1" width="42.0" height="42.9" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="980.9" y="863.1" text-anchor="middle" class="card-commit-count">3</text>
+<text x="980.9" y="938.0" text-anchor="middle" class="card-date">23 Aug</text>
+<rect x="52.0" y="984.0" width="996.0" height="266" rx="14" fill="#171f4d" stroke="#2a3671"/>
+<circle cx="80.0" cy="1015.0" r="15" fill="#5959d6"/>
+<text x="80.0" y="1020.0" text-anchor="middle" class="name">6</text>
+<text x="106.0" y="1014.0" class="name">67026146</text>
+<text x="106.0" y="1035.0" class="stat">6 commits</text>
+<text x="1028.0" y="1014.0" text-anchor="end" class="diff-separator"><tspan class="diff-added">+1,745</tspan><tspan class="diff-separator"> / </tspan><tspan class="diff-removed">−2</tspan></text>
+<text x="76.0" y="1063.0" class="label">weekly commits · date is week start</text>
+<line x1="76.0" y1="1204.0" x2="1024.0" y2="1204.0" stroke="#344176"/>
+<rect x="98.1" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="119.1" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="119.1" y="1228.0" text-anchor="middle" class="card-date">14 Jun</text>
+<rect x="184.3" y="1104.0" width="42.0" height="100.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="205.3" y="1096.0" text-anchor="middle" class="card-commit-count">2</text>
+<text x="205.3" y="1228.0" text-anchor="middle" class="card-date">21 Jun</text>
+<rect x="270.5" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="291.5" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="291.5" y="1228.0" text-anchor="middle" class="card-date">28 Jun</text>
+<rect x="356.6" y="1104.0" width="42.0" height="100.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="377.6" y="1096.0" text-anchor="middle" class="card-commit-count">2</text>
+<text x="377.6" y="1228.0" text-anchor="middle" class="card-date">05 Jul</text>
+<rect x="442.8" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="463.8" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="463.8" y="1228.0" text-anchor="middle" class="card-date">12 Jul</text>
+<rect x="529.0" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="550.0" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="550.0" y="1228.0" text-anchor="middle" class="card-date">19 Jul</text>
+<rect x="615.2" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="636.2" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="636.2" y="1228.0" text-anchor="middle" class="card-date">26 Jul</text>
+<rect x="701.4" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="722.4" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="722.4" y="1228.0" text-anchor="middle" class="card-date">02 Aug</text>
+<rect x="787.5" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="808.5" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="808.5" y="1228.0" text-anchor="middle" class="card-date">09 Aug</text>
+<rect x="873.7" y="1204.0" width="42.0" height="0.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="894.7" y="1196.0" text-anchor="middle" class="card-commit-count">0</text>
+<text x="894.7" y="1228.0" text-anchor="middle" class="card-date">16 Aug</text>
+<rect x="959.9" y="1104.0" width="42.0" height="100.0" rx="5" fill="#a855f7" opacity="0.92"/>
+<text x="980.9" y="1096.0" text-anchor="middle" class="card-commit-count">2</text>
+<text x="980.9" y="1228.0" text-anchor="middle" class="card-date">23 Aug</text>
+<text x="1048" y="1286" text-anchor="end" class="muted">Repository scope · selected team members · source: GitHub contributor statistics API</text>
+</svg>

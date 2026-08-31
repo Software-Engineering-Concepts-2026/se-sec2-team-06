@@ -2,7 +2,7 @@
 
 User Stories ชุดนี้ derive จาก [`scenarios.md`](./scenarios.md) และใช้รูปแบบ As a / I want / So that พร้อม Acceptance Criteria ที่ตรวจสอบได้
 
-> **หมายเหตุ:** Priority และ Estimate เป็น draft ที่ derive จาก MoSCoW และ INVEST note ของงานเดิม ทีมต้องยืนยันอีกครั้งใน Sprint Planning ก่อนสร้าง GitHub Issue จริง
+> **Planning baseline:** ค่า Priority (MoSCoW) และ Estimate (S/M/L) ด้านล่างเป็นค่าที่ทีมบันทึกไว้สำหรับ Lab 03 และใช้เป็นข้อมูลอ้างอิงใน GitHub Issues หากมีการปรับระหว่าง Sprint Planning ต้องปรับ Issue และเอกสารให้ตรงกันด้วย
 
 ## US-01 — ถามคำถามเมื่อไม่เข้าใจ
 
@@ -184,4 +184,4 @@ User Stories ชุดนี้ derive จาก [`scenarios.md`](./scenarios.md
 | Small | Story ที่ Large ถูกแยกจาก flow หลัก และระบุ Estimate L เพื่อวางแผนต่อ |
 | Testable | ทุก Story มี Acceptance Criteria แบบ Given/When/Then หรือ checklist |
 
-> US-07 ถึง US-09 เป็น Could/Should draft ที่ต้องผ่าน MoSCoW และ team review ก่อนนำเข้า Sprint เพื่อป้องกัน feature creep
+> US-07 ถึง US-09 เป็น Could/Should ที่ทีมตั้งใจเก็บไว้เป็นลำดับถัดไป เพื่อป้องกัน feature creep โดยยังคงอยู่ในชุด User Stories ของ Lab 03 และต้องใช้ Priority/Estimate เดียวกับ Issue ที่เชื่อมโยง

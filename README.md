@@ -13,7 +13,7 @@
 <br>
 
 <code>Learning Web App</code>
-<code>Lab 02–03</code>
+<code>Lab 01–07</code>
 <code>Docs-first</code>
 <code>Academic Project</code>
 
@@ -35,7 +35,7 @@
 
 <div align="center">
 
-<img src="./docs/assets/readme/synapsesync-hero-animated.gif" alt="ผู้เรียนใช้ SynapseSync เปลี่ยนคำถามเป็นความเข้าใจและความก้าวหน้า" width="60%">
+<img src="./docs/assets/readme/synapsesync-hero.png" alt="ผู้เรียนใช้ SynapseSync เปลี่ยนคำถามเป็นความเข้าใจและความก้าวหน้า" width="60%">
 
 </div>
 
@@ -65,10 +65,10 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 | **Theme** | Tools for Modern Learners |
 | **Primary User** | นักเรียนที่ต้องทบทวนและแก้จุดที่ไม่เข้าใจด้วยตนเอง |
 | **Core Value** | ลดเวลาค้นหาคำอธิบายและเปลี่ยนความเข้าใจให้เป็นหลักฐานจากการฝึก |
-| **Current Scope** | Lab 02–06: foundation, requirements, prototype, architecture และ first container |
-| **Project Status** | Lab 06 container configuration prepared; Docker verification pending |
+| **Current Scope** | Lab 01–07: pragmatic commit, requirements, prototype, architecture, first container และ refactoring |
+| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 verified; Docker image `v0.1.0` published |
 
-> Prototype และ Architecture ผ่านการตรวจตาม Lab 04–05 แล้ว ส่วน Lab 06 มี FastAPI service และ container configuration แต่ยังไม่อ้างว่า Docker build/run ผ่านจนกว่าจะตรวจใน environment ที่มี Docker CLI
+> Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run และ Lab 07 refactoring ผ่านการตรวจใน environment ปัจจุบัน
 
 ---
 
@@ -76,7 +76,7 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 
 <div align="center">
 
-<img src="./docs/assets/readme/learning-flow-animated.gif" alt="เส้นทางการเรียนรู้จากคำถามไปสู่ความเข้าใจ การฝึกฝน และความก้าวหน้า" width="60%">
+<img src="./docs/assets/readme/learning-flow.png" alt="เส้นทางการเรียนรู้จากคำถามไปสู่ความเข้าใจ การฝึกฝน และความก้าวหน้า" width="60%">
 
 </div>
 
@@ -138,7 +138,7 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 
 <div align="center">
 
-<img src="./docs/assets/readme/learning-ecosystem-animated.gif" alt="ผู้เรียนและผู้สอนใช้ข้อมูลการเรียนร่วมกันภายใต้การควบคุมสิทธิ์และความยินยอม" width="60%">
+<img src="./docs/assets/readme/learning-ecosystem.png" alt="ผู้เรียนและผู้สอนใช้ข้อมูลการเรียนร่วมกันภายใต้การควบคุมสิทธิ์และความยินยอม" width="60%">
 
 <sub>ระบบมีหน้าที่สนับสนุนการตัดสินใจของผู้เรียนและผู้สอน ไม่ใช่เฝ้าระวังหรือตัดสินผลการเรียนแทนมนุษย์</sub>
 
@@ -157,6 +157,8 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 - [Project Proposal](./docs/project-proposal.md) — Theme, value, scope, priorities and risks
 - [Definition of Done](./docs/definition-of-done.md) — เกณฑ์ร่วมก่อนย้ายงานเป็น Done
 - [AI Usage](./AI_USAGE.md) — เครื่องมือ AI ส่วนที่นำมาใช้ และวิธีตรวจสอบ
+- [Lab 06 Evidence](./docs/evidence/lab06/README.md) — หลักฐาน build, health check และ Docker Hub
+- [Lab 07 Refactoring Journal](./docs/refactoring-journal.md) — smell, refactor และ test-first evidence
 
 </td>
 <td width="50%" valign="top">
@@ -177,6 +179,7 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 
 - [Sprint 1 Entry Point](./prototypes/sprint1/index.html)
 - [Prototype Workspace](./prototypes/sprint1/)
+- [Prototype Guide and Test Evidence](./prototypes/sprint1/README.md)
 
 Prototype เป็นงานสาธิตและยังไม่เชื่อมต่อ authentication หรือฐานข้อมูลจริง
 
@@ -188,6 +191,7 @@ Prototype เป็นงานสาธิตและยังไม่เช�
 - [Architecture Overview](./docs/architecture/README.md)
 - [Architecture Decision Records](./docs/architecture/adr/)
 - [C4 Diagram Sources](./docs/architecture/diagrams/)
+- [Team Reflections](./docs/reflections/) — บันทึก reflection ของสมาชิกทีม
 
 Architecture Lab 05 ใช้ Modular Monolith เป็น implementation target โดย Lab 06 เริ่มพิสูจน์ deployable boundary ด้วย FastAPI first container
 
@@ -225,6 +229,8 @@ prototypes/sprint1/index.html
 
 สามารถใช้ static web server เช่น VS Code Live Server เพื่อให้ navigation ระหว่างหน้าทำงานใกล้เคียงสภาพแวดล้อมจริง
 
+รายละเอียด flow, module และข้อจำกัดอยู่ใน [Prototype Guide](./prototypes/sprint1/README.md)
+
 ### 3. Run the FastAPI Service
 
 ```bash
@@ -237,7 +243,20 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 Health endpoint: `http://127.0.0.1:8000/health`
 
-### 4. Build the First Container
+API documentation: `http://127.0.0.1:8000/docs`
+
+### 4. Run Automated Checks
+
+จาก repository root หลังติดตั้ง dependencies แล้ว:
+
+```bash
+pytest services/api/tests -q
+node --test prototypes/sprint1/tests/*.test.cjs
+```
+
+Browser tests ต้องใช้ Playwright และ Chrome ตามรายละเอียดใน [Prototype Guide](./prototypes/sprint1/README.md)
+
+### 5. Build the First Container
 
 ```bash
 docker build -t synapsesync-api:v0.1.0 .
@@ -245,6 +264,14 @@ docker run --rm -p 8000:8000 synapsesync-api:v0.1.0
 ```
 
 รายละเอียด image, security choices และ Container vs VM trade-off อยู่ใน [`docker/README.md`](./docker/README.md)
+
+### 6. Pull the Verified Registry Image
+
+```bash
+docker pull thakornj/synapsesync-api:v0.1.0
+```
+
+ดู tag ล่าสุดได้ที่ [Docker Hub](https://hub.docker.com/r/thakornj/synapsesync-api/tags) และดูภาพหลักฐานใน [Lab 06 Evidence](./docs/evidence/lab06/README.md)
 
 ---
 
@@ -266,21 +293,29 @@ docker run --rm -p 8000:8000 synapsesync-api:v0.1.0
 
 ## Cᴏɴᴛʀɪʙᴜᴛɪᴏɴ Gʀᴀᴘʜ
 
-กราฟต่อไปนี้แสดง **public GitHub activity** ของสมาชิกแต่ละคน ข้อมูล private contribution อาจไม่ปรากฏตามการตั้งค่าความเป็นส่วนตัวของเจ้าของบัญชี
+กราฟนี้แสดง **commit activity ของ repository `Software-Engineering-Concepts-2026/se-sec2-team-06` เท่านั้น** โดยอ่านข้อมูลจาก GitHub repository contributor statistics บน default branch และคัดเฉพาะสมาชิกทีม 3 คนด้านล่าง ไม่ใช่กิจกรรมรวมจาก repository อื่นของสมาชิก
 
-### ฐากร ใจพล — [@THAKORN-MK](https://github.com/THAKORN-MK)
+<div align="center">
 
-[![Contribution graph ของ THAKORN-MK](https://github-readme-activity-graph.vercel.app/graph?username=THAKORN-MK&bg_color=11183f&color=e9d5ff&line=22d3ee&point=a855f7&area=true&area_color=312e81&hide_border=true&custom_title=THAKORN-MK%20Contribution%20Graph)](https://github.com/THAKORN-MK)
+<a href="https://github.com/Software-Engineering-Concepts-2026/se-sec2-team-06/graphs/contributors">
+  <img src="./docs/assets/readme/repo-contributors.svg" alt="SynapseSync repository contributors graph" width="92%">
+</a>
 
-### ไชยวัฒน์ แซ่ว้าง — [@Chaiwat2005](https://github.com/Chaiwat2005)
+<br>
 
-[![Contribution graph ของ Chaiwat2005](https://github-readme-activity-graph.vercel.app/graph?username=Chaiwat2005&bg_color=11183f&color=e9d5ff&line=22d3ee&point=a855f7&area=true&area_color=312e81&hide_border=true&custom_title=Chaiwat2005%20Contribution%20Graph)](https://github.com/Chaiwat2005)
+<sub>คลิกกราฟเพื่อดูข้อมูลล่าสุดจาก GitHub Insights · กราฟใน README จะอัปเดตโดย GitHub Actions</sub>
+<br>
+<sub>การ์ดของสมาชิกแสดงวันที่เริ่มต้นของแต่ละสัปดาห์และจำนวน commit ของช่วงนั้น ตามรูปแบบสถิติ Contributors ของ GitHub</sub>
 
-### สุวิชาดา วงพีระ — [@67026146](https://github.com/67026146)
+</div>
 
-[![Contribution graph ของ 67026146](https://github-readme-activity-graph.vercel.app/graph?username=67026146&bg_color=11183f&color=e9d5ff&line=22d3ee&point=a855f7&area=true&area_color=312e81&hide_border=true&custom_title=67026146%20Contribution%20Graph)](https://github.com/67026146)
+| สมาชิกทีม | GitHub |
+|---|---|
+| ฐากร ใจพล | [@THAKORN-MK](https://github.com/THAKORN-MK) |
+| ไชยวัฒน์ แซ่ว้าง | [@Chaiwat2005](https://github.com/Chaiwat2005) |
+| สุวิชาดา วงพีระ | [@67026146](https://github.com/67026146) |
 
-> Contribution Graph ใช้บริการแสดงผลภายนอกและอาจไม่แสดงชั่วคราวเมื่อบริการไม่พร้อม กราฟนี้ไม่ใช่ตัววัดคุณภาพหรือปริมาณงานทั้งหมดของสมาชิก
+> สถิติของ GitHub อาจใช้เวลาประมวลผลหลังมีการเปลี่ยนแปลงประวัติ commit กราฟนี้เป็นหลักฐานกิจกรรมใน repository ไม่ใช่ตัววัดคุณภาพหรือปริมาณงานทั้งหมดของสมาชิก
 
 ---
 
@@ -362,11 +397,12 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 
 | Area | Status | Notes |
 |---|---|---|
-| Lab 02 — Sprint Zero | Content complete | Project Board และ Issues ต้องตรวจบน GitHub แยกต่างหาก |
-| Lab 03 — Requirements | Content complete; team decisions remain | Priority, Estimate และ consent details ยังต้องให้ทีมยืนยัน |
-| Lab 04 — Prototype | Verified | Shared UI และ browser regression tests ผ่านใน environment ปัจจุบัน |
-| Lab 05 — Architecture | Verified | Mermaid C4 render ผ่าน และเลือก Modular Monolith ผ่าน ADR-0001 |
-| Lab 06 — First Container | Partially verified | API tests/static container checks ผ่าน; Docker build/run และ registry image รอ Docker CLI |
+| Lab 01 — First Pragmatic Commit | ✅ เสร็จแล้ว | Initial repository structure, commit convention และ team setup อยู่ในประวัติ Git |
+| Lab 02 — Sprint Zero | ✅ เสร็จแล้ว | Project Board, Issues, labels, milestones และ Insights ตรวจครบแล้วบน GitHub |
+| Lab 04 — Prototype | ✅ เสร็จแล้ว | Shared UI และ browser regression tests ผ่านใน environment ปัจจุบัน |
+| Lab 05 — Architecture | ✅ เสร็จแล้ว | Mermaid C4 render ผ่าน และเลือก Modular Monolith ผ่าน ADR-0001 |
+| Lab 06 — First Container | ✅ เสร็จแล้ว | Docker build/run, `HEALTHCHECK`, `/health` และ Docker Hub image `thakornj/synapsesync-api:v0.1.0` ผ่าน |
+| Lab 07 — Refactoring Milestone 1 | ✅ เสร็จแล้ว | แยก `renderQuestion()` เป็น view model และ rendering helpers พร้อม test-first evidence |
 
 ### Product Boundaries
 
