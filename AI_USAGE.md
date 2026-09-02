@@ -9,9 +9,855 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 
 ## Prompts used
 
-1. “ช่วยตรวจข้อกำหนด Lab 01 และสรุป deliverables ที่ต้องส่งให้ครบตาม rubric”
-2. “ช่วยตรวจโครงสร้างไฟล์ `team/Thakorn.md` ว่าครบ 4 sections และอยู่ในช่วง 200–500 คำหรือไม่”
-3. “ช่วยตรวจภาษาและรูปแบบ `AI_USAGE.md` โดยคงความหมายและเสียงการเขียนของผู้จัดทำไว้”
+# Codex Task — Analyze Current Work, Find Problems, and Improve Existing Implementation
+
+Repository:
+
+```text
+Software-Engineering-Concepts-2026/se-sec2-team-06
+```
+
+โปรเจกต์นี้เป็นงานกลุ่มในรายวิชา **Software Engineering Concepts 2026**
+
+ให้ถือว่าไฟล์และโครงสร้างที่มีอยู่ใน repository ปัจจุบันคือ **source of truth หลัก** และงานของสมาชิกคนอื่นอาจอยู่ใน repository เดียวกัน
+
+> ห้ามรื้อหรือเขียนโปรเจกต์ใหม่โดยไม่จำเป็น
+> ห้ามเดาว่า Assignment ต้องการอะไรจากชื่อไฟล์เพียงอย่างเดียว
+> ต้องอ่านเอกสารและ implementation ปัจจุบันก่อนทุกครั้ง
+
+---
+
+# เป้าหมายหลัก
+
+ต้องการให้ช่วยตรวจสอบ **งานที่ทีมกำลังทำอยู่ใน repository ตอนนี้** ว่า:
+
+1. ตอนนี้ทีมกำลังทำหัวข้อหรือ Assignment อะไร
+2. Requirement ของงานคืออะไร
+3. งานที่ทำอยู่ตรงกับ Requirement มากน้อยแค่ไหน
+4. ส่วนใดทำเสร็จแล้ว
+5. ส่วนใดยังไม่สมบูรณ์
+6. ส่วนใดผิดหลัก Software Engineering
+7. ส่วนใดควรแก้
+8. ควรแก้อย่างไรโดยกระทบงานเดิมให้น้อยที่สุด
+
+จากนั้นเสนอแนวทางปรับปรุงที่สามารถนำไปทำต่อได้จริง
+
+---
+
+# STEP 1 — ตรวจสอบสถานะ Repository ก่อน
+
+ก่อนแก้ไขไฟล์ใด ๆ ให้ตรวจ:
+
+```bash
+git status
+git branch --show-current
+git log --oneline -10
+```
+
+ตรวจว่ามี:
+
+* modified files
+* untracked files
+* staged files
+* งานที่ยังไม่ได้ commit
+* branch ที่กำลังทำงานอยู่
+
+หรือไม่
+
+ถ้ามีไฟล์ที่ถูกแก้ไว้ก่อนเริ่มงานนี้:
+
+**ห้าม overwrite หรือ revert การเปลี่ยนแปลงเดิม**
+
+ให้ถือว่าอาจเป็นงานของสมาชิกในทีม
+
+---
+
+# STEP 2 — สำรวจโครงสร้าง Repository
+
+อ่าน repository ทั้งหมดก่อน
+
+ให้สำรวจอย่างน้อย:
+
+* `README.md`
+* Markdown (`*.md`)
+* source code
+* documentation
+* assignment files
+* requirement files
+* diagrams
+* frontend
+* backend
+* database
+* test
+* configuration
+* `.gitignore`
+* dependency files
+* GitHub workflow
+* screenshots / images ที่เกี่ยวกับงาน
+* folder งานของแต่ละ Chapter / Week / Assignment ถ้ามี
+
+แสดงโครงสร้างสำคัญในรูปแบบประมาณ:
+
+```text
+se-sec2-team-06/
+│
+├── README.md
+├── ...
+├── docs/
+│   ├── ...
+│
+├── src/
+│   ├── ...
+│
+└── ...
+```
+
+พร้อมอธิบายสั้น ๆ ว่าแต่ละส่วนใช้ทำอะไร
+
+ไม่จำเป็นต้องแสดง dependency หรือ generated files จำนวนมาก
+
+---
+
+# STEP 3 — หาให้ได้ว่าตอนนี้กำลังทำงานอะไร
+
+จากไฟล์ทั้งหมด ให้ตรวจว่า **งานล่าสุด / งานปัจจุบันของทีมคืออะไร**
+
+ใช้ข้อมูลจาก:
+
+* README
+* Assignment
+* Markdown
+* commit ล่าสุด
+* branch ปัจจุบัน
+* TODO
+* source code
+* diagram
+* documentation
+
+อย่าใช้ `git log` เพียงอย่างเดียว
+
+ต้องตรวจ implementation จริงร่วมด้วย
+
+สรุป:
+
+```text
+Current Task:
+Current Chapter / Assignment:
+Objective:
+Expected Deliverables:
+Current Progress:
+```
+
+ถ้ามีหลายงาน ให้แยกออกจากกัน
+
+---
+
+# STEP 4 — อ่าน Requirement ของงานปัจจุบัน
+
+หา Requirement หรือโจทย์ที่เกี่ยวข้องกับงานที่ทีมกำลังทำ
+
+เช่น:
+
+* Assignment requirement
+* User Story
+* Use Case
+* Functional Requirement
+* Non-functional Requirement
+* Acceptance Criteria
+* README
+* instructor instructions
+* specification
+* diagram
+
+จากนั้นสรุป Requirement ที่ต้องทำจริง
+
+ห้ามสร้าง Requirement เพิ่มเองถ้าไม่มีหลักฐานใน repository
+
+ถ้ามีสิ่งที่อนุมานจาก context ให้ระบุว่า:
+
+```text
+Inferred requirement
+```
+
+ไม่ใช่ Requirement ที่ยืนยันแล้ว
+
+---
+
+# STEP 5 — เปรียบเทียบ Requirement กับงานปัจจุบัน
+
+สร้างตาราง:
+
+| Requirement | Current Implementation | Status   | Problem |
+| ----------- | ---------------------- | -------- | ------- |
+| ...         | ...                    | Complete | -       |
+| ...         | ...                    | Partial  | ...     |
+| ...         | ไม่มี                  | Missing  | ...     |
+
+Status ใช้:
+
+* `Complete`
+* `Partial`
+* `Missing`
+* `Incorrect`
+* `Needs Verification`
+
+อย่าถือว่า Feature Complete เพียงเพราะมีไฟล์หรือ function อยู่
+
+ต้องตรวจว่า implementation ทำงานตรง Requirement จริง
+
+---
+
+# STEP 6 — วิเคราะห์งานที่ทีมทำอยู่
+
+ตรวจงานปัจจุบันในหลายด้าน
+
+## 6.1 Correctness
+
+ตรวจ:
+
+* logic
+* condition
+* workflow
+* data flow
+* function
+* API
+* component interaction
+* result
+
+ว่าทำงานถูกต้องหรือไม่
+
+---
+
+## 6.2 Software Engineering
+
+ตรวจหลัก:
+
+* Separation of Concerns
+* Modularity
+* Cohesion
+* Coupling
+* Maintainability
+* Reusability
+* DRY
+* Naming Convention
+* Code readability
+* Error Handling
+* Input Validation
+
+แต่ไม่ต้อง Refactor เพียงเพื่อให้ดู "สวย"
+
+ให้แก้เฉพาะจุดที่มีเหตุผลต่อ Assignment หรือคุณภาพของระบบ
+
+---
+
+## 6.3 Requirement Quality
+
+หากงานปัจจุบันเป็นงานเกี่ยวกับ Requirement ให้ตรวจ:
+
+* Requirement ชัดหรือไม่
+* Testable หรือไม่
+* Ambiguous หรือไม่
+* Consistent หรือไม่
+* Complete หรือไม่
+* Traceable หรือไม่
+
+ตัวอย่าง Requirement ที่ควรหลีกเลี่ยง:
+
+```text
+ระบบควรใช้งานง่าย
+```
+
+เพราะวัดผลยาก
+
+ควรเสนอวิธีเขียนที่สามารถตรวจสอบได้มากขึ้น
+
+---
+
+## 6.4 User Story
+
+ถ้ามี User Story ตรวจรูปแบบ:
+
+```text
+As a [user]
+I want [goal]
+So that [benefit]
+```
+
+และตรวจว่าแต่ละ Story มี:
+
+* Actor
+* Goal
+* Business value
+* Acceptance Criteria
+
+หรือไม่
+
+---
+
+## 6.5 Use Case
+
+ถ้ามี Use Case ตรวจ:
+
+* Actor
+* Preconditions
+* Trigger
+* Main Flow
+* Alternative Flow
+* Exception Flow
+* Postconditions
+
+รวมถึงความสอดคล้องระหว่าง:
+
+```text
+User Story
+↓
+Use Case
+↓
+Requirement
+↓
+Implementation
+```
+
+---
+
+## 6.6 Diagram
+
+ถ้ามี diagram เช่น:
+
+* Use Case Diagram
+* Activity Diagram
+* Sequence Diagram
+* Class Diagram
+* Architecture Diagram
+
+ให้ตรวจทั้ง:
+
+### Syntax
+
+และ
+
+### ความสอดคล้องกับระบบจริง
+
+ตัวอย่างเช่น:
+
+ถ้า Sequence Diagram เรียก API:
+
+```text
+POST /login
+```
+
+แต่ backend ไม่มี API ดังกล่าว
+
+ให้รายงานว่า diagram กับ implementation ไม่ตรงกัน
+
+---
+
+## 6.7 Documentation
+
+ตรวจ README และ Markdown ว่า:
+
+* ข้อมูลยังเป็นปัจจุบันหรือไม่
+* สอดคล้องกับ source code หรือไม่
+* วิธี Run ถูกต้องหรือไม่
+* ชื่อ Feature ตรงกันหรือไม่
+* link เสียหรือไม่
+* มีข้อความ placeholder หรือไม่
+* มีข้อความซ้ำหรือไม่
+
+---
+
+# STEP 7 — หา Problem จริง
+
+ค้นหา:
+
+```text
+TODO
+FIXME
+HACK
+XXX
+Not implemented
+Coming soon
+placeholder
+mock
+dummy
+```
+
+รวมถึงตรวจ:
+
+* function ว่าง
+* hard-coded data
+* duplicated code
+* unreachable code
+* unused file
+* unused function
+* dead route
+* inconsistent naming
+* missing validation
+* missing error handling
+* broken links
+* incorrect documentation
+
+แต่:
+
+**อย่าลบของที่ดูเหมือนไม่ใช้ทันที**
+
+ให้ตรวจ reference ก่อน
+
+---
+
+# STEP 8 — เสนอแนวทางแก้ไข
+
+ก่อนแก้ ให้สร้าง:
+
+# Proposed Improvements
+
+แบ่งเป็น:
+
+## Critical
+
+สิ่งที่:
+
+* ทำให้งานผิด Requirement
+* ทำให้ระบบใช้ไม่ได้
+* ทำให้ Assignment ไม่ครบ
+* เป็น bug สำคัญ
+
+## High
+
+สิ่งที่ควรแก้ก่อนส่งงาน
+
+## Medium
+
+สิ่งที่ช่วยเพิ่มคุณภาพ
+
+## Low
+
+สิ่งที่ปรับภายหลังได้
+
+แต่ละข้อให้บอก:
+
+```text
+Problem:
+Evidence:
+Impact:
+Suggested Fix:
+Files involved:
+Risk:
+```
+
+ตัวอย่าง:
+
+```text
+Problem:
+User Story ระบุว่าสามารถแก้ไขข้อมูลได้ แต่ UI มีเพียง Create และ Delete
+
+Evidence:
+docs/user-story.md
+src/...
+
+Impact:
+Requirement ยังไม่ Complete
+
+Suggested Fix:
+เพิ่ม Edit workflow โดย reuse form component เดิม
+
+Files involved:
+src/components/...
+src/services/...
+
+Risk:
+Medium
+```
+
+---
+
+# STEP 9 — ให้ความสำคัญกับ Minimal Change
+
+ถ้ามีหลายวิธีแก้ ให้เลือกวิธีที่:
+
+1. ใช้ architecture เดิม
+2. ใช้ dependency เดิม
+3. แก้ไฟล์น้อย
+4. ลด regression
+5. สมาชิกทีมเข้าใจต่อได้ง่าย
+
+หลีกเลี่ยง:
+
+```text
+rewrite everything
+```
+
+หรือ
+
+```text
+เปลี่ยน framework
+```
+
+เว้นแต่ของเดิมใช้งานต่อไม่ได้จริงและมีหลักฐานชัดเจน
+
+---
+
+# STEP 10 — ตรวจความสัมพันธ์ของงาน
+
+ตรวจ Traceability:
+
+```text
+Requirement
+   ↓
+User Story
+   ↓
+Use Case
+   ↓
+Design
+   ↓
+Implementation
+   ↓
+Test
+```
+
+รายงานกรณีเช่น:
+
+```text
+User Story มี แต่ไม่มี Implementation
+
+Implementation มี แต่ไม่มี Requirement
+
+Requirement มี แต่ไม่มี Acceptance Criteria
+
+Feature มี แต่ Documentation ไม่ได้อัปเดต
+
+Diagram ไม่ตรงกับ implementation
+```
+
+---
+
+# STEP 11 — ตรวจ Git History เพื่อเข้าใจงานล่าสุด
+
+ตรวจ commit ล่าสุดเพื่อช่วยระบุงานที่กำลังพัฒนา
+
+เช่น:
+
+```bash
+git log --oneline --decorate -20
+```
+
+ถ้าจำเป็น:
+
+```bash
+git show <commit>
+```
+
+แต่:
+
+**ห้ามแก้ implementation โดยอิง commit message อย่างเดียว**
+
+ต้องตรวจ source code จริง
+
+---
+
+# STEP 12 — วิเคราะห์ก่อนแก้
+
+ก่อนทำการแก้ไข ให้รายงาน:
+
+# Current Work Analysis
+
+## 1. Current Assignment
+
+งานที่กำลังทำคืออะไร
+
+## 2. Current Status
+
+ทำอะไรไปแล้ว
+
+## 3. Correct Parts
+
+ส่วนใดทำได้ดีและไม่ควรแก้
+
+## 4. Problems Found
+
+ปัญหาที่พบ
+
+## 5. Missing Requirements
+
+สิ่งที่ยังขาด
+
+## 6. Proposed Fix
+
+แนวทางแก้ที่แนะนำ
+
+## 7. Files That Need Changes
+
+เช่น:
+
+```text
+README.md
+docs/...
+src/...
+```
+
+## 8. Expected Result
+
+หลังแก้ควรได้อะไร
+
+---
+
+# STEP 13 — หลังจากวิเคราะห์ ให้ดำเนินการแก้จุดที่เหมาะสม
+
+หากมีปัญหาที่:
+
+* Requirement ชัดเจน
+* Root cause ชัด
+* แนวทางแก้ไม่ทำลาย Architecture
+* สามารถตรวจสอบผลได้
+
+สามารถดำเนินการแก้ได้
+
+ใช้หลัก:
+
+```text
+Problem
+↓
+Root Cause
+↓
+Minimal Fix
+↓
+Verification
+```
+
+---
+
+# กฎสำคัญในการแก้ไฟล์
+
+ก่อนแก้ไฟล์ใด:
+
+อ่านไฟล์ทั้งหมดที่เกี่ยวข้องก่อน
+
+เช่น ถ้าจะแก้:
+
+```text
+service
+```
+
+ต้องตรวจ:
+
+```text
+component
+controller
+route
+model
+test
+```
+
+ที่เรียก service นั้นด้วย
+
+---
+
+# ห้ามทำสิ่งต่อไปนี้
+
+ห้าม:
+
+* `git reset --hard`
+* `git clean -fd`
+* force push
+* delete branch
+* overwrite uncommitted work
+* เปลี่ยน framework
+* rewrite project ทั้งหมด
+* ลบโค้ดสมาชิกคนอื่นโดยไม่มีเหตุผล
+* เปลี่ยน directory structure จำนวนมาก
+* เปลี่ยน dependency version แบบสุ่ม
+* commit secret
+* hard-code password
+* hard-code token
+* hard-code API key
+
+---
+
+# อย่า Over-engineer
+
+นี่เป็นโปรเจกต์รายวิชา Software Engineering
+
+ไม่จำเป็นต้องเพิ่ม:
+
+* Microservices
+* Kubernetes
+* Docker
+* Redis
+* Message Queue
+* Complex Design Pattern
+
+ถ้า Assignment ไม่ได้ต้องการ
+
+ให้เลือกวิธีที่ง่าย เข้าใจได้ และอธิบายต่ออาจารย์ได้
+
+---
+
+# STEP 14 — ทดสอบหลังแก้
+
+หา command จาก project configuration ก่อน
+
+ถ้ามีให้ run:
+
+```bash
+lint
+test
+build
+```
+
+รวมถึงตรวจ feature ที่แก้
+
+หาก command ไม่สามารถรันได้:
+
+รายงานสาเหตุ
+
+ห้ามรายงานว่า:
+
+```text
+Tests passed
+```
+
+ถ้าไม่ได้ run จริง
+
+---
+
+# STEP 15 — ตรวจ Diff
+
+หลังแก้:
+
+```bash
+git diff
+git status
+```
+
+ตรวจว่าไม่มีการแก้ไฟล์ที่ไม่เกี่ยวข้อง
+
+ถ้ามี accidental changes ให้ revert เฉพาะการเปลี่ยนแปลงที่เกิดจากงานนี้
+
+ห้าม revert งานเดิมของผู้ใช้
+
+---
+
+# Final Report
+
+หลังทำงานเสร็จ ให้ตอบในรูปแบบ:
+
+# Current Assignment
+
+อธิบายว่างานปัจจุบันคืออะไร
+
+---
+
+# Current Progress
+
+สิ่งที่ทีมทำแล้ว
+
+---
+
+# Problems Found
+
+| Priority | Problem | Evidence | Impact |
+| -------- | ------- | -------- | ------ |
+| Critical | ...     | ...      | ...    |
+| High     | ...     | ...      | ...    |
+| Medium   | ...     | ...      | ...    |
+| Low      | ...     | ...      | ...    |
+
+---
+
+# Recommended Improvements
+
+อธิบายแนวทางแก้พร้อมเหตุผล
+
+---
+
+# Changes Made
+
+| File | Change | Reason |
+| ---- | ------ | ------ |
+| ...  | ...    | ...    |
+
+ถ้ายังไม่ได้แก้ไฟล์:
+
+```text
+No source files modified.
+```
+
+---
+
+# Requirement Coverage
+
+| Requirement | Status   |
+| ----------- | -------- |
+| ...         | Complete |
+| ...         | Partial  |
+| ...         | Missing  |
+
+---
+
+# Verification
+
+ระบุ command ที่ run จริงและผลลัพธ์
+
+เช่น:
+
+```text
+npm test      PASS
+npm run lint  PASS
+npm run build PASS
+```
+
+หรือ Stack อื่นตามที่ repository ใช้จริง
+
+---
+
+# Remaining Work
+
+สิ่งที่ยังควรทำต่อก่อนส่ง Assignment
+
+---
+
+# Recommended Next Task
+
+เลือก **งานถัดไปที่ควรทำที่สุด 1 งาน**
+
+พร้อมอธิบายว่า:
+
+```text
+Why this should be next:
+Files involved:
+Expected result:
+```
+
+---
+
+# หลักสำคัญที่สุด
+
+**Repository ปัจจุบันคือข้อมูลหลัก**
+
+อย่าคิดระบบใหม่จากศูนย์
+
+ให้ทำ:
+
+```text
+Read
+↓
+Understand
+↓
+Compare with Requirement
+↓
+Find Evidence
+↓
+Identify Problem
+↓
+Propose Fix
+↓
+Apply Minimal Fix
+↓
+Verify
+```
+
+เป้าหมายคือทำให้งานของ `se-sec2-team-06` **ถูกต้องขึ้น ครบ Requirement ขึ้น และพร้อมส่งมากขึ้น** โดยรักษางานเดิมของทีมไว้ให้มากที่สุด
+
 
 ## Direct AI-generated content
 
@@ -29,14 +875,13 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 ### Tools and tasks
 
 - อ่านและทำความเข้าใจใบงานด้วยตนเอง แล้วใช้ ChatGPT/Codex ช่วยตรวจว่ารายการส่งงานไม่ตกหล่น
-- ใช้ข้อมูลทีมและข้อมูลส่วนตัวที่มีอยู่จริงมาเขียน `team/Thakorn.md`
+- ใช้ข้อมูลทีมและข้อมูลส่วนตัวที่มีอยู่จริงมาเขียน 
 - ใช้ AI ช่วยตรวจความครบถ้วนของ Identification, Pragmatic Promise, เหตุผลที่อยากเรียน SE และ Broken Window
 - ใช้ AI ช่วยตรวจจำนวนคำและรูปแบบ headings หลังจากเขียนเนื้อหาหลักแล้ว
 - ผู้จัดทำเป็นผู้เลือกว่าจะรับหรือแก้คำแนะนำของ AI ทุกจุด
 
 ### Team verification and responsibility
 
-- Thakorn เป็นผู้รับผิดชอบเนื้อหาและตรวจสอบชื่อเล่น เหตุผลที่อยากเรียน Software Engineering และประสบการณ์ Broken Window ด้วยตนเอง
 - Pragmatic Promise ต้องสะท้อนพฤติกรรมที่ Thakorn ตั้งใจทำจริง ไม่ใช่ข้อความที่ AI แต่งขึ้นเพื่อส่งแทน
 - ทีมเป็นผู้ตรวจเนื้อหา ความถูกต้องของ README, branch, commit message, Pull Request และ reviewer ก่อน merge
 - ไม่มีการนำเนื้อหาจากไฟล์หรือโฟลเดอร์ที่เป็นงานของ Chaiwat และ shuwichada มาใช้หรือแก้ไข
@@ -45,7 +890,7 @@ AI ถูกใช้เป็นผู้ช่วยระหว่างก�
 ### Verification status
 
 - Branch งานปัจจุบัน: `se-sec2-team-06-lab02-proposal-Thakorn` โดยต่อยอดจาก worktree ที่เริ่มจาก `origin/main`
-- `team/Thakorn.md` มี 4 sections และความยาวอยู่ในช่วง 200–500 คำ
+- `team/.md` มี 4 sections และความยาวอยู่ในช่วง 200–500 คำ
 - README มีคำอธิบายโปรเจกต์ รายชื่อสมาชิก และ Theme แล้ว
 - ก่อนส่งงานยังต้อง commit ด้วย Conventional Commits, push branch, เปิด Pull Request, tag reviewer, ผ่าน review, merge เข้า `main` และย้าย Project Board ไป `Done`
 
