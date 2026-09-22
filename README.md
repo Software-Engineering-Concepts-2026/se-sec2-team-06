@@ -271,7 +271,7 @@ Browser tests ต้องใช้ Playwright และ Chrome ตามรา�
 
 ชุดทดสอบ Lab 09 ครอบคลุม unit และ boundary cases ของ contributor data, property-based tests, FizzBuzz kata และ API health checks ส่วน contributor graph มี tests สำหรับ API failure paths, การ normalize ข้อมูล และการ escape ข้อความก่อน render เป็น SVG
 
-GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow การตรวจในเครื่องบน branch นี้ผ่าน **39 tests และ 100% coverage**
+GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow การตรวจในเครื่องบน branch นี้ผ่าน **39 tests และ 100% coverage ใน `src/` และ `services/api/app/` ซึ่งเป็นส่วนที่ workflow วัด coverage**
 
 | Test suite | ครอบคลุม |
 |---|---|
