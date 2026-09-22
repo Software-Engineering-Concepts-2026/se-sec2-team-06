@@ -4,6 +4,10 @@
 def fizzbuzz(number: int) -> str:
     """Return the standard FizzBuzz label for one integer."""
 
+    if number % 15 == 0:
+        return "FizzBuzz"
     if number % 3 == 0:
         return "Fizz"
-    raise NotImplementedError
+    if number % 5 == 0:
+        return "Buzz"
+    return str(number)
