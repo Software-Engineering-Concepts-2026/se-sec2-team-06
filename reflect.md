@@ -65,3 +65,19 @@ Prompt ที่กว้างเกินไป เช่น “ช่วย�
 ## 3. AI ช่วยเสนอทางเลือก แต่การตัดสินใจและ verification เป็นของทีม
 
 AI ช่วยชี้ smell และเสนอชื่อ helper ได้เร็ว แต่ผมต้องเลือก scope เองเพื่อไม่แตะงานสมาชิกและไม่เปลี่ยน behavior การรัน unit test, browser flow และการตรวจ diff ทำให้มั่นใจว่าการ refactor เป็น Milestone 1 ที่อธิบายได้ ไม่ใช่การรับโค้ดจาก AI โดยไม่ตรวจสอบ
+
+---
+
+# Post-quiz 9 — Reflection on Testing and CI
+
+## 1. Test case ที่ดีเริ่มจาก behavior และ partition
+
+การเขียน unit tests จาก equivalence partitions และ boundary ก่อนทำ implementation ทำให้ผมไม่ยึดติดกับตัวอย่างเดียว เช่น `normalize_contributors()` ต้องจัดการรายการว่าง, author ที่หายไป, จำนวนสัปดาห์ และจำนวน contributor สูงสุดอย่างชัดเจน ส่วน FizzBuzz ต้องมีทั้งตัวเลขทั่วไป, หารด้วย 3, หารด้วย 5 และหารด้วย 15 การกำหนด expected behavior ก่อนเขียน code ช่วยให้ test เป็นสัญญาของระบบและทำให้ refactor ต่อได้อย่างมั่นใจ
+
+## 2. Property-based test ช่วยตรวจสมมติฐานที่ตัวอย่างปกติอาจไม่ครอบคลุม
+
+Hypothesis ช่วยสร้างข้อมูล contributor หลายรูปแบบให้โดยอัตโนมัติ ผมจึงตรวจ invariant ที่ควรเป็นจริงเสมอ เช่น ผลลัพธ์ไม่เกิน `max_contributors`, weeks เรียงจากใหม่ไปเก่าและไม่เกินจำนวนที่ขอ และค่าการรวม additions/deletions/commits ไม่ติดลบ บทเรียนคือ property test ไม่ได้แทน example test แต่ช่วยเปิดเผย input combination ที่ทีมอาจนึกไม่ถึง
+
+## 3. CI และ saboteur ทำให้คุณภาพตรวจสอบซ้ำได้
+
+การย้ายคำสั่ง pytest และ coverage ไปไว้ใน GitHub Actions ทำให้ทุก push หรือ pull request ใช้ gate เดียวกัน โดยตั้งขั้นต่ำไว้ที่ 90% และผล local verification ได้ 27 tests ผ่านกับ coverage 100% การทดลองแก้ FizzBuzz ให้เลข 15 คืนค่า `Fizz` แล้วเห็น test fail ก่อน restore ยืนยันว่าชุดทดสอบจับ regression ได้จริง ขั้นตอนที่ยังต้องทำใน GitHub คือเปิด branch protection และ required check ด้วยตนเองเมื่อมีการ push workflow ขึ้น remote
