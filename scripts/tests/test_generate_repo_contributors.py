@@ -3,10 +3,27 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import pytest
+
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from generate_repo_contributors import fetch_contributors, normalize_contributors, render_svg
+
+
+class _RawResponse:
+    def __init__(self, status, body):
+        self.status = status
+        self._body = body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+    def read(self):
+        return self._body
 
 
 def _payload():
@@ -119,6 +136,55 @@ def test_fetch_contributors_retries_when_202_body_is_empty():
     assert result == _payload()
 
 
+def test_fetch_contributors_rejects_invalid_repo_before_opening_request():
+    def unexpected_opener(_request):
+        raise AssertionError("opener must not run for an invalid repository")
+
+    with pytest.raises(ValueError, match="OWNER/REPOSITORY"):
+        fetch_contributors("invalid repo", opener=unexpected_opener)
+
+
+def test_fetch_contributors_fails_after_all_attempts_return_202():
+    requests = []
+    sleeps = []
+
+    def fake_opener(request):
+        requests.append(request)
+        return _RawResponse(202, b"")
+
+    with pytest.raises(RuntimeError, match="after 2 attempts"):
+        fetch_contributors(
+            "owner/repository",
+            opener=fake_opener,
+            sleep_fn=sleeps.append,
+            max_attempts=2,
+        )
+
+    assert len(requests) == 2
+    assert sleeps == [1]
+
+
+def test_fetch_contributors_includes_http_status_and_api_message():
+    response = _RawResponse(403, b'{"message": "bad credentials"}')
+
+    with pytest.raises(RuntimeError, match="HTTP 403: bad credentials"):
+        fetch_contributors("owner/repository", opener=lambda _request: response)
+
+
+def test_fetch_contributors_rejects_invalid_json_response():
+    response = _RawResponse(200, b"this is not JSON")
+
+    with pytest.raises(RuntimeError, match="invalid JSON"):
+        fetch_contributors("owner/repository", opener=lambda _request: response)
+
+
+def test_fetch_contributors_rejects_json_object_instead_of_array():
+    response = _RawResponse(200, b'{"message": "not a contributor list"}')
+
+    with pytest.raises(RuntimeError, match="must be a JSON array"):
+        fetch_contributors("owner/repository", opener=lambda _request: response)
+
+
 def test_render_svg_is_repo_scoped_and_contains_contributor_cards():
     contributors = normalize_contributors(_payload(), max_contributors=10, weeks=12)
     svg = render_svg(
@@ -205,3 +271,24 @@ def test_render_svg_places_commit_summary_away_from_date_labels():
 
     # Date labels sit at the chart baseline; the summary must not share that row.
     assert float(summary.attrib["y"]) < 200
+
+
+def test_render_svg_escapes_untrusted_login_and_generated_timestamp():
+    svg = render_svg(
+        repo="owner/repository",
+        contributors=[
+            {
+                "login": "<member & guest>",
+                "total": 1,
+                "additions": 0,
+                "deletions": 0,
+                "weeks": [],
+            }
+        ],
+        generated_at="<not-a-date & value>",
+    )
+
+    assert "&lt;member &amp; guest&gt;" in svg
+    assert "&lt;not-a-date &amp; value&gt;" in svg
+    assert "<member & guest>" not in svg
+    assert "<not-a-date & value>" not in svg
