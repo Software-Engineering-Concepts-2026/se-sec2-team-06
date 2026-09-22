@@ -1,4 +1,5 @@
 import './styles.css';
+import { ApiError, getApiHealth } from './api/client.js';
 
 const app = document.querySelector('#app');
 
@@ -39,6 +40,31 @@ app.innerHTML = `
   </div>
 `;
 
-document.querySelector('#check-api').addEventListener('click', () => {
-  document.querySelector('#api-status').textContent = 'กำลังเตรียมการเชื่อมต่อ API';
-});
+const apiStatus = document.querySelector('#api-status');
+const checkApiButton = document.querySelector('#check-api');
+const statusDot = document.querySelector('.status-dot');
+
+async function checkApi() {
+  apiStatus.textContent = 'กำลังตรวจสอบ API...';
+  apiStatus.dataset.state = 'loading';
+  statusDot.dataset.state = 'loading';
+  checkApiButton.disabled = true;
+
+  try {
+    const health = await getApiHealth();
+    apiStatus.textContent = `API พร้อมใช้งาน: ${health.version}`;
+    apiStatus.dataset.state = 'success';
+    statusDot.dataset.state = 'success';
+  } catch (error) {
+    apiStatus.textContent = error instanceof ApiError
+      ? 'ยังเชื่อมต่อ API ไม่ได้'
+      : 'ได้รับข้อมูลจาก API ไม่ถูกต้อง';
+    apiStatus.dataset.state = 'error';
+    statusDot.dataset.state = 'error';
+  } finally {
+    checkApiButton.disabled = false;
+  }
+}
+
+checkApiButton.addEventListener('click', checkApi);
+checkApi();

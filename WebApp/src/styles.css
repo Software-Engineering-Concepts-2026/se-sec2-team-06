@@ -119,11 +119,34 @@ h1 {
   box-shadow: 0 0 1rem rgba(242, 187, 103, 0.7);
 }
 
+.status-dot[data-state="loading"] {
+  background: #f2bb67;
+  box-shadow: 0 0 1rem rgba(242, 187, 103, 0.7);
+}
+
+.status-dot[data-state="success"] {
+  background: #65e6a7;
+  box-shadow: 0 0 1rem rgba(101, 230, 167, 0.7);
+}
+
+.status-dot[data-state="error"] {
+  background: #ff8e9b;
+  box-shadow: 0 0 1rem rgba(255, 142, 155, 0.7);
+}
+
 #api-status {
   min-height: 1.7rem;
   margin: 1rem 0 1.25rem;
   color: #c8d0eb;
   line-height: 1.6;
+}
+
+#api-status[data-state="success"] {
+  color: #8af0bb;
+}
+
+#api-status[data-state="error"] {
+  color: #ffb0b9;
 }
 
 #check-api {
@@ -140,6 +163,11 @@ h1 {
 #check-api:hover {
   background: #a7f0ff;
   transform: translateY(-1px);
+}
+
+#check-api:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .feature-grid {
