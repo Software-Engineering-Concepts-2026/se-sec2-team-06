@@ -1093,3 +1093,43 @@ Verify
 - Focused unit test ของ view model ผ่าน 1 test
 - Prototype/navbar browser suite ผ่าน 14 tests เพิ่มเติม รวม 15 tests ผ่านและไม่มี failure
 - Refactor แยก pure view model และ DOM rendering helpers โดยไม่มี feature ใหม่หรือการเปลี่ยน persistence/backend
+
+---
+
+## Lab 9 — Testing, TDD, Property-Based Testing และ CI
+
+### Tools and tasks
+
+- ผมอ่าน rubric Lab 9 แล้วใช้ ChatGPT/Codex เป็นผู้ช่วยแตกงานเป็น unit tests, TDD, property-based tests, GitHub Actions และ saboteur journal
+- ใช้ `pytest` และ `pytest-cov` ตรวจ behavior จริงของ `normalize_contributors()`, FastAPI health contract และ FizzBuzz
+- ใช้ Hypothesis สร้างข้อมูล contributor หลายรูปแบบเพื่อทดสอบ invariants ที่ไม่ได้จำกัดอยู่กับตัวอย่างไม่กี่ชุด
+- ใช้ GitHub Actions เป็นร่าง CI สำหรับ Python 3.12, dependency installation, test suite และ coverage gate
+
+### Prompts used and purposes
+
+1. “ช่วยแบ่ง equivalence partitions และ boundary cases ของ `normalize_contributors()` แล้วเสนอชื่อ test ที่ตรวจสอบได้”
+2. “ช่วยออกแบบลำดับ TDD Red → Green → Refactor สำหรับ FizzBuzz โดยไม่เพิ่ม feature อื่น”
+3. “ช่วยเสนอ Hypothesis properties ที่ควรเป็นจริงเสมอสำหรับการ aggregate contributors และจำกัดจำนวนผลลัพธ์”
+4. “ช่วยตรวจ GitHub Actions workflow ให้รัน pytest, coverage อย่างน้อย 90% และใช้ `PYTHONPATH=services/api` ได้ถูกต้อง”
+
+### Direct AI-assisted content
+
+- โครงร่าง test cases, ชื่อ property และตัวอย่าง workflow YAML
+- ข้อเสนอ wording สำหรับ reflection และ saboteur journal
+- แนวทางตรวจ failure ของ test และจัดลำดับ commit แบบ TDD
+
+เนื้อหาที่ AI เสนอถูกผมอ่าน แก้ให้ตรงกับ source จริง และตรวจด้วยการรัน test ใน virtual environment ของ repository ก่อนบันทึกทุกครั้ง AI ไม่ได้เป็นผู้ตัดสินใจ contract, threshold หรือขอบเขตของ Lab 9 แทนทีม
+
+### Team verification and responsibility
+
+- ผมเป็นผู้เลือก `normalize_contributors()` เป็น behavior จริงของโครงการสำหรับ unit/property tests และกำหนดให้ FizzBuzz เป็น kata ที่แยกขอบเขตเพื่อสาธิต TDD
+- ผมตรวจ RED, GREEN และ REFACTOR ด้วย commit history, รันทดสอบ mutation แล้ว restore source เอง และตรวจว่าไม่มี mutation ถูก commit
+- ทีมต้องตรวจ workflow บน GitHub และตั้ง branch protection/required checks หลัง push; รอบนี้ยังไม่ push ตามขอบเขตที่อนุมัติ
+- ไม่ส่ง API key, secret, credential, รหัสนิสิต หรือข้อมูลส่วนบุคคลเข้า prompt
+
+### Verification status
+
+- `tests/test_unit.py`, `tests/test_fizzbuzz.py`, `tests/test_property.py`, `services/api/tests` และ `scripts/tests` ผ่านรวม 27 tests
+- Local coverage ผ่านเกณฑ์ด้วย 100% สำหรับ `src` และ `services/api/app` โดยตั้ง fail-under ไว้ที่ 90%
+- Saboteur mutation ทำให้ FizzBuzz fail 1 test และหลัง restore ผ่าน 5 tests
+- สร้าง `.github/workflows/test.yml` สำหรับ push/pull request และลบ workflow placeholder ที่ไม่ถูกต้องออกแล้ว

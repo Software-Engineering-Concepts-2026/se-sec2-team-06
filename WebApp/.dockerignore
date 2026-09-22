@@ -1,0 +1,9 @@
+.env*
+node_modules
+dist
+tests
+.git
+.gitignore
+.editorconfig
+.vscode
+*.log

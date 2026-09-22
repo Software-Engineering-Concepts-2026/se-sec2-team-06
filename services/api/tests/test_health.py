@@ -45,3 +45,15 @@ def test_root_endpoint_exposes_service_discovery_without_overclaiming_status() -
         "health": "/health",
         "docs": "/docs",
     }
+
+
+def test_api_health_endpoint_matches_legacy_health_contract() -> None:
+    response = asyncio.run(request("/api/health"))
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "healthy",
+        "service": "synapsesync-api",
+        "architecture": "modular-monolith",
+        "version": "0.1.0",
+    }
