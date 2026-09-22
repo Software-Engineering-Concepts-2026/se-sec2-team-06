@@ -3,51 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="หน้าสมัครสมาชิกแบบ Prototype ของ SynapseSync ซึ่งตรวจข้อมูลใน browser โดยไม่บันทึกข้อมูล">
   <title>สมัครสมาชิก - SynapseSync Prototype</title>
-  <link rel="stylesheet" href="register_style.css">
+  <link rel="stylesheet" href="shared.css?v=20260824-6">
+  <link rel="stylesheet" href="navbar.css?v=20260824-6">
+  <link rel="stylesheet" href="register_style.css?v=20260824-1">
+  <script src="navbar.js?v=20260824-5" defer></script>
+  <script src="register_script.js?v=20260824-1" defer></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
 
-  <main class="app-frame">
+  <div data-navbar-root data-page="register"></div>
 
-    <header class="app-header">
-      <a href="login.html" class="icon-link" aria-label="กลับหน้าเข้าสู่ระบบ">&lt;</a>
-      <h1>Create Your SynapseSync Account</h1>
-      <span class="icon-spacer"></span>
-    </header>
+  <main class="page-shell auth-shell" id="main-content">
+    <section class="auth-intro" aria-labelledby="register-title">
+      <span class="prototype-pill">Interactive prototype</span>
+      <p class="auth-kicker">เริ่มต้นเส้นทางการเรียนรู้</p>
+      <h1 id="register-title">สร้างพื้นที่เรียนรู้<br>ที่เข้าใจคุณมากขึ้น</h1>
+      <p class="auth-lead">ทดลอง flow การสมัครสมาชิกก่อนเข้าสู่หน้าหลักและเครื่องมือสร้างแบบทดสอบของ SynapseSync</p>
 
-    <form id="signup-form" novalidate>
+      <div class="privacy-card">
+        <span class="privacy-card__icon" aria-hidden="true">◇</span>
+        <div>
+          <strong>ไม่มีการจัดเก็บข้อมูล</strong>
+          <p>ข้อมูลในฟอร์มใช้ตรวจสอบบนหน้าจอนี้เท่านั้น ไม่ส่งไปยัง server และไม่บันทึกใน browser storage</p>
+        </div>
+      </div>
+    </section>
 
-      <div class="field-row">
-        <label for="full-name">Full Name</label>
-        <input type="text" id="full-name" name="full-name" placeholder="ชื่อ-นามสกุล">
+    <section class="auth-card" aria-label="แบบฟอร์มสมัครสมาชิก">
+      <div class="auth-card__heading">
+        <p>Join SynapseSync</p>
+        <h2>สมัครสมาชิก</h2>
+        <span>กรอกข้อมูลตัวอย่างเพื่อเข้าสู่ Prototype</span>
       </div>
 
-      <div class="field-row">
-        <label for="email">University Email</label>
-        <input type="email" id="email" name="email" placeholder="name@university.ac.th">
-      </div>
+      <form id="signup-form" novalidate>
+        <div class="field-row">
+          <label for="full-name">ชื่อ–นามสกุล</label>
+          <input type="text" id="full-name" name="full-name" autocomplete="name" placeholder="เช่น ปันปัน ใจดี" aria-describedby="full-name-hint">
+          <small id="full-name-hint">ใช้เพื่อสาธิต validation เท่านั้น</small>
+        </div>
 
-      <div class="field-row">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="••••••••">
-      </div>
+        <div class="field-row">
+          <label for="email">University Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" inputmode="email" placeholder="name@university.ac.th">
+        </div>
 
-      <div class="field-row">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" id="confirm-password" name="confirm-password" placeholder="••••••••">
-      </div>
+        <div class="field-row field-row--split">
+          <div>
+            <label for="password">รหัสผ่าน</label>
+            <input type="password" id="password" name="password" autocomplete="new-password" placeholder="อย่างน้อย 8 ตัวอักษร">
+          </div>
+          <div>
+            <label for="confirm-password">ยืนยันรหัสผ่าน</label>
+            <input type="password" id="confirm-password" name="confirm-password" autocomplete="new-password" placeholder="พิมพ์รหัสผ่านอีกครั้ง">
+          </div>
+        </div>
 
-      <button type="submit" id="signup-btn" class="btn-primary">Sign Up</button>
+        <p class="form-status" id="register-status" role="status" aria-live="polite"></p>
 
-    </form>
+        <button type="submit" id="signup-btn" class="btn-primary">
+          <span>สร้างบัญชีทดลอง</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </form>
 
-    <p class="switch-link">มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบ</a></p>
-
-    <p class="hint-text">Prototype: การสมัครสมาชิกนี้ยังไม่เชื่อมต่อฐานข้อมูลจริง ใช้เพื่อสาธิต Flow และ Validation เท่านั้น</p>
-
+      <p class="switch-link">มีบัญชีทดลองอยู่แล้ว? <a href="login.html?v=20260824-5">เข้าสู่ระบบ</a></p>
+      <p class="hint-text">Prototype only · No database · No account is created</p>
+    </section>
   </main>
-
-  <script src="register_script.js"></script>
 </body>
 </html>

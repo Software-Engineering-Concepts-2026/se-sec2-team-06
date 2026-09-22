@@ -1,0 +1,52 @@
+name: Update repository contributor graph
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "docs/assets/readme/repo-contributors.svg"
+  schedule:
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repository-contributors-graph
+  cancel-in-progress: true
+
+jobs:
+  update-graph:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate repository-scoped SVG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python scripts/generate_repo_contributors.py
+          --repo "${{ github.repository }}"
+          --output docs/assets/readme/repo-contributors.svg
+
+      - name: Check generated file
+        run: git diff --check
+
+      - name: Commit updated graph
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/readme/repo-contributors.svg
+          if git diff --cached --quiet; then
+            echo "Contributor graph is already up to date."
+            exit 0
+          fi
+          git commit -m "docs(readme): update repository contributor graph"
+          git push

@@ -1,103 +1,20 @@
-<mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1050" math="0" shadow="0">
+<mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
   <root>
     <mxCell id="0" />
     <mxCell id="1" parent="0" />
-
-    <!-- ================= PERSONS (left column) ================= -->
-
-    <mxCell id="pun" value="&lt;b&gt;ปันปัน&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;นักเรียน — ใช้ web app&lt;br&gt;จัดการโน้ต, quiz, to-do" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="20" y="20" width="200" height="110" as="geometry" />
-    </mxCell>
-
-    <mxCell id="teacher" value="&lt;b&gt;ครูสมชาย&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ครู — ใช้ web app&lt;br&gt;ดูแดชบอร์ดภาพรวมนักเรียน" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="20" y="170" width="200" height="110" as="geometry" />
-    </mxCell>
-
-    <mxCell id="earth" value="&lt;b&gt;พี่เอิร์ธ&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ผู้เรียนผู้ใหญ่ — ใช้ web app&lt;br&gt;ทบทวนเนื้อหา, ดูความคืบหน้า" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="20" y="320" width="200" height="110" as="geometry" />
-    </mxCell>
-
-    <mxCell id="mom" value="&lt;b&gt;คุณแม่มล&lt;/b&gt;&lt;br&gt;[Person]&lt;br&gt;&lt;br&gt;ผู้ปกครอง — ใช้ web app&lt;br&gt;ดูสรุปและรับแจ้งเตือน" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="20" y="470" width="200" height="110" as="geometry" />
-    </mxCell>
-
-    <!-- ================= SYSTEM BOUNDARY ================= -->
-
-    <mxCell id="boundary" value="SynapseSync Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=1.5;verticalAlign=top;align=center;fontStyle=1;fontSize=15;spacingTop=10;" vertex="1" parent="1">
-      <mxGeometry x="320" y="20" width="700" height="800" as="geometry" />
-    </mxCell>
-
-    <mxCell id="webapp" value="&lt;b&gt;Web Application&lt;/b&gt;&lt;br&gt;[Container: React + Vite]&lt;br&gt;&lt;br&gt;Single-page application ให้ UI&lt;br&gt;ทั้งหมด: หน้าโน้ต, อัปโหลดไฟล์,&lt;br&gt;quiz, to-do, แดชบอร์ดครู,&lt;br&gt;หน้าสรุปสำหรับผู้ปกครอง" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="480" y="70" width="380" height="150" as="geometry" />
-    </mxCell>
-
-    <mxCell id="backend" value="&lt;b&gt;Backend API&lt;/b&gt;&lt;br&gt;[Container: Python + FastAPI]&lt;br&gt;&lt;br&gt;REST API จัดการ business logic:&lt;br&gt;auth + role-based access (นักเรียน/&lt;br&gt;ครู/ผู้ปกครอง), note CRUD, AI&lt;br&gt;orchestration, quiz generation,&lt;br&gt;to-do, notification (Swagger docs&lt;br&gt;อัตโนมัติที่ /docs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=2;align=center;verticalAlign=middle;fontSize=13;" vertex="1" parent="1">
-      <mxGeometry x="480" y="290" width="380" height="190" as="geometry" />
-    </mxCell>
-
-    <mxCell id="db" value="&lt;b&gt;Primary Database&lt;/b&gt;&lt;br&gt;[Container: PostgreSQL]&lt;br&gt;&lt;br&gt;เก็บ users (พร้อม role และ&lt;br&gt;parent-child link), courses,&lt;br&gt;notes, quizzes, questions,&lt;br&gt;attempts, และ to-dos&lt;br&gt;(มี JSONB column สำหรับ&lt;br&gt;AI metadata)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#F0FDF4;strokeColor=#10B981;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="440" y="560" width="220" height="220" as="geometry" />
-    </mxCell>
-
-    <mxCell id="docstore" value="&lt;b&gt;Document Store&lt;/b&gt;&lt;br&gt;[Container: S3-compatible&lt;br&gt;Object Storage]&lt;br&gt;&lt;br&gt;เก็บไฟล์ PDF/DOCX ดิบ&lt;br&gt;และ text artifact ที่ extract" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#F0FDF4;strokeColor=#10B981;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="700" y="560" width="220" height="220" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EXTERNAL SYSTEMS ================= -->
-
-    <mxCell id="llm" value="&lt;b&gt;LLM Provider API&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;OpenAI GPT-4o-mini" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="1120" y="90" width="260" height="130" as="geometry" />
-    </mxCell>
-
-    <mxCell id="lms" value="&lt;b&gt;University LMS API&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Moodle REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="1120" y="290" width="260" height="130" as="geometry" />
-    </mxCell>
-
-    <mxCell id="notify" value="&lt;b&gt;Notification Service&lt;/b&gt;&lt;br&gt;[External System]&lt;br&gt;&lt;br&gt;Email/Push provider สำหรับ&lt;br&gt;แจ้งเตือนผู้ปกครองและ&lt;br&gt;ผู้เรียนผู้ใหญ่ เช่น Resend,&lt;br&gt;Firebase Cloud Messaging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
-      <mxGeometry x="1120" y="490" width="260" height="150" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: Persons -> Web App ================= -->
-
-    <mxCell id="e-pun" value="ใช้ผ่าน browser&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.3;entryX=0;entryY=0.2;curved=0;" edge="1" parent="1" source="pun" target="webapp">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-teacher" value="ใช้ผ่าน browser&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.4;curved=0;" edge="1" parent="1" source="teacher" target="webapp">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-earth" value="ใช้ผ่าน browser&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.6;curved=0;" edge="1" parent="1" source="earth" target="webapp">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-mom" value="ใช้ผ่าน browser&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.7;entryX=0;entryY=0.8;curved=0;" edge="1" parent="1" source="mom" target="webapp">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: Web App -> Backend ================= -->
-
-    <mxCell id="e-webapp-backend" value="เรียก REST API&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="webapp" target="backend">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: Backend -> Database/Storage ================= -->
-
-    <mxCell id="e-backend-db" value="อ่าน/เขียนข้อมูล&lt;br&gt;(SQL/TCP)" style="endArrow=block;html=1;fontSize=11;exitX=0.35;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="backend" target="db">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-backend-docstore" value="เก็บ/ดึงไฟล์&lt;br&gt;(HTTPS)" style="endArrow=block;html=1;fontSize=11;exitX=0.65;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="backend" target="docstore">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
-    <!-- ================= EDGES: Backend -> External ================= -->
-
-    <mxCell id="e-backend-llm" value="ส่ง prompt ขอสรุป/&lt;br&gt;quiz question (HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.2;entryX=0;entryY=0.5;curved=0;" edge="1" parent="1" source="backend" target="llm">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-backend-lms" value="ดึง course catalog&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;curved=0;" edge="1" parent="1" source="backend" target="lms">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-    <mxCell id="e-backend-notify" value="ส่งคำขอแจ้งเตือน&lt;br&gt;(HTTPS/JSON)" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.85;entryX=0;entryY=0.5;curved=0;" edge="1" parent="1" source="backend" target="notify">
-      <mxGeometry relative="1" as="geometry" />
-    </mxCell>
-
+    <mxCell id="student" value="&lt;b&gt;Student Learner&lt;/b&gt;&lt;br&gt;[Person]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="30" y="100" width="180" height="100" as="geometry" /></mxCell>
+    <mxCell id="teacher" value="&lt;b&gt;Teacher Mentor&lt;/b&gt;&lt;br&gt;[Person]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="30" y="300" width="180" height="100" as="geometry" /></mxCell>
+    <mxCell id="boundary" value="SynapseSync System Boundary" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#64748B;strokeWidth=1.5;verticalAlign=top;align=center;fontStyle=1;fontSize=15;spacingTop=10;" vertex="1" parent="1"><mxGeometry x="300" y="30" width="720" height="560" as="geometry" /></mxCell>
+    <mxCell id="web" value="&lt;b&gt;Web Application&lt;/b&gt;&lt;br&gt;[Container: React + Vite]&lt;br&gt;&lt;br&gt;Responsive UI, validation,&lt;br&gt;routing และ accessibility" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="80" width="380" height="120" as="geometry" /></mxCell>
+    <mxCell id="api" value="&lt;b&gt;Backend API&lt;/b&gt;&lt;br&gt;[Container: Python + FastAPI]&lt;br&gt;&lt;br&gt;Modular Monolith, authorization,&lt;br&gt;AI orchestration และ persistence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="470" y="250" width="380" height="140" as="geometry" /></mxCell>
+    <mxCell id="db" value="&lt;b&gt;Primary Database&lt;/b&gt;&lt;br&gt;[Container: PostgreSQL]&lt;br&gt;&lt;br&gt;Users, sessions, attempts, progress" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="420" y="450" width="220" height="110" as="geometry" /></mxCell>
+    <mxCell id="store" value="&lt;b&gt;Document Store&lt;/b&gt;&lt;br&gt;[Container: S3-compatible Object Storage]&lt;br&gt;&lt;br&gt;Binary documents and artifacts" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=2;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="720" y="450" width="220" height="110" as="geometry" /></mxCell>
+    <mxCell id="llm" value="&lt;b&gt;LLM Provider API&lt;/b&gt;&lt;br&gt;[External Software System]&lt;br&gt;&lt;br&gt;คำอธิบายและแบบฝึกหัด" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#64748B;strokeWidth=1.5;dashed=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1100" y="230" width="240" height="130" as="geometry" /></mxCell>
+    <mxCell id="e-student" value="HTTPS" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.3;curved=0;" edge="1" parent="1" source="student" target="web"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-teacher" value="HTTPS" style="endArrow=block;html=1;fontSize=11;exitX=1;exitY=0.5;entryX=0;entryY=0.7;curved=0;" edge="1" parent="1" source="teacher" target="web"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-web-api" value="HTTPS/JSON REST" style="endArrow=block;html=1;fontSize=11;exitX=0.5;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="web" target="api"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-api-db" value="SQL/TCP" style="endArrow=block;html=1;fontSize=11;exitX=0.35;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="api" target="db"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-api-store" value="S3 API/HTTPS" style="endArrow=block;html=1;fontSize=11;exitX=0.65;exitY=1;entryX=0.5;entryY=0;curved=0;" edge="1" parent="1" source="api" target="store"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e-api-llm" value="HTTPS/JSON" style="endArrow=block;html=1;fontSize=11;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;curved=0;" edge="1" parent="1" source="api" target="llm"><mxGeometry relative="1" as="geometry" /></mxCell>
   </root>
 </mxGraphModel>

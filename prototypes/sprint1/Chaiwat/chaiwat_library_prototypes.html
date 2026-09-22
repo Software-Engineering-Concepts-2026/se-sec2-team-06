@@ -3,13 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>คลังเอกสาร</title>
-<link rel="stylesheet" href="chaiwat_library_prototypes.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>คลังเอกสาร — SynapseSync</title>
+<link rel="stylesheet" href="../webtest/shared.css?v=lab4">
+<link rel="stylesheet" href="../webtest/navbar.css?v=lab4">
+<link rel="stylesheet" href="chaiwat_library_prototypes.css?v=20260826-theme-1">
+<script src="../webtest/navbar.js?v=lab4" defer></script>
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+<div data-navbar-root data-page="library"></div>
+
+<main class="page-shell feature-shell" id="main-content">
 <div class="library-page">
 
   <!-- Header -->
@@ -38,18 +43,19 @@
   </nav>
 
   <!-- Document grid -->
-  <main class="doc-grid" id="docGrid">
+  <section class="doc-grid" id="docGrid" aria-label="รายการเอกสาร">
     <!-- empty state -->
     <div class="grid-empty" id="gridEmpty">
       <span class="grid-empty-icon">🗂️</span>
       <p>ยังไม่มีเอกสารเลย ลองอัปโหลดไฟล์แรกกันเถอะ!</p>
     </div>
-  </main>
+  </section>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
 </div>
+</main>
 
 <!-- Upload subject-assign modal -->
 <div class="modal-overlay" id="subjectModal" hidden>
