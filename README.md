@@ -13,7 +13,7 @@
 <br>
 
 <code>Learning Web App</code>
-<code>Lab 01–07</code>
+<code>Labs 01–07 & 09</code>
 <code>Docs-first</code>
 <code>Academic Project</code>
 
@@ -24,6 +24,7 @@
 <a href="#-personas"><kbd>PERSONAS</kbd></a>
 <a href="#-documentation-hub"><kbd>DOCUMENTATION</kbd></a>
 <a href="#-getting-started"><kbd>GET STARTED</kbd></a>
+<a href="#-testing--ci"><kbd>TESTING &amp; CI</kbd></a>
 <a href="#-team--brainlink-co"><kbd>TEAM</kbd></a>
 <a href="#contribution-graph"><kbd>CONTRIBUTIONS</kbd></a>
 
@@ -65,10 +66,10 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 | **Theme** | Tools for Modern Learners |
 | **Primary User** | นักเรียนที่ต้องทบทวนและแก้จุดที่ไม่เข้าใจด้วยตนเอง |
 | **Core Value** | ลดเวลาค้นหาคำอธิบายและเปลี่ยนความเข้าใจให้เป็นหลักฐานจากการฝึก |
-| **Current Scope** | Lab 01–07: pragmatic commit, requirements, prototype, architecture, first container และ refactoring |
-| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 verified; Docker image `v0.1.0` published |
+| **Current Scope** | Lab 01–07 และ Lab 09: requirements, prototype, architecture, first container, refactoring และ testing/CI |
+| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 และ Lab 09 verified; Docker image `v0.1.0` published |
 
-> Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run และ Lab 07 refactoring ผ่านการตรวจใน environment ปัจจุบัน
+> Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run, Lab 07 refactoring และ Lab 09 testing ผ่านการตรวจใน environment ปัจจุบัน
 
 ---
 
@@ -159,6 +160,8 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 - [AI Usage](./AI_USAGE.md) — เครื่องมือ AI ส่วนที่นำมาใช้ และวิธีตรวจสอบ
 - [Lab 06 Evidence](./docs/evidence/lab06/README.md) — หลักฐาน build, health check และ Docker Hub
 - [Lab 07 Refactoring Journal](./docs/refactoring-journal.md) — smell, refactor และ test-first evidence
+- [Lab 09 CI Workflow](./.github/workflows/test.yml) — รันทดสอบอัตโนมัติเมื่อ push และ pull request
+- [Lab 09 Saboteur Journal](./docs/saboteur-journal.md) — หลักฐาน mutation test และการ restore
 
 </td>
 <td width="50%" valign="top">
@@ -247,14 +250,38 @@ API documentation: `http://127.0.0.1:8000/docs`
 
 ### 4. Run Automated Checks
 
-จาก repository root หลังติดตั้ง dependencies แล้ว:
+จาก repository root หลังติดตั้ง dependencies แล้ว (ตัวอย่างสำหรับ PowerShell):
+
+```powershell
+$env:PYTHONPATH = "services/api"
+python -m pytest services/api/tests tests scripts/tests --cov=src --cov=services/api/app --cov-branch --cov-report=term-missing --cov-fail-under=90
+```
+
+ทดสอบ prototype แยกต่างหาก:
 
 ```bash
-pytest services/api/tests -q
 node --test prototypes/sprint1/tests/*.test.cjs
 ```
 
 Browser tests ต้องใช้ Playwright และ Chrome ตามรายละเอียดใน [Prototype Guide](./prototypes/sprint1/README.md)
+
+---
+
+## ✦ Testing & CI
+
+ชุดทดสอบ Lab 09 ครอบคลุม unit และ boundary cases ของ contributor data, property-based tests, FizzBuzz kata และ API health checks ส่วน contributor graph มี tests สำหรับ API failure paths, การ normalize ข้อมูล และการ escape ข้อความก่อน render เป็น SVG
+
+GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow การตรวจในเครื่องบน branch นี้ผ่าน **39 tests และ 100% coverage ใน `src/` และ `services/api/app/` ซึ่งเป็นส่วนที่ workflow วัด coverage**
+
+| Test suite | ครอบคลุม |
+|---|---|
+| [`tests/test_unit.py`](./tests/test_unit.py) | equivalence partitions, malformed input, allow-list, totals และลำดับผลลัพธ์ |
+| [`tests/test_property.py`](./tests/test_property.py) | invariants ด้วย Hypothesis |
+| [`tests/test_fizzbuzz.py`](./tests/test_fizzbuzz.py) | FizzBuzz behavior และ boundary ตัวอย่างตามโจทย์ |
+| [`scripts/tests/test_generate_repo_contributors.py`](./scripts/tests/test_generate_repo_contributors.py) | contributor API responses, rendering, dates และ output safety |
+| [`services/api/tests/test_health.py`](./services/api/tests/test_health.py) | health endpoint ของ FastAPI |
+
+ดูหลักฐานการทดลอง saboteur ได้ที่ [Lab 09 Saboteur Journal](./docs/saboteur-journal.md)
 
 ### 5. Build the First Container
 
@@ -403,6 +430,7 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 | Lab 05 — Architecture | ✅ เสร็จแล้ว | Mermaid C4 render ผ่าน และเลือก Modular Monolith ผ่าน ADR-0001 |
 | Lab 06 — First Container | ✅ เสร็จแล้ว | Docker build/run, `HEALTHCHECK`, `/health` และ Docker Hub image `thakornj/synapsesync-api:v0.1.0` ผ่าน |
 | Lab 07 — Refactoring Milestone 1 | ✅ เสร็จแล้ว | แยก `renderQuestion()` เป็น view model และ rendering helpers พร้อม test-first evidence |
+| Lab 09 — Testing and CI | ✅ เสร็จแล้ว | 39 tests ผ่านในเครื่อง; GitHub Actions กำหนด coverage ขั้นต่ำ 90% และมี saboteur evidence |
 
 ### Product Boundaries
 

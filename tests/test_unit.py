@@ -7,7 +7,7 @@ def test_empty_payload_returns_empty_list():
     assert normalize_contributors([]) == []
 
 
-def test_deleted_author_and_malformed_week_are_ignored_safely():
+def test_deleted_author_is_skipped_and_malformed_week_values_are_sanitized():
     payload = [
         {"author": None, "weeks": [{"w": 1, "c": 9}]},
         {
@@ -28,6 +28,77 @@ def test_deleted_author_and_malformed_week_are_ignored_safely():
     assert result[0]["weeks"] == [
         {"timestamp": 0, "commits": 2, "additions": 4, "deletions": 1},
         {"timestamp": 2, "commits": 3, "additions": 6, "deletions": 2},
+    ]
+
+
+def test_non_dictionary_rows_and_records_without_login_are_skipped():
+    payload = [
+        None,
+        "not a contributor record",
+        {"author": None, "weeks": [{"w": 1, "c": 2}]},
+        {"author": {"id": 123}, "weeks": []},
+        {"author": {"login": "valid"}, "total": 1},
+    ]
+
+    result = normalize_contributors(payload, include_logins=None)
+
+    assert [item["login"] for item in result] == ["valid"]
+
+
+def test_login_falls_back_to_author_name_then_top_level_login():
+    payload = [
+        {"author": {"name": "Author Name"}, "login": "Top Level", "total": 2},
+        {"author": None, "login": "Top Level", "total": 1},
+    ]
+
+    result = normalize_contributors(payload, include_logins=None)
+
+    assert [item["login"] for item in result] == ["Author Name", "Top Level"]
+
+
+@pytest.mark.parametrize("include_logins", [[], ["someone-else"]])
+def test_empty_or_nonmatching_allow_list_returns_no_contributors(include_logins):
+    payload = [{"author": {"login": "teammate"}, "total": 1}]
+
+    assert normalize_contributors(payload, include_logins=include_logins) == []
+
+
+def test_invalid_and_negative_week_values_are_sanitized_without_losing_valid_values():
+    payload = [
+        {
+            "author": {"login": "member"},
+            "weeks": [
+                {"w": "bad", "c": "many", "a": None, "d": -4},
+                {"w": 9, "c": 3, "a": 6, "d": 2},
+            ],
+        }
+    ]
+
+    result = normalize_contributors(payload, include_logins=None)
+
+    assert result[0]["weeks"] == [
+        {"timestamp": 0, "commits": 0, "additions": 0, "deletions": 0},
+        {"timestamp": 9, "commits": 3, "additions": 6, "deletions": 2},
+    ]
+    assert result[0]["weekly_commits"] == [0, 3]
+    assert result[0]["total"] == 3
+    assert result[0]["additions"] == 6
+    assert result[0]["deletions"] == 2
+
+
+def test_missing_total_uses_week_commits_and_ties_sort_by_casefolded_login():
+    payload = [
+        {"author": {"login": "Charlie"}, "total": 3},
+        {"author": {"login": "Beta"}, "weeks": [{"w": 1, "c": 3}]},
+        {"author": {"login": "alpha"}, "total": 3},
+    ]
+
+    result = normalize_contributors(payload, include_logins=None)
+
+    assert [(item["login"], item["total"]) for item in result] == [
+        ("alpha", 3),
+        ("Beta", 3),
+        ("Charlie", 3),
     ]
 
 
