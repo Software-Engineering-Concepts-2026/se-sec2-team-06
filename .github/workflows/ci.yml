@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   lint:
-    name: Lint Lab 12B tests
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
       - run: npm --prefix WebApp run lint
 
   test:
-    name: Run WebApp and Lab 12B tests
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -38,9 +38,9 @@ npm run build
 
 GitHub Actions workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) มี job แยกสำหรับ lint และ tests บน push ไป `feature/safety-net` และ pull request เข้า `main`. การยืนยัน run สีเขียว, branch protection, reviewer approval และการย้าย Project Board เป็นขั้นตอนบน GitHub หลัง push
 
-## งานที่ยังต้องเติมก่อนส่ง Lab 12B ให้ครบ
+## งานที่เหลือก่อนส่ง Lab 12B ให้ครบ
 
-- เขียน Post-quiz 12 reflection ตามประสบการณ์จริงใน [`reflect.md`](../reflect.md); ไม่สร้าง reflection แทนผู้จัดทำ
-- ตรวจผล GitHub Actions หลัง push
-- ตั้ง branch protection/required check ตามสิทธิ์และ rubric ของทีม
-- สร้าง PR, ขอ reviewer อย่างน้อยหนึ่งคน และย้าย card ไป Done หลัง merge
+- เพิ่ม Post-quiz 12 draft ใน [`reflect.md`](../reflect.md); ผู้จัดทำต้องทบทวนและแก้ถ้อยคำให้ตรงกับความเข้าใจของตนก่อนส่ง
+- ตรวจผล GitHub Actions หลังเปิด PR โดย jobs ต้องแสดงชื่อ `lint` และ `test`
+- ตั้ง branch protection บน `main` ให้ต้องผ่าน PR และ required checks `lint`/`test`; บันทึกหลักฐานว่า check ที่ fail บล็อก merge จริง
+- ขอ reviewer อย่างน้อยหนึ่งคน; ย้าย Project Board card ไป Done หลัง review, checks และ merge เสร็จ

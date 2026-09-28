@@ -81,3 +81,25 @@ Hypothesis ช่วยสร้างข้อมูล contributor หลา�
 ## 3. CI และ saboteur ทำให้คุณภาพตรวจสอบซ้ำได้
 
 การย้ายคำสั่ง pytest และ coverage ไปไว้ใน GitHub Actions ทำให้ทุก push หรือ pull request ใช้ gate เดียวกัน โดยตั้งขั้นต่ำไว้ที่ 90% และผล local verification ได้ 27 tests ผ่านกับ coverage 100% การทดลองแก้ FizzBuzz ให้เลข 15 คืนค่า `Fizz` แล้วเห็น test fail ก่อน restore ยืนยันว่าชุดทดสอบจับ regression ได้จริง ขั้นตอนที่ยังต้องทำใน GitHub คือเปิด branch protection และ required check ด้วยตนเองเมื่อมีการ push workflow ขึ้น remote
+
+---
+
+# Post-quiz 12B — Reflection on the Safety Net Sprint
+
+> Draft based on the work recorded for this Lab 12B. Please review and revise any statement that does not match your own understanding before submission.
+
+## 1. เลือกขอบเขตที่ทดสอบได้สำคัญกว่าการเลือกฟังก์ชันใหญ่
+
+งานนี้เลือก `buildQuestionViewModel()` ซึ่งคำนวณ feedback, สถานะคำตอบ, progress และ navigation จาก input ที่กำหนด ทำให้ทดสอบได้โดยไม่ต้องเปิดหน้าเว็บหรือต่อบริการภายนอก ชุดกรณีทดสอบครอบคลุมคำตอบถูก/ผิด, ยังไม่ตอบ, จำนวนข้อเป็นศูนย์ และข้อมูล `choices` ที่ผิดรูปแบบ บทเรียนคือควรเริ่มจาก business rule ที่มีผลต่อผู้ใช้และแยกขอบเขตได้ ไม่ใช่เลือกโค้ดที่ใหญ่หรือซับซ้อนที่สุด
+
+## 2. Coverage เป็นเครื่องมือชี้จุดเสี่ยง ไม่ใช่เป้าหมายเดี่ยว
+
+ผล local coverage ของโมดูลอยู่ที่ statements/lines 96.29%, branches 89.47% และ functions 100% แม้ตัวเลขจะสูง แต่ report ยังช่วยชี้ว่าทางเดินใดถูกทดสอบไม่ครบ และ branch ที่เหลือส่วนหนึ่งมาจาก wrapper ของ module ใน browser-compatibility tests จึงควรอ่านร่วมกับ test matrix และความสำคัญของ behavior ไม่ควรเพิ่ม assertion ที่ไม่ตรวจ requirement เพียงเพื่อไล่ให้ได้ 100%
+
+## 3. CI กับ Branch Protection ต้องทำงานร่วมกัน
+
+การมี workflow เพียงอย่างเดียวบอกได้ว่า checks รัน แต่ยังไม่บังคับให้หยุดการ merge เมื่อ check ล้มเหลว งานนี้จึงแยก lint กับ test เป็น required checks ที่ตั้งใจใช้กับ pull request เข้า `main` ขั้นตอนที่ต้องตรวจบน GitHub คือให้ทั้งสอง job รันผ่าน, ตั้ง branch protection และยืนยันว่า PR ที่ check ไม่ผ่านถูกบล็อกจริง ก่อนคืน test ให้ผ่านและดำเนินการ merge ตาม review process
+
+## 4. ใช้ AI โดยเปิดเผยและตรวจความเข้าใจ
+
+AI ช่วยเสนอ test cases, ร่าง tests/configuration และช่วยจัดถ้อยคำเอกสาร แต่คำตอบที่คาดหวังและการเลือก scope ต้องตรวจเทียบกับ behavior ในโค้ดจริง การบันทึกใน `AI_USAGE.md` ทำให้เห็นชัดว่าส่วนใดมี AI ช่วยร่าง และส่วนใดผู้จัดทำต้องอ่าน ทำความเข้าใจ และยืนยันก่อนส่ง บทเรียนคือไม่ควรอ้างว่าเป็นผู้เขียนทั้งหมดเมื่อมี AI สร้างร่างให้ และไม่ควรใช้ coverage หรือ CI สีเขียวแทนการทำความเข้าใจ test
