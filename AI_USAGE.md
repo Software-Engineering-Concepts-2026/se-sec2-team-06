@@ -1133,3 +1133,32 @@ Verify
 - Local coverage ผ่านเกณฑ์ด้วย 100% สำหรับ `src` และ `services/api/app` โดยตั้ง fail-under ไว้ที่ 90%
 - Saboteur mutation ทำให้ FizzBuzz fail 1 test และหลัง restore ผ่าน 5 tests
 - สร้าง `.github/workflows/test.yml` สำหรับ push/pull request และลบ workflow placeholder ที่ไม่ถูกต้องออกแล้ว
+
+---
+
+## Lab 12B — Safety Net Sprint
+
+### Tools and tasks
+
+- ใช้ ChatGPT/Codex เป็นผู้ช่วยอ่าน rubric, คัดเลือก business logic ที่มี branch จริง และจัด test matrix สำหรับ Lab 12B
+- เลือก `buildQuestionViewModel()` จาก `prototypes/sprint1/Thakorn/thakorn_quizgenerator_view_model.js` เพราะตัดสิน feedback, สถานะตัวเลือก, progress และ navigation โดยไม่พึ่ง DB, API, ไฟล์ หรือเวลาปัจจุบัน
+- ใช้ AI ช่วยร่าง Jest tests, lint configuration, GitHub Actions workflow และคำอธิบาย safety net ใน README/เอกสาร
+
+### Prompt summary
+
+คำขอจริงคือให้เลือกฟังก์ชันที่เหมาะกับ rubric, ปรับ README และเตรียม handoff files ของสมาชิก โดยกำชับไม่ให้แก้หรือลบทับงานใน `prototypes/` ข้อความด้านบนเป็นสรุปเจตนาของคำขอ ไม่ใช่การอ้างคำพูดแบบ verbatim
+
+### Human decisions and review
+
+- ผู้จัดทำอนุมัติให้ใช้ `buildQuestionViewModel()` เป็นเป้าหมายของ Lab 12B และคง runtime prototype เดิมไว้โดยไม่แก้ไข
+- ชุดหลักครอบคลุมคำตอบถูก/ผิด, ยังไม่ตอบ, จำนวนข้อเป็นศูนย์ และข้อมูล choices ที่ผิดรูปแบบ รวมถึงการ export สำหรับ browser
+- ไฟล์ handoff ของ Chaiwat และ Shuwichada แยกอยู่นอก repository เพื่อให้คัดลอกไปวางได้ และไม่ถูกรวมใน commit/push ของ Thakorn
+- ไม่มีการส่ง API key, secret, credential หรือข้อมูลส่วนบุคคลเข้า prompt
+
+### Verification status
+
+- `npm run test:all` ใน `WebApp/`: Vitest 3 tests และ Jest Lab 12B 7 tests ผ่าน
+- Jest coverage ของ view-model module: statements 96.29%, branches 89.47%, functions 100%, lines 96.29%; กำหนด gate เป็น statements/lines ≥95%, branches ≥85%, functions 100%
+- `npm run lint` และ `npm run build` ใน `WebApp/` ผ่าน
+- `.github/workflows/ci.yml` ตรวจ lint และ test บน branch `feature/safety-net` และ PR เข้า `main`; ยังต้องตรวจ run จริงบน GitHub
+- ยังไม่เติม `reflect.md` ส่วน Post-quiz 12 เพื่อไม่แต่ง reflection แทนผู้จัดทำ
