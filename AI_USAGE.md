@@ -946,7 +946,7 @@ Verify
 4. “ช่วยตรวจ test failure จาก Navbar และ browser flow แล้วอธิบายสาเหตุโดยไม่แก้ requirement แทนทีม”
 5. “ช่วยปรับ visual direction ของ Thakorn และ Chaiwat ให้ใช้สีและ Navbar เหมือน Home แต่ยังคง layout และ flow ที่ทดสอบไว้”
 
-### AI-assisted content accepted after review
+### AI-assisted content included (draft pending the author's final review)
 
 - โครงร่าง shared Navbar, design tokens และ responsive CSS ที่นำมาปรับให้เข้ากับ SynapseSync
 - แนวทางจัดโครงสร้าง HTML ของ Thakorn, Chaiwat และ shuwichada
@@ -1133,3 +1133,39 @@ Verify
 - Local coverage ผ่านเกณฑ์ด้วย 100% สำหรับ `src` และ `services/api/app` โดยตั้ง fail-under ไว้ที่ 90%
 - Saboteur mutation ทำให้ FizzBuzz fail 1 test และหลัง restore ผ่าน 5 tests
 - สร้าง `.github/workflows/test.yml` สำหรับ push/pull request และลบ workflow placeholder ที่ไม่ถูกต้องออกแล้ว
+
+---
+
+## Lab 12B — Safety Net Sprint
+
+### Tools and tasks
+
+- ใช้ ChatGPT/Codex เป็นผู้ช่วยอ่าน rubric, คัดเลือก business logic ที่มี branch จริง และจัด test matrix สำหรับ Lab 12B
+- เลือก `buildQuestionViewModel()` จาก `prototypes/sprint1/Thakorn/thakorn_quizgenerator_view_model.js` เพราะตัดสิน feedback, สถานะตัวเลือก, progress และ navigation โดยไม่พึ่ง DB, API, ไฟล์ หรือเวลาปัจจุบัน
+- ใช้ AI ช่วยร่าง Jest tests, lint configuration, GitHub Actions workflow และคำอธิบาย safety net ใน README/เอกสาร
+
+### Prompt summaries
+
+1. ขอให้เลือก business function ที่มีเงื่อนไขแตกแขนง ทดสอบแยกได้ และไม่พึ่ง DB/API/ไฟล์/เวลาปัจจุบัน พร้อมวาง test matrix ให้ตรง Lab 12B (สรุปความหมาย ไม่ใช่คำพูด verbatim)
+2. ขอให้ตรวจ workflow ของ GitHub Actions ให้มี lint และ test แยกเป็นสอง jobs ที่รันกับ pull request เข้า `main` และช่วยอธิบาย coverage ที่ได้ (สรุปความหมาย ไม่ใช่คำพูด verbatim)
+
+### AI-assisted content accepted after review
+
+- AI ช่วยร่างไฟล์ Jest tests 7 กรณี, ESLint configuration, workflow และคำอธิบาย test matrix/coverage
+- AI ช่วยร่างถ้อยคำของส่วน Lab 12B ใน `docs/safety-net.md`, `AI_USAGE.md` และ Post-quiz 12 ใน `reflect.md`
+- ผู้จัดทำต้องอ่าน test ทีละกรณี ตรวจ expected result กับ implementation จริง และปรับ reflection ให้ตรงกับความเข้าใจ/ประสบการณ์ของตนก่อนส่ง งานนี้ไม่ได้อ้างว่า test หรือ reflection ทั้งหมดเขียนโดยผู้จัดทำ
+
+### Human decisions and review
+
+- ผู้จัดทำเลือก `buildQuestionViewModel()` เป็นเป้าหมายของ Lab 12B และคง runtime prototype เดิมไว้ ไม่แก้ไขไฟล์ใน `prototypes/`
+- เลือกตรวจคำตอบถูก/ผิด, ยังไม่ตอบ, จำนวนข้อเป็นศูนย์, `choices` ที่ผิดรูปแบบ และ browser/CommonJS export; AI เสนอร่าง cases แต่ผู้จัดทำต้องยืนยันความเข้าใจและความเหมาะสมก่อนส่ง
+- ไฟล์ handoff ของ Chaiwat และ Shuwichada แยกอยู่นอก repository และไม่ถูกรวมใน commit/push ของ Thakorn
+- ไม่มีการส่ง API key, secret, credential หรือข้อมูลส่วนบุคคลเข้า prompt
+
+### Verification status
+
+- Local `npm run test:all` ใน `WebApp/`: Vitest 3 tests และ Jest Lab 12B 7 tests ผ่าน
+- Jest coverage ของ view-model module: statements 96.29%, branches 89.47%, functions 100%, lines 96.29%; configured thresholds: statements/lines ≥95%, branches ≥85%, functions 100%
+- Local `npm run lint` และ `npm run build` ใน `WebApp/` ผ่าน
+- `.github/workflows/ci.yml` มี jobs ชื่อ `lint` และ `test`, ทำงานบน push ไป `feature/safety-net` และ pull request เข้า `main`; ต้องตรวจผล run จริงบน GitHub หลังเปิด PR
+- Post-quiz 12 draft เพิ่มใน `reflect.md`; ผู้จัดทำควรทบทวนและแก้ให้สะท้อนความเข้าใจของตนก่อนส่ง

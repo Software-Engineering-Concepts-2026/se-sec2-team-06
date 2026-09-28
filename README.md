@@ -13,7 +13,7 @@
 <br>
 
 <code>Learning Web App</code>
-<code>Labs 01–07 & 09</code>
+<code>Labs 01–07, 09 & 12B</code>
 <code>Docs-first</code>
 <code>Academic Project</code>
 
@@ -66,8 +66,8 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 | **Theme** | Tools for Modern Learners |
 | **Primary User** | นักเรียนที่ต้องทบทวนและแก้จุดที่ไม่เข้าใจด้วยตนเอง |
 | **Core Value** | ลดเวลาค้นหาคำอธิบายและเปลี่ยนความเข้าใจให้เป็นหลักฐานจากการฝึก |
-| **Current Scope** | Lab 01–07 และ Lab 09: requirements, prototype, architecture, first container, refactoring และ testing/CI |
-| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 และ Lab 09 verified; Docker image `v0.1.0` published |
+| **Current Scope** | Lab 01–07, Lab 09 และ Lab 12B: requirements, prototype, architecture, first container, refactoring, testing/CI และ safety net |
+| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 และ Lab 09 verified; Lab 12B เพิ่ม safety-net tests, CI และ Post-quiz 12 reflection draft บน branch แยก โดยยังรอผู้จัดทำทบทวนและตรวจผลบน GitHub |
 
 > Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run, Lab 07 refactoring และ Lab 09 testing ผ่านการตรวจใน environment ปัจจุบัน
 
@@ -162,6 +162,8 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 - [Lab 07 Refactoring Journal](./docs/refactoring-journal.md) — smell, refactor และ test-first evidence
 - [Lab 09 CI Workflow](./.github/workflows/test.yml) — รันทดสอบอัตโนมัติเมื่อ push และ pull request
 - [Lab 09 Saboteur Journal](./docs/saboteur-journal.md) — หลักฐาน mutation test และการ restore
+- [Lab 12B Safety Net](./docs/safety-net.md) — test cases, coverage และวิธีรัน lint/test
+- [Lab 12B CI Workflow](./.github/workflows/ci.yml) — lint และ test บน branch `feature/safety-net` และ PR เข้า `main`
 
 </td>
 <td width="50%" valign="top">
@@ -271,6 +273,8 @@ Browser tests ต้องใช้ Playwright และ Chrome ตามรา�
 
 ชุดทดสอบ Lab 09 ครอบคลุม unit และ boundary cases ของ contributor data, property-based tests, FizzBuzz kata และ API health checks ส่วน contributor graph มี tests สำหรับ API failure paths, การ normalize ข้อมูล และการ escape ข้อความก่อน render เป็น SVG
 
+Lab 12B เพิ่ม Jest safety net 7 tests ให้ `buildQuestionViewModel()` ที่มี logic เรื่องคำตอบ, feedback, progress และ navigation โดยไม่แก้ runtime file ใน `prototypes/`. Jest ตรวจ coverage ของ module นี้แยกจาก Vitest; ผลล่าสุดคือ statements/lines 96.29%, branches 89.47% และ functions 100%. รายละเอียดและ coverage threshold อยู่ใน [Lab 12B Safety Net](./docs/safety-net.md)
+
 GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow การตรวจในเครื่องบน branch นี้ผ่าน **39 tests และ 100% coverage ใน `src/` และ `services/api/app/` ซึ่งเป็นส่วนที่ workflow วัด coverage**
 
 | Test suite | ครอบคลุม |
@@ -280,6 +284,7 @@ GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workf
 | [`tests/test_fizzbuzz.py`](./tests/test_fizzbuzz.py) | FizzBuzz behavior และ boundary ตัวอย่างตามโจทย์ |
 | [`scripts/tests/test_generate_repo_contributors.py`](./scripts/tests/test_generate_repo_contributors.py) | contributor API responses, rendering, dates และ output safety |
 | [`services/api/tests/test_health.py`](./services/api/tests/test_health.py) | health endpoint ของ FastAPI |
+| [`WebApp/tests/lab12b/test_thakorn_quiz_view_model.test.cjs`](./WebApp/tests/lab12b/test_thakorn_quiz_view_model.test.cjs) | correct/incorrect answer, unanswered/empty boundary, malformed input และ module exports |
 
 ดูหลักฐานการทดลอง saboteur ได้ที่ [Lab 09 Saboteur Journal](./docs/saboteur-journal.md)
 
@@ -431,6 +436,7 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 | Lab 06 — First Container | ✅ เสร็จแล้ว | Docker build/run, `HEALTHCHECK`, `/health` และ Docker Hub image `thakornj/synapsesync-api:v0.1.0` ผ่าน |
 | Lab 07 — Refactoring Milestone 1 | ✅ เสร็จแล้ว | แยก `renderQuestion()` เป็น view model และ rendering helpers พร้อม test-first evidence |
 | Lab 09 — Testing and CI | ✅ เสร็จแล้ว | 39 tests ผ่านในเครื่อง; GitHub Actions กำหนด coverage ขั้นต่ำ 90% และมี saboteur evidence |
+| Lab 12B — Safety Net Sprint | 🟡 เตรียม PR บน `feature/safety-net` | Local lint/build/tests ผ่าน; reflection draft รอผู้จัดทำทบทวน; GitHub Actions, branch protection และ reviewer approval ยังรอตรวจ/ดำเนินการ |
 
 ### Product Boundaries
 

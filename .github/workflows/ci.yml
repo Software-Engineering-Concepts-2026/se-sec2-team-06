@@ -1,0 +1,37 @@
+name: Lab 12B Safety Net
+
+on:
+  push:
+    branches: [feature/safety-net]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: WebApp/package-lock.json
+      - run: npm ci --prefix WebApp
+      - run: npm --prefix WebApp run lint
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: WebApp/package-lock.json
+      - run: npm ci --prefix WebApp
+      - run: npm --prefix WebApp run test:all
