@@ -67,7 +67,7 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 | **Primary User** | นักเรียนที่ต้องทบทวนและแก้จุดที่ไม่เข้าใจด้วยตนเอง |
 | **Core Value** | ลดเวลาค้นหาคำอธิบายและเปลี่ยนความเข้าใจให้เป็นหลักฐานจากการฝึก |
 | **Current Scope** | Lab 01–07, Lab 09 และ Lab 12B: requirements, prototype, architecture, first container, refactoring, testing/CI และ safety net |
-| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 และ Lab 09 verified; Lab 12B เพิ่ม safety-net tests และ CI บน branch แยก โดยยังรอ reflection และตรวจผลบน GitHub |
+| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 และ Lab 09 verified; Lab 12B เพิ่ม safety-net tests, CI และ Post-quiz 12 reflection draft บน branch แยก โดยยังรอผู้จัดทำทบทวนและตรวจผลบน GitHub |
 
 > Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run, Lab 07 refactoring และ Lab 09 testing ผ่านการตรวจใน environment ปัจจุบัน
 
@@ -436,7 +436,7 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 | Lab 06 — First Container | ✅ เสร็จแล้ว | Docker build/run, `HEALTHCHECK`, `/health` และ Docker Hub image `thakornj/synapsesync-api:v0.1.0` ผ่าน |
 | Lab 07 — Refactoring Milestone 1 | ✅ เสร็จแล้ว | แยก `renderQuestion()` เป็น view model และ rendering helpers พร้อม test-first evidence |
 | Lab 09 — Testing and CI | ✅ เสร็จแล้ว | 39 tests ผ่านในเครื่อง; GitHub Actions กำหนด coverage ขั้นต่ำ 90% และมี saboteur evidence |
-| Lab 12B — Safety Net Sprint | 🟡 เตรียมงานบน `feature/safety-net` | Local lint/build/tests ผ่าน; ยังรอ Post-quiz 12 reflection และตรวจ GitHub Actions/branch protection/PR |
+| Lab 12B — Safety Net Sprint | 🟡 เตรียม PR บน `feature/safety-net` | Local lint/build/tests ผ่าน; reflection draft รอผู้จัดทำทบทวน; GitHub Actions, branch protection และ reviewer approval ยังรอตรวจ/ดำเนินการ |
 
 ### Product Boundaries
 
