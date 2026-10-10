@@ -104,4 +104,10 @@ describe('buildQuestionViewModel — Lab 12B safety net', () => {
     expect(typeof browserContext.QuizViewModel.buildQuestionViewModel)
       .toBe('function');
   });
+
+  test('temporary safety-net blocking demonstration', () => {
+  expect(false).toBe(true);
+  });
+
+  
 });
