@@ -1129,7 +1129,7 @@ Verify
 
 ### Verification status
 
-- `tests/test_unit.py`, `tests/test_fizzbuzz.py`, `tests/test_property.py`, `services/api/tests` และ `scripts/tests` ผ่านรวม 27 tests
+- `tests/test_unit.py`, `tests/test_fizzbuzz.py`, `tests/test_property.py`, `services/api/tests` และ `scripts/tests` ผ่านรวม 39 tests
 - Local coverage ผ่านเกณฑ์ด้วย 100% สำหรับ `src` และ `services/api/app` โดยตั้ง fail-under ไว้ที่ 90%
 - Saboteur mutation ทำให้ FizzBuzz fail 1 test และหลัง restore ผ่าน 5 tests
 - สร้าง `.github/workflows/test.yml` สำหรับ push/pull request และลบ workflow placeholder ที่ไม่ถูกต้องออกแล้ว
@@ -1167,5 +1167,8 @@ Verify
 - Local `npm run test:all` ใน `WebApp/`: Vitest 3 tests และ Jest Lab 12B 7 tests ผ่าน
 - Jest coverage ของ view-model module: statements 96.29%, branches 89.47%, functions 100%, lines 96.29%; configured thresholds: statements/lines ≥95%, branches ≥85%, functions 100%
 - Local `npm run lint` และ `npm run build` ใน `WebApp/` ผ่าน
-- `.github/workflows/ci.yml` มี jobs ชื่อ `lint` และ `test`, ทำงานบน push ไป `feature/safety-net` และ pull request เข้า `main`; ต้องตรวจผล run จริงบน GitHub หลังเปิด PR
+- `.github/workflows/ci.yml` มี jobs ชื่อ `lint` และ `test`, ทำงานบน push ไป `feature/safety-net` และ pull request เข้า `main`.
+- หลักฐาน GitHub Actions: run #121 ของ PR #71 และ run #123 ของ PR #72 แสดง `lint`/`test` ผ่าน; run #125 ของ PR #73 ใช้ test ที่ตั้งใจให้ fail เพื่อทดสอบ safety net โดย `lint` ผ่าน, `test` ล้มเหลวทั้งใน push และ pull request และหน้า PR แสดง `Merging is blocked`. ภาพและรายละเอียดอยู่ใน `docs/evidence/lab12b/`.
+- Ruleset `Protect main - Lab 12B` ถูกเปิดใช้งานกับ `main`; หลักฐานแสดง require pull request, approval อย่างน้อย 1 คน และ required checks `lint`/`test`.
+- หลังบันทึกภาพ blocked ได้นำ assertion ที่ทำให้ fail ชั่วคราวออกจาก test file แล้ว; ผล GitHub Actions สำหรับ commit cleanup หลัง push ยัง pending และต้องตรวจจาก run ใหม่ก่อนสรุปว่า remote กลับมาเขียว
 - Post-quiz 12 draft เพิ่มใน `reflect.md`; ผู้จัดทำควรทบทวนและแก้ให้สะท้อนความเข้าใจของตนก่อนส่ง
