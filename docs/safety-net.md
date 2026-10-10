@@ -1,46 +1,48 @@
 # Lab 12B — Safety Net Sprint
 
-## เป้าหมายและขอบเขต
+## 1. ฟังก์ชันที่เลือกทดสอบ
 
-ชุดทดสอบนี้ใช้ `buildQuestionViewModel()` ใน `prototypes/sprint1/Thakorn/thakorn_quizgenerator_view_model.js` เป็น business logic เป้าหมาย ฟังก์ชันรับคำถาม ลำดับ จำนวนข้อ และคำตอบที่บันทึกไว้ แล้วสร้างข้อมูลสำหรับแสดง feedback, สถานะ choices, progress และ navigation โดยเป็น logic แบบ deterministic ที่ไม่เรียก DB, API, ไฟล์ หรือเวลาปัจจุบัน
+`buildQuestionViewModel(question, index, total, savedAnswer)` ใน [`prototypes/sprint1/Thakorn/thakorn_quizgenerator_view_model.js`](../prototypes/sprint1/Thakorn/thakorn_quizgenerator_view_model.js) แปลงสถานะคำถามและคำตอบเป็นข้อมูล feedback, choice classes, progress และ navigation เลือกเพราะผลลัพธ์ตรวจซ้ำได้และไม่พึ่ง DB/API/ไฟล์/เวลาปัจจุบัน การทดสอบแยกอยู่ใน `WebApp/tests/lab12b/`; ไม่แก้ runtime file ใน `prototypes/`.
 
-ไฟล์ runtime และ test เดิมใต้ `prototypes/` คงเดิมทั้งหมด ชุด Lab 12B เพิ่ม test แยกใน `WebApp/tests/lab12b/` เท่านั้น
+## 2. Test cases (7 tests)
 
-## Test matrix
+| # | ประเภท | กรณีและสิ่งที่ยืนยัน |
+|---:|---|---|
+| 1 | Happy | ตอบถูกข้อสุดท้าย: feedback ถูก, choice selected/correct, ไปดูผลคะแนน |
+| 2 | Happy | คำตอบผิด: feedback ผิด, ระบุ choice ที่ผิดและ choice ที่ถูก, ไปข้อถัดไป |
+| 3 | Edge | ยังไม่ตอบข้อแรก: ซ่อน feedback, แสดง choice ที่ถูก, ปิดย้อนกลับ |
+| 4 | Edge | จำนวนข้อเป็นศูนย์: progress เท่ากับ 0 |
+| 5 | Error | `choices: null`: โยน `TypeError` แทนการคืน view model บางส่วน |
+| 6 | Compatibility | ไม่มี CommonJS: API ใช้ได้ผ่าน browser global `QuizViewModel` |
+| 7 | Compatibility | ไม่มี `globalThis`: API fallback ไปยัง script global |
 
-| ประเภท | กรณีที่ตรวจ | ผลที่คาดหวัง |
-|---|---|---|
-| Happy path | เลือกคำตอบถูกในข้อสุดท้าย | แสดง feedback ว่าถูก, ทำเครื่องหมาย selected/correct และแสดง “ดูผลคะแนน” |
-| Happy path | เลือกคำตอบผิดระหว่างชุดข้อ | แสดง feedback ว่าผิด, ทำเครื่องหมายคำตอบที่เลือกและคำตอบที่ถูกแยกกัน และแสดง “ถัดไป” |
-| Edge | ยังไม่เลือกคำตอบในข้อแรก | ซ่อน feedback, ยังแสดงคำตอบที่ถูก และปิด navigation ย้อนกลับ |
-| Edge | จำนวนข้อเป็นศูนย์ | progress เป็น 0 โดยไม่หารด้วยศูนย์ |
-| Error | `choices` เป็น `null` | ปฏิเสธข้อมูลคำถามที่ผิดรูปแบบด้วย `TypeError` ไม่คืน view model ที่ไม่สมบูรณ์ |
-| Compatibility | โหลดโดยไม่มี CommonJS | เปิดให้ browser ใช้ API ผ่าน global `QuizViewModel` |
-| Compatibility | สภาพแวดล้อมไม่มี `globalThis` | fallback ไปยัง script global ได้ |
+ขั้นต่ำ rubric ครบ: 2 happy, 2 edge และ 1 error; อีก 2 tests ตรวจ module compatibility. ผลล่าสุด: Jest 7 tests ผ่าน.
 
-ห้าแถวแรกตรงกับขั้นต่ำ 2 happy paths, 2 edge cases และ 1 error case; สองแถวสุดท้ายตรวจทางเลือกการ export ของ module
+## 3. Coverage และการตีความ
 
-## วิธีรัน
+| Metric | ผล local | Threshold |
+|---|---:|---:|
+| Statements / Lines | 96.29% / 96.29% | ≥ 95% |
+| Branches | 89.47% | ≥ 85% |
+| Functions | 100% | 100% |
 
-```powershell
-cd WebApp
-npm ci
-npm run lint
-npm run test:all
-npm run build
-```
+Coverage ผ่าน threshold ใน `WebApp/jest.config.cjs`. Report ระบุ lines 7–8 ซึ่งเป็นทาง export ไป browser global ว่า uncovered; compatibility tests ตรวจพฤติกรรมผ่าน VM โดยตรง แต่ coverage report นี้ไม่บันทึก execution จาก VM context จึงอ่านตัวเลขควบคู่กับ test results ไม่ไล่ให้ถึง 100%. ภาพ local lint/tests/coverage: [01-local-test-coverage.png](./evidence/lab12b/01-local-test-coverage.png) (ไม่ใช่หลักฐาน GitHub Actions).
 
-`test:all` รัน Vitest ของ WebApp เดิมก่อน แล้วจึงรัน Jest ของ Lab 12B พร้อม coverage ส่วน Vitest exclude `tests/lab12b/` เพราะไฟล์เหล่านั้นเป็น suite ของ Jest
+## 4. CI และการบล็อก merge
 
-## Coverage และ CI
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) รันเมื่อ push ไป `feature/safety-net` และ PR เข้า `main`: job `lint` รัน `npm run lint`; job `test` รัน `npm run test:all` ใน `WebApp`. Local lint และ tests ผ่าน แต่ GitHub Actions ล่าสุด, Branch Protection และการบล็อก merge ยังต้องตรวจยืนยันบน GitHub.
 
-ผล local ล่าสุดของ Jest: statements **96.29%**, branches **89.47%**, functions **100%**, lines **96.29%** โดย gate อยู่ที่ statements/lines อย่างน้อย 95%, branches อย่างน้อย 85% และ functions 100%. Branch ที่เหลือใน report มาจาก module wrapper path ซึ่ง Jest/V8 ไม่รวม execution counters จาก VM context ของ browser-compatibility tests; tests เหล่านั้นยังยืนยันผล export โดยตรง
+หลักฐานที่ rubric ระบุ: แนบภาพ PR ซึ่งแสดง **“Merging is blocked”** ในคอมเมนต์ PR หลังตั้ง `main` ให้ require PR และ checks `lint`/`test` แล้วทดลองให้ test fail ชั่วคราวบน `feature/safety-net`. จากนั้น restore test, push และยืนยันว่า checks กลับมาเขียว ห้ามทดลองบน `main`.
 
-GitHub Actions workflow [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) มี job แยกสำหรับ lint และ tests บน push ไป `feature/safety-net` และ pull request เข้า `main`. การยืนยัน run สีเขียว, branch protection, reviewer approval และการย้าย Project Board เป็นขั้นตอนบน GitHub หลัง push
+## 5. บทเรียนที่ได้
 
-## งานที่เหลือก่อนส่ง Lab 12B ให้ครบ
+> ร่างจาก test matrix และ coverage — ผู้จัดทำโปรดทบทวนและปรับให้ตรงกับความเข้าใจของตนก่อนส่ง
 
-- เพิ่ม Post-quiz 12 draft ใน [`reflect.md`](../reflect.md); ผู้จัดทำต้องทบทวนและแก้ถ้อยคำให้ตรงกับความเข้าใจของตนก่อนส่ง
-- ตรวจผล GitHub Actions หลังเปิด PR โดย jobs ต้องแสดงชื่อ `lint` และ `test`
-- ตั้ง branch protection บน `main` ให้ต้องผ่าน PR และ required checks `lint`/`test`; บันทึกหลักฐานว่า check ที่ fail บล็อก merge จริง
-- ขอ reviewer อย่างน้อยหนึ่งคน; ย้าย Project Board card ไป Done หลัง review, checks และ merge เสร็จ
+การแยกกรณีคำตอบถูก/ผิด ยังไม่ตอบ และจำนวนข้อเป็นศูนย์ช่วยตรวจพฤติกรรมที่ happy path อย่างเดียวอาจไม่พบ Coverage ช่วยชี้จุดที่ควรตรวจต่อ แต่ต้องอ่านร่วมกับ test ที่ยืนยัน browser compatibility ด้วย Local tests ที่ผ่านยังไม่พิสูจน์ว่า merge ถูกป้องกัน จึงต้องตรวจ CI และ Branch Protection บน GitHub.
+
+## สถานะก่อนส่ง
+
+- [x] มีร่าง Post-quiz 12B ใน [`reflect.md`](../reflect.md); **ยังต้องให้ผู้จัดทำทบทวน/ปรับถ้อยคำ**
+- [ ] ยืนยัน GitHub Actions ว่า `lint` และ `test` ผ่านทั้งคู่
+- [ ] ตั้ง Branch Protection ของ `main`; ทดสอบและแนบภาพ “Merging is blocked” ใน PR comment แล้ว restore test ให้ CI เขียว
+- [ ] ขอ reviewer อย่างน้อย 1 คน approve, merge PR เข้า `main` และย้ายการ์ด Project Board ไป `Done`

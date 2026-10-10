@@ -80,7 +80,7 @@ Hypothesis ช่วยสร้างข้อมูล contributor หลา�
 
 ## 3. CI และ saboteur ทำให้คุณภาพตรวจสอบซ้ำได้
 
-การย้ายคำสั่ง pytest และ coverage ไปไว้ใน GitHub Actions ทำให้ทุก push หรือ pull request ใช้ gate เดียวกัน โดยตั้งขั้นต่ำไว้ที่ 90% และผล local verification ได้ 27 tests ผ่านกับ coverage 100% การทดลองแก้ FizzBuzz ให้เลข 15 คืนค่า `Fizz` แล้วเห็น test fail ก่อน restore ยืนยันว่าชุดทดสอบจับ regression ได้จริง ขั้นตอนที่ยังต้องทำใน GitHub คือเปิด branch protection และ required check ด้วยตนเองเมื่อมีการ push workflow ขึ้น remote
+เมื่อ push workflow ขึ้น remote แล้ว GitHub Actions จะใช้คำสั่ง pytest และ coverage เดียวกันกับ push หรือ pull request และบังคับ coverage ขั้นต่ำ 90%; ผล local verification ได้ 39 tests ผ่านกับ coverage 100% ใน `src/` และ `services/api/app/` การทดลองแก้ FizzBuzz ให้เลข 15 คืนค่า `Fizz` แล้วเห็น test fail ก่อน restore ยืนยันว่าชุดทดสอบจับ regression ได้จริง ขั้นตอนที่ยังต้องทำใน GitHub คือยืนยันผล workflow ล่าสุดและเปิด branch protection/required checks ด้วยตนเองเมื่อ workflow อยู่บน remote
 
 ---
 
@@ -88,18 +88,20 @@ Hypothesis ช่วยสร้างข้อมูล contributor หลา�
 
 > Draft based on the work recorded for this Lab 12B. Please review and revise any statement that does not match your own understanding before submission.
 
-## 1. เลือกขอบเขตที่ทดสอบได้สำคัญกว่าการเลือกฟังก์ชันใหญ่
+## 1. เริ่มจากพฤติกรรมสำคัญและแบ่งกรณีทดสอบให้ชัด
 
-งานนี้เลือก `buildQuestionViewModel()` ซึ่งคำนวณ feedback, สถานะคำตอบ, progress และ navigation จาก input ที่กำหนด ทำให้ทดสอบได้โดยไม่ต้องเปิดหน้าเว็บหรือต่อบริการภายนอก ชุดกรณีทดสอบครอบคลุมคำตอบถูก/ผิด, ยังไม่ตอบ, จำนวนข้อเป็นศูนย์ และข้อมูล `choices` ที่ผิดรูปแบบ บทเรียนคือควรเริ่มจาก business rule ที่มีผลต่อผู้ใช้และแยกขอบเขตได้ ไม่ใช่เลือกโค้ดที่ใหญ่หรือซับซ้อนที่สุด
+ฟังก์ชัน `buildQuestionViewModel()` มีผลต่อสิ่งที่ผู้เรียนเห็นหลังตอบคำถาม ได้แก่ feedback, สถานะตัวเลือก, progress และ navigation จึงเหมาะกับการตรวจ behavior ที่ผู้ใช้สัมผัสได้ โดยไม่ต้องเปิดหน้าเว็บหรือต่อบริการภายนอก ชุดทดสอบมี 7 กรณี: happy path 2, edge case 2, error case 1 และ compatibility 2 กรณี ทำให้เกินขั้นต่ำ 5 tests และครอบคลุมประเภทหลักตาม rubric
 
-## 2. Coverage เป็นเครื่องมือชี้จุดเสี่ยง ไม่ใช่เป้าหมายเดี่ยว
+สิ่งที่ได้เรียนรู้คือควรเขียน test จากเงื่อนไขและผลลัพธ์ที่ผู้ใช้คาดหวัง ไม่ใช่ดูแค่จำนวน test หรือเลือกฟังก์ชันที่ดูซับซ้อนที่สุด
 
-ผล local coverage ของโมดูลอยู่ที่ statements/lines 96.29%, branches 89.47% และ functions 100% แม้ตัวเลขจะสูง แต่ report ยังช่วยชี้ว่าทางเดินใดถูกทดสอบไม่ครบ และ branch ที่เหลือส่วนหนึ่งมาจาก wrapper ของ module ใน browser-compatibility tests จึงควรอ่านร่วมกับ test matrix และความสำคัญของ behavior ไม่ควรเพิ่ม assertion ที่ไม่ตรวจ requirement เพียงเพื่อไล่ให้ได้ 100%
+## 2. อ่าน coverage ควบคู่กับความเสี่ยงของ behavior
 
-## 3. CI กับ Branch Protection ต้องทำงานร่วมกัน
+ผล local coverage ที่บันทึกไว้คือ statements/lines 96.29%, branches 89.47% และ functions 100% ตัวเลขช่วยบอกว่ามีส่วนใดของโค้ดยังไม่ถูกรันผ่าน แต่ไม่ได้ยืนยันด้วยตัวเองว่าพฤติกรรมถูกต้องทั้งหมด ดังนั้นควรอ่าน coverage คู่กับ test cases และ requirement โดยเฉพาะ report ที่ยังระบุ lines 7–8 ว่าไม่ถูกครอบคลุม แทนการเพิ่ม assertion ที่ไม่ตรวจ behavior จริงเพื่อไล่ให้ถึง 100%
 
-การมี workflow เพียงอย่างเดียวบอกได้ว่า checks รัน แต่ยังไม่บังคับให้หยุดการ merge เมื่อ check ล้มเหลว งานนี้จึงแยก lint กับ test เป็น required checks ที่ตั้งใจใช้กับ pull request เข้า `main` ขั้นตอนที่ต้องตรวจบน GitHub คือให้ทั้งสอง job รันผ่าน, ตั้ง branch protection และยืนยันว่า PR ที่ check ไม่ผ่านถูกบล็อกจริง ก่อนคืน test ให้ผ่านและดำเนินการ merge ตาม review process
+## 3. CI ที่รันได้ยังไม่เท่ากับ merge ที่ถูกป้องกัน
 
-## 4. ใช้ AI โดยเปิดเผยและตรวจความเข้าใจ
+การแยก workflow เป็น `lint` และ `test` ทำให้ตรวจคุณภาพซ้ำได้ แต่ local test ผ่านหรือมี workflow file อยู่ใน repository ยังไม่พิสูจน์ว่า GitHub Actions ล่าสุดผ่าน หรือว่า GitHub จะบล็อกการ merge เมื่อ check ล้มเหลว สิ่งที่ต้องทำต่อคือยืนยันผลทั้งสอง job บน PR, ตั้ง required checks/Branch Protection ของ `main` และเก็บหลักฐานการบล็อก merge ก่อนสรุปว่าส่วนนี้เสร็จ
 
-AI ช่วยเสนอ test cases, ร่าง tests/configuration และช่วยจัดถ้อยคำเอกสาร แต่คำตอบที่คาดหวังและการเลือก scope ต้องตรวจเทียบกับ behavior ในโค้ดจริง การบันทึกใน `AI_USAGE.md` ทำให้เห็นชัดว่าส่วนใดมี AI ช่วยร่าง และส่วนใดผู้จัดทำต้องอ่าน ทำความเข้าใจ และยืนยันก่อนส่ง บทเรียนคือไม่ควรอ้างว่าเป็นผู้เขียนทั้งหมดเมื่อมี AI สร้างร่างให้ และไม่ควรใช้ coverage หรือ CI สีเขียวแทนการทำความเข้าใจ test
+## 4. ใช้ AI เป็นผู้ช่วย พร้อมรับผิดชอบต่อเนื้อหาที่ส่ง
+
+AI ช่วย brainstorm test cases และเกลาถ้อยคำเอกสารได้ แต่ expected result, การเลือกกรณีทดสอบ และการอธิบาย coverage ต้องตรวจเทียบกับโค้ดและผลที่รันได้จริง การบันทึกการใช้ AI ใน `AI_USAGE.md` ช่วยเปิดเผยขอบเขตการช่วยเหลือ บทเรียนคือผู้ส่งงานยังต้องอธิบายได้ว่าแต่ละ test ตรวจอะไรและเพราะเหตุใด จึงไม่ควรถือว่าร่างจาก AI หรือเครื่องหมาย CI สีเขียวแทนความเข้าใจของตนเอง
