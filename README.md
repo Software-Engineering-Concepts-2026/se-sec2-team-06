@@ -67,9 +67,9 @@ SynapseSync ช่วยระบุจุดที่ยังไม่เข�
 | **Primary User** | นักเรียนที่ต้องทบทวนและแก้จุดที่ไม่เข้าใจด้วยตนเอง |
 | **Core Value** | ลดเวลาค้นหาคำอธิบายและเปลี่ยนความเข้าใจให้เป็นหลักฐานจากการฝึก |
 | **Current Scope** | Lab 01–07, Lab 09 และ Lab 12B: requirements, prototype, architecture, first container, refactoring, testing/CI และ safety net |
-| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 ผ่านการตรวจ; Lab 09 ผ่าน local tests/coverage ตามขอบเขต workflow แต่ยังรอตรวจ GitHub Actions run และ branch protection/required checks; Lab 12B: PR #72 merged แล้ว และ PR #73 มีหลักฐาน `Merging is blocked`; เอา test ที่ตั้งใจให้ fail ออกใน branch ปัจจุบันแล้ว โดยต้องตรวจ CI รอบใหม่หลัง push ก่อนขอ approval/merge; Post-quiz ยังรอผู้จัดทำทบทวน |
+| **Project Status** | Lab 01–02 ผ่านแล้ว; Lab 04–07 ผ่านการตรวจ; Lab 09 — PR #70 merge แล้ว พร้อมผล local verification 39 tests และ coverage 100% ใน scope ที่กำหนด; Lab 12B — PR #74 merge แล้ว, reviewer อนุมัติและ checks ผ่าน 6 รายการ; PR #73 ปิดโดยไม่ merge ใช้เก็บหลักฐาน `Merging is blocked`; Ruleset ของ `main` กำหนด PR, approval 1 คน และ checks `lint`/`test`; Post-quiz 12B ยังเป็นร่างให้ผู้จัดทำทบทวน |
 
-> Lab 01–02 ปิดงานแล้ว ส่วน Prototype, Architecture, Docker build/run, Lab 07 refactoring และ Lab 09 testing ผ่านการตรวจในเครื่อง; สถานะ GitHub Actions และ branch protection ของ Lab 09 ยังรอยืนยันบน GitHub
+> Lab 09 รวมเข้า `main` ผ่าน PR #70 แล้ว; Lab 12B รวมผ่าน PR #74 หลัง reviewer approve และ checks ผ่าน โดย PR #73 เก็บหลักฐานการบล็อกขณะ test fail แล้วปิดโดยไม่ merge; Post-quiz 12B ยังต้องให้ผู้จัดทำทบทวนก่อนส่ง
 
 ---
 
@@ -208,6 +208,22 @@ Architecture Lab 05 ใช้ Modular Monolith เป็น implementation targe
 
 ## ✦ Getting Started
 
+### เว็บ SynapseSync ที่ออนไลน์
+
+เปิดใช้งานเว็บที่ deploy บน Render ได้ที่ **[https://synapsesync-pyio.onrender.com](https://synapsesync-pyio.onrender.com)**
+
+### ทดลองเว็บทั้งระบบในเครื่อง (Docker Compose)
+
+ต้องเปิด Docker Desktop ก่อน แล้วรันคำสั่งจากโฟลเดอร์หลักของ repository:
+
+```powershell
+docker compose -f compose.webapp.yml up --build
+```
+
+จากนั้นเปิดเว็บที่ <http://localhost:8080/>; API อยู่ที่ <http://localhost:8000/> และเอกสาร API อยู่ที่ <http://localhost:8000/docs> หากต้องการหยุด ให้กด `Ctrl+C` แล้วรัน `docker compose -f compose.webapp.yml down` ข้อมูลและไฟล์ที่สร้างในเครื่องเก็บไว้ใต้ `.local/` อย่าลบโฟลเดอร์นี้หากต้องการเก็บข้อมูลไว้
+
+ฟีเจอร์ AI ต้องตั้ง `AI_API_KEY` ใน `services/api/.env` ก่อนใช้งาน และห้าม commit ไฟล์ `.env` ที่มี key จริง หากต้องการรันแยก API กับ Vite เพื่อพัฒนาแบบ hot reload ดูขั้นตอนใน [คู่มือ WebApp](./WebApp/README.md)
+
 ### Prerequisites
 
 | Requirement | Used For |
@@ -215,7 +231,8 @@ Architecture Lab 05 ใช้ Modular Monolith เป็น implementation targe
 | Git | Clone และทำงานร่วมกันใน repository |
 | Modern Web Browser | เปิด Sprint 1 prototype |
 | Python 3.12+ | รัน FastAPI service และ automated tests |
-| Docker Desktop/Engine | Build และ run `synapsesync-api:v0.1.0` |
+| Node.js 20.19+ | พัฒนาและทดสอบ WebApp |
+| Docker Desktop/Engine | รัน WebApp และ API ในเครื่องด้วย Docker Compose |
 
 ### 1. Clone the Repository
 
@@ -275,9 +292,9 @@ Browser tests ต้องใช้ Playwright และ Chrome ตามรา�
 
 ชุดทดสอบ Lab 09 ครอบคลุม unit และ boundary cases ของ contributor data, property-based tests, FizzBuzz kata และ API health checks ส่วน contributor graph มี tests สำหรับ API failure paths, การ normalize ข้อมูล และการ escape ข้อความก่อน render เป็น SVG
 
-Lab 12B เพิ่ม Jest safety net 7 tests ให้ `buildQuestionViewModel()` ที่มี logic เรื่องคำตอบ, feedback, progress และ navigation โดยไม่แก้ runtime file ใน `prototypes/`. Jest ตรวจ coverage ของ module นี้แยกจาก Vitest; ผลล่าสุดคือ statements/lines 96.29%, branches 89.47% และ functions 100%. รายละเอียดและ coverage threshold อยู่ใน [Lab 12B Safety Net](./docs/safety-net.md) และ [บันทึกหลักฐาน Lab 12B](./docs/evidence/lab12b/08-pr-merging-blocked-record.md); ภาพ PR #73 บันทึกการบล็อกขณะ test fail โดยตั้งใจ ส่วนผล CI หลังคืน test ให้ผ่านต้องตรวจจาก run ใหม่บน GitHub
+Lab 12B เพิ่ม Jest safety net 7 tests ให้ `buildQuestionViewModel()` ที่มี logic เรื่องคำตอบ, feedback, progress และ navigation โดยไม่แก้ runtime file ใน `prototypes/`. Jest ตรวจ coverage ของ module นี้แยกจาก Vitest; local verification ล่าสุดผ่าน 7 tests โดยมี statements/lines 96.29%, branches 89.47% และ functions 100%. PR #73 ถูกปิดโดยไม่ merge และใช้เก็บภาพ `Merging is blocked` ระหว่างทดลองให้ test fail ชั่วคราว; หลังคืน test ให้ผ่าน PR #74 ได้รับ reviewer approval, checks ผ่าน 6 รายการ และ merge เข้า `main` แล้ว. Ruleset ของ `main` กำหนดให้ใช้ PR, approval อย่างน้อย 1 คน และ required checks `lint`/`test`. รายละเอียดอยู่ใน [Lab 12B Safety Net](./docs/safety-net.md) และ [บันทึกหลักฐาน Lab 12B](./docs/evidence/lab12b/08-pr-merging-blocked-record.md); Post-quiz 12B ใน `reflect.md` ยังเป็นร่างที่ผู้จัดทำต้องทบทวน
 
-GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow การตรวจในเครื่องบน branch นี้ผ่าน **39 tests และ 100% coverage ใน `src/` และ `services/api/app/` ซึ่งเป็นส่วนที่ workflow วัด coverage**
+สำหรับ Lab 09, PR #70 ถูกรวมเข้า `main` แล้ว. GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workflows/test.yml) ซึ่งทำงานเมื่อมี `push` หรือ `pull_request` และกำหนด coverage ขั้นต่ำ 90% สำหรับ source/API ที่ระบุใน workflow; ผล local verification ที่บันทึกไว้คือ **39 tests ผ่าน และ coverage 100% ใน `src/` กับ `services/api/app/`** ซึ่งเป็นส่วนที่ workflow วัด coverage
 
 | Test suite | ครอบคลุม |
 |---|---|
@@ -290,7 +307,7 @@ GitHub Actions ใช้ workflow [`.github/workflows/test.yml`](./.github/workf
 
 ดูหลักฐานการทดลอง saboteur ได้ที่ [Lab 09 Saboteur Journal](./docs/saboteur-journal.md)
 
-สถานะ badge อ้างอิง workflow run บน GitHub สำหรับ main ส่วนผล run ล่าสุดและการบังคับใช้ branch protection/required checks ต้องตรวจยืนยันบน GitHub แยกต่างหาก; ผลทดสอบในเครื่องไม่ได้ยืนยันสถานะ remote เหล่านี้
+Badge ด้านบนแสดงสถานะ workflow ของ Lab 09 บน `main`. สำหรับ Lab 12B, PR #74 เป็นหลักฐานการรวมหลัง checks ผ่าน; Ruleset `Protect main - Lab 12B` มีภาพหลักฐานแยกใน `docs/evidence/lab12b/`. ผล local verification ใช้ยืนยันเฉพาะการทดสอบในเครื่อง ไม่แทนสถานะ CI บน GitHub
 
 ### 5. Build the First Container
 
@@ -439,8 +456,8 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 | Lab 05 — Architecture | ✅ เสร็จแล้ว | Mermaid C4 render ผ่าน และเลือก Modular Monolith ผ่าน ADR-0001 |
 | Lab 06 — First Container | ✅ เสร็จแล้ว | Docker build/run, `HEALTHCHECK`, `/health` และ Docker Hub image `thakornj/synapsesync-api:v0.1.0` ผ่าน |
 | Lab 07 — Refactoring Milestone 1 | ✅ เสร็จแล้ว | แยก `renderQuestion()` เป็น view model และ rendering helpers พร้อม test-first evidence |
-| Lab 09 — Testing and CI | 🟡 Local checks ผ่าน; GitHub-side ยังรอยืนยัน | 39 tests ผ่านในเครื่อง; coverage 100% ใน `src/` และ `services/api/app/`; ยังไม่ได้ยืนยัน GitHub Actions run ล่าสุด, required checks หรือ branch protection |
-| Lab 12B — Safety Net Sprint | 🟡 PR #73 บน `feature/safety-net` | PR #72 merged แล้ว; PR #73 เก็บหลักฐาน `Merging is blocked` ขณะ test fail โดยตั้งใจ และ Ruleset Active กำหนด PR, approval 1 คน, checks `lint`/`test`; test ชั่วคราวถูกเอาออกใน branch ปัจจุบัน—หลัง push ให้ยืนยัน CI รอบใหม่ก่อนขอ approval/merge; Post-quiz ยังต้องทบทวน |
+| Lab 09 — Testing and CI | ✅ PR #70 merged | บันทึกผล local verification 39 tests ผ่านและ coverage 100% ใน `src/` กับ `services/api/app/`; workflow `test.yml` รันบน push/pull request และกำหนด coverage ขั้นต่ำ 90% |
+| Lab 12B — Safety Net Sprint | ✅ PR #74 merged; 🟡 Post-quiz รอผู้จัดทำทบทวน | PR #73 ปิดโดยไม่ merge และเก็บภาพ `Merging is blocked`; PR #74 ผ่าน reviewer approval และ 6 checks ก่อน merge; Ruleset `main` บังคับ PR, approval 1 คน และ checks `lint`/`test`; local `lint`, 3 Vitest tests และ 7 Jest tests ผ่าน |
 
 ### Product Boundaries
 
