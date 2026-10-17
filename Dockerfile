@@ -1,5 +1,15 @@
 # syntax=docker/dockerfile:1.7
 
+FROM node:24-alpine AS web-builder
+
+WORKDIR /web
+
+COPY WebApp/package*.json ./
+RUN npm ci
+
+COPY WebApp/ ./
+RUN npm run build
+
 FROM python:3.12.13-slim-bookworm AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -18,6 +28,7 @@ ARG APP_GID=10001
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    SYNAPSESYNC_WEB_DIR=/app/web \
     PATH="/opt/venv/bin:${PATH}"
 
 RUN groupadd --system --gid "${APP_GID}" appgroup \
@@ -28,6 +39,7 @@ WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appgroup services/api/app ./app
+COPY --from=web-builder --chown=appuser:appgroup /web/dist ./web
 
 USER appuser:appgroup
 
