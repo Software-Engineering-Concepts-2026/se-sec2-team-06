@@ -1,70 +1,271 @@
 import './styles.css';
-import { ApiError, getApiHealth } from './api/client.js';
+import {
+  login,
+  getQuiz,
+  getQuizAttempts,
+  listQuizzes,
+  deleteQuiz,
+  logout,
+  renameQuiz,
+  register,
+  getQuizAttempt,
+  listDocuments,
+  getDocument,
+  getDocumentContent,
+  getDocumentText,
+  saveDocumentProgress,
+  submitQuizAttempt,
+  updateProfile,
+  uploadAvatar,
+  uploadDocument,
+  listTags,
+  createTag,
+  renameDocument,
+  replaceDocumentTags,
+  deleteDocument,
+  listDeadlines,
+  createDeadline,
+  updateDeadline,
+  deleteDeadline,
+  listTutorConversations,
+  getTutorConversation,
+  createTutorConversation,
+  sendTutorMessage,
+  retryTutorMessage,
+  getAiProviders,
+  getProgress,
+  getProgressTopic,
+  getDashboardOverview,
+} from './api/client.js';
+import { getSessionUser, loadSession } from './auth/session.js';
+import { renderNavbar } from './components/Navbar.js';
+import { renderHomePage } from './pages/HomePage.js';
+import { renderLoginPage } from './pages/LoginPage.js';
+import { renderProfilePage } from './pages/ProfilePage.js';
+import { renderQuizCreatePage } from './pages/QuizCreatePage.js';
+import { renderQuizAttemptReviewPage } from './pages/QuizAttemptReviewPage.js';
+import { renderQuizDetailPage } from './pages/QuizDetailPage.js';
+import { renderQuizLibraryPage } from './pages/QuizLibraryPage.js';
+import { renderQuizTakePage } from './pages/QuizTakePage.js';
+import { renderDocumentsPage } from './pages/DocumentsPage.js';
+import { renderDocumentReaderPage } from './pages/DocumentReaderPage.js';
+import { renderDeadlinesPage } from './pages/DeadlinesPage.js';
+import { renderTutorPage } from './pages/TutorPage.js';
+import { renderProgressPage } from './pages/ProgressPage.js';
+import { renderRegisterPage } from './pages/RegisterPage.js';
+import { applyTutorAppMode, markRoutePage, resolveRoute } from './router.js';
+import { initializeTheme, setTheme } from './theme/theme-manager.js';
 
 const app = document.querySelector('#app');
+let user = null;
+let currentTheme = initializeTheme();
+let currentPage = null;
+let activeRouteUrl = null;
+const navigationMotion = { activeTabId: null };
 
-app.innerHTML = `
-  <div class="shell">
-    <header class="hero" aria-labelledby="page-title">
-      <div class="brand-mark" aria-hidden="true">S</div>
-      <div>
-        <p class="eyebrow">STUDY SMARTER</p>
-        <h1 id="page-title">SynapseSync WebApp</h1>
-        <p class="lede">พื้นที่ใหม่สำหรับวางแผนการเรียนรู้และทบทวนเนื้อหาอย่างเป็นระบบ</p>
-      </div>
-    </header>
+function navigate(path, replace = false) {
+  if (replace) {
+    window.history.replaceState({}, '', path);
+  } else {
+    window.history.pushState({}, '', path);
+  }
+  render();
+}
 
-    <section class="status-card" aria-labelledby="connection-title">
-      <div class="status-heading">
-        <span class="status-dot" aria-hidden="true"></span>
-        <h2 id="connection-title">สถานะการเชื่อมต่อ</h2>
-      </div>
-      <p id="api-status" role="status" aria-live="polite">กำลังเตรียมการเชื่อมต่อ API</p>
-      <button id="check-api" type="button">ตรวจสอบ API</button>
-    </section>
-
-    <section class="feature-grid" aria-label="ขอบเขตเริ่มต้นของ WebApp">
-      <article class="feature-card">
-        <span class="feature-icon" aria-hidden="true">01</span>
-        <h2>เริ่มจากโครงสร้างที่ชัดเจน</h2>
-        <p>WebApp ชุดใหม่นี้แยกจาก prototype เดิม เพื่อให้พัฒนาต่อและทดสอบได้อย่างปลอดภัย</p>
-      </article>
-      <article class="feature-card">
-        <span class="feature-icon" aria-hidden="true">02</span>
-        <h2>เชื่อมต่อผ่าน API boundary</h2>
-        <p>เบราว์เซอร์เรียกใช้ backend ผ่านเส้นทางเดียว โดยไม่เปิดเผยคีย์หรือข้อมูลลับ</p>
-      </article>
-    </section>
-
-    <footer>SynapseSync · WebApp scaffold 0.1.0</footer>
-  </div>
-`;
-
-const apiStatus = document.querySelector('#api-status');
-const checkApiButton = document.querySelector('#check-api');
-const statusDot = document.querySelector('.status-dot');
-
-async function checkApi() {
-  apiStatus.textContent = 'กำลังตรวจสอบ API...';
-  apiStatus.dataset.state = 'loading';
-  statusDot.dataset.state = 'loading';
-  checkApiButton.disabled = true;
-
+async function handleLogout() {
   try {
-    const health = await getApiHealth();
-    apiStatus.textContent = `API พร้อมใช้งาน: ${health.version}`;
-    apiStatus.dataset.state = 'success';
-    statusDot.dataset.state = 'success';
-  } catch (error) {
-    apiStatus.textContent = error instanceof ApiError
-      ? 'ยังเชื่อมต่อ API ไม่ได้'
-      : 'ได้รับข้อมูลจาก API ไม่ถูกต้อง';
-    apiStatus.dataset.state = 'error';
-    statusDot.dataset.state = 'error';
-  } finally {
-    checkApiButton.disabled = false;
+    await logout();
+    user = await loadSession();
+    navigate('/');
+  } catch {
+    const message = app.querySelector('[data-app-message]');
+    if (message) message.textContent = 'ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง';
   }
 }
 
-checkApiButton.addEventListener('click', checkApi);
-checkApi();
+function render() {
+  if (!app) return;
+  if (currentPage) {
+    void currentPage.destroy?.();
+    currentPage = null;
+  }
+
+  const route = resolveRoute(window.location.pathname, user, window.location.search);
+  applyTutorAppMode(app, route.page === 'tutor');
+  const routeUrl = route.returnTo
+    ? `${route.path}?next=${encodeURIComponent(route.returnTo)}`
+    : route.path;
+  if (routeUrl !== `${window.location.pathname}${window.location.search}`) {
+    window.history.replaceState({}, '', routeUrl);
+  }
+  const navigateWithReturnTo = (path) => navigate(
+    route.returnTo ? `${path}?next=${encodeURIComponent(route.returnTo)}` : path,
+  );
+
+  const navbar = renderNavbar(user, {
+    navigate,
+    currentPath: route.path,
+    onLogout: handleLogout,
+    themeId: currentTheme,
+    loadDeadlines: listDeadlines,
+    navigationMotion,
+    onThemeChange: (themeId) => {
+      currentTheme = setTheme(themeId);
+    },
+  });
+  let page;
+  if (route.page === 'login') {
+    page = renderLoginPage({
+      onNavigate: navigateWithReturnTo,
+      onLogin: async (credentials) => {
+        await login(credentials);
+        user = await loadSession();
+        if (!user) throw new Error('เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง');
+        navigate(route.returnTo || '/');
+      },
+    });
+  } else if (route.page === 'register') {
+    page = renderRegisterPage({
+      onNavigate: navigateWithReturnTo,
+      onRegister: async (details) => {
+        await register(details);
+        user = await loadSession();
+        if (!user) throw new Error('สร้างบัญชีไม่สำเร็จ กรุณาลองอีกครั้ง');
+        navigate(route.returnTo || '/');
+      },
+    });
+  } else if (route.page === 'profile') {
+    page = renderProfilePage({
+      user,
+      onUpdate: async (details) => {
+        await updateProfile(details);
+        user = await loadSession();
+        render();
+      },
+      onAvatarUpload: async (file) => {
+        await uploadAvatar(file);
+        user = await loadSession();
+        render();
+      },
+    });
+  } else if (route.page === 'quiz-create') {
+    page = renderQuizCreatePage({ navigate });
+  } else if (route.page === 'quiz-library') {
+    page = renderQuizLibraryPage({ loadQuizzes: listQuizzes, updateTitle: renameQuiz, deleteQuiz, navigate });
+  } else if (route.page === 'quiz-detail') {
+    page = renderQuizDetailPage({
+      quizId: route.params.quizId,
+      loadQuiz: getQuiz,
+      loadAttempts: getQuizAttempts,
+      navigate,
+    });
+  } else if (route.page === 'quiz-take') {
+    page = renderQuizTakePage({
+      quizId: route.params.quizId,
+      loadQuiz: getQuiz,
+      submitAttempt: submitQuizAttempt,
+      navigate,
+    });
+  } else if (route.page === 'quiz-attempt-review') {
+    page = renderQuizAttemptReviewPage({
+      quizId: route.params.quizId,
+      attemptId: route.params.attemptId,
+      loadReview: getQuizAttempt,
+      navigate,
+    });
+  } else if (route.page === 'documents-library') {
+    page = renderDocumentsPage({
+      loadDocuments: listDocuments,
+      loadTags: listTags,
+      uploadDocument,
+      createTag,
+      renameDocument,
+      replaceDocumentTags,
+      deleteDocument,
+      navigate,
+    });
+  } else if (route.page === 'document-reader') {
+    page = renderDocumentReaderPage({
+      documentId: route.params.documentId,
+      loadDocument: getDocument,
+      loadDocumentContent: getDocumentContent,
+      loadDocumentText: getDocumentText,
+      saveProgress: saveDocumentProgress,
+      updateTitle: renameDocument,
+      loadTags: listTags,
+      createTag,
+      replaceDocumentTags,
+      deleteDocument,
+      navigate,
+    });
+  } else if (route.page === 'deadlines') {
+    page = renderDeadlinesPage({
+      loadDeadlines: listDeadlines,
+      loadTags: listTags,
+      createDeadline,
+      updateDeadline,
+      deleteDeadline,
+      onDeadlineCreated: (task) => navbar.refreshNotifications({ assignedTask: task }),
+    });
+  } else if (route.page === 'tutor') {
+    page = renderTutorPage({
+      loadConversations: listTutorConversations,
+      loadConversation: getTutorConversation,
+      createConversation: createTutorConversation,
+      sendMessage: sendTutorMessage,
+      retryMessage: retryTutorMessage,
+      loadProviders: getAiProviders,
+      loadTags: listTags,
+      navigate,
+    });
+  } else if (route.page === 'progress') {
+    page = renderProgressPage({
+      loadProgress: getProgress,
+      loadTopic: getProgressTopic,
+      loadTags: listTags,
+      navigate,
+    });
+  } else {
+    page = renderHomePage({
+      user,
+      onNavigate: navigate,
+      loadOverview: getDashboardOverview,
+      loadDeadlines: listDeadlines,
+      loadTags: listTags,
+      loadProgress: getProgress,
+      loadQuizzes: listQuizzes,
+      loadDocuments: listDocuments,
+    });
+  }
+
+  const footer = document.createElement('footer');
+  footer.className = 'site-footer';
+  footer.textContent = 'SynapseSync · พื้นที่เรียนรู้ของคุณ';
+  const appMessage = document.createElement('p');
+  appMessage.className = 'app-message';
+  appMessage.dataset.appMessage = 'true';
+  appMessage.setAttribute('role', 'status');
+  appMessage.setAttribute('aria-live', 'polite');
+
+  const mainContent = document.createElement('main');
+  activeRouteUrl = markRoutePage(
+    page,
+    routeUrl,
+    activeRouteUrl,
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
+  );
+  mainContent.append(page, appMessage);
+  app.replaceChildren(navbar, mainContent, footer);
+  currentPage = page;
+}
+
+window.addEventListener('popstate', render);
+loadSession()
+  .then(() => {
+    user = getSessionUser();
+    render();
+  })
+  .catch(() => {
+    user = null;
+    render();
+  });
