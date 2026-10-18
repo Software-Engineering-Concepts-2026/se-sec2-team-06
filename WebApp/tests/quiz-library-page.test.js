@@ -435,9 +435,9 @@ describe('quiz library and detail pages', () => {
   });
 
   it('test_tag_pill_click_autosaves_add_and_remove_without_save_button', async () => {
-    const saveQuizTags = vi.fn().mockResolvedValue({ tags: [{
-      id: 1, name: 'Mathematics', parent_id: null, is_builtin: true, color: 'blue',
-    }] });
+    const saveQuizTags = vi.fn(async (_id, { tag_ids }) => ({
+      tags: tagCatalog.tags.filter((tag) => tag_ids.includes(tag.id)),
+    }));
     const page = renderLibrary({
       loadQuizzes: async () => [{ ...quiz, tags: [] }],
       saveQuizTags,
@@ -445,9 +445,12 @@ describe('quiz library and detail pages', () => {
     document.body.append(page);
     await flushPromises();
 
-    page.querySelector('[data-action="manage-tags"]').click();
+    const manageTags = page.querySelector('[data-action="manage-tags"]');
+    const pickerContainer = page.querySelector('.quiz-library-card__picker-container');
+    manageTags.click();
     const picker = page.querySelector('[data-role="tag-picker"]');
     const math = picker.querySelector('button[data-tag-id="1"]');
+    const sets = picker.querySelector('button[data-tag-id="8"]');
     expect(picker.querySelectorAll('input[type="checkbox"]')).toHaveLength(0);
     expect([...picker.querySelectorAll('button')].some((button) => button.textContent === 'Save tags')).toBe(false);
 
@@ -455,11 +458,77 @@ describe('quiz library and detail pages', () => {
     await flushPromises();
     expect(saveQuizTags).toHaveBeenNthCalledWith(1, 12, { tag_ids: [1] });
     expect(math.getAttribute('aria-pressed')).toBe('true');
+    expect(pickerContainer.hidden).toBe(true);
+    expect(manageTags.getAttribute('aria-expanded')).toBe('false');
 
+    manageTags.click();
+    expect(pickerContainer.hidden).toBe(false);
+    expect(math.getAttribute('aria-pressed')).toBe('true');
+    sets.click();
+    await flushPromises();
+    expect(saveQuizTags).toHaveBeenNthCalledWith(2, 12, { tag_ids: [1, 8] });
+    expect(pickerContainer.hidden).toBe(true);
+    expect(manageTags.getAttribute('aria-expanded')).toBe('false');
+    expect(page.querySelector('[data-quiz-id="12"] .tag-chip-list').textContent).toContain('Mathematics');
+    expect(page.querySelector('[data-quiz-id="12"] .tag-chip-list').textContent).toContain('Sets');
+
+    manageTags.click();
     math.click();
     await flushPromises();
-    expect(saveQuizTags).toHaveBeenNthCalledWith(2, 12, { tag_ids: [] });
-    expect(page.querySelector('[data-quiz-id="12"] .tag-chip-list').textContent).toBe('');
+    expect(saveQuizTags).toHaveBeenNthCalledWith(3, 12, { tag_ids: [8] });
+    expect(pickerContainer.hidden).toBe(true);
+    expect(page.querySelector('[data-quiz-id="12"] .tag-chip-list').textContent).toBe('Sets');
+  });
+
+  it('separates quiz tag selection from the shared subject-tag editor', async () => {
+    const updatedCatalog = { tags: [
+      tagCatalog.tags[0],
+      { ...tagCatalog.tags[1], name: 'Sets II', color: 'green' },
+    ] };
+    const loadTags = vi.fn()
+      .mockResolvedValueOnce(tagCatalog)
+      .mockResolvedValueOnce(updatedCatalog)
+      .mockResolvedValueOnce({ tags: [tagCatalog.tags[0]] });
+    const updateTag = vi.fn().mockResolvedValue(updatedCatalog.tags[1]);
+    const deleteTag = vi.fn().mockResolvedValue(null);
+    const confirmTagDelete = vi.fn().mockReturnValue(true);
+    const page = renderLibrary({
+      loadQuizzes: async () => [{ ...quiz, tags: [] }],
+      loadTags,
+      updateTag,
+      deleteTag,
+      confirmTagDelete,
+    });
+    document.body.append(page);
+    await flushPromises();
+
+    const chooseTagsButton = page.querySelector('[data-action="manage-tags"]');
+    expect(chooseTagsButton.textContent).toBe('เลือกแท็ก');
+    chooseTagsButton.click();
+    const picker = page.querySelector('[data-role="tag-picker"]');
+    expect(picker.querySelector('[data-action="open-tag-create"]')?.textContent).toBe('+ สร้างแท็กวิชา');
+    const editTagsButton = picker.querySelector('[data-action="open-tag-management"]');
+    expect(editTagsButton?.textContent).toBe('แก้ไขแท็ก');
+    editTagsButton.click();
+
+    const manager = document.querySelector('[data-role="tag-management-dialog"]');
+    expect(manager?.getAttribute('role')).toBe('dialog');
+    expect(manager.querySelector('[data-role="tag-management-list"] [data-tag-id="1"]')).toBeNull();
+    expect(manager.querySelector('[data-role="tag-management-list"] [data-tag-id="8"]')).not.toBeNull();
+
+    manager.querySelector('[data-action="edit-tag"]').click();
+    const editDialog = document.querySelector('.tag-create-dialog');
+    editDialog.querySelector('[aria-label="New topic tag name"]').value = 'Sets II';
+    editDialog.querySelector('[data-action="save-tag"]').click();
+    await flushPromises();
+    expect(updateTag).toHaveBeenCalledWith(8, { name: 'Sets II', color: 'pink' });
+    expect(manager.querySelector('[data-role="tag-management-list"]').textContent).toContain('Sets II');
+
+    manager.querySelector('[data-action="delete-tag"]').click();
+    await flushPromises();
+    expect(confirmTagDelete).toHaveBeenCalledOnce();
+    expect(deleteTag).toHaveBeenCalledWith(8);
+    expect(manager.querySelector('[data-role="tag-management-list"]').textContent).toContain('ยังไม่มีแท็กที่สร้างเอง');
   });
 
   it('keeps a quiz tag save queue across search refreshes', async () => {

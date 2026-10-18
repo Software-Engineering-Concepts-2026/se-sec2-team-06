@@ -1,14 +1,16 @@
 import {
   createTag as createTagRequest,
   deleteDocument as deleteDocumentRequest,
+  deleteTag as deleteTagRequest,
   getDocumentContent as getDocumentContentRequest,
   listDocuments as listDocumentsRequest,
   listTags as listTagsRequest,
   renameDocument as renameDocumentRequest,
   replaceDocumentTags as replaceDocumentTagsRequest,
   uploadDocument as uploadDocumentRequest,
+  updateTag as updateTagRequest,
 } from '../api/client.js';
-import { renderTagChips, renderTagPicker } from '../tags/tag-components.js';
+import { openTagManagementDialog, renderTagChips, renderTagPicker } from '../tags/tag-components.js';
 import { createTagAssignmentQueue } from '../tags/tag-assignment-queue.js';
 import { nextDocumentTagSelection } from '../tags/document-tag-selection.js';
 import { mountPdfPreview } from '../documents/pdf-viewer.js';
@@ -122,7 +124,11 @@ function makeDocumentCard(documentItem, {
   getTagCatalog,
   getTagAssignment,
   refreshTagCatalog,
+  onTagCatalogChange,
   createTag,
+  updateTag,
+  deleteTag,
+  confirmTagDelete,
   updateTitle,
   updateTags,
   removeDocument,
@@ -246,7 +252,7 @@ function makeDocumentCard(documentItem, {
       editTitleButton.setAttribute('aria-label', `แก้ชื่อ ${nextTitle}`);
       deleteButton.setAttribute('aria-label', `ลบ ${nextTitle}`);
       tagSection.setAttribute('aria-label', `แท็กของ ${nextTitle}`);
-      manageTags.setAttribute('aria-label', `แก้แท็กของ ${nextTitle}`);
+      manageTags.setAttribute('aria-label', `เลือกแท็กวิชาของ ${nextTitle}`);
       closeDialog(titleDialog);
       setMessage('ชื่อเอกสารอัปเดตแล้ว');
     } catch (error) {
@@ -264,8 +270,8 @@ function makeDocumentCard(documentItem, {
   manageTags.type = 'button';
   manageTags.dataset.action = 'manage-tags';
   manageTags.setAttribute('aria-expanded', 'false');
-  manageTags.setAttribute('aria-label', `แก้แท็กของ ${initialTitle}`);
-  manageTags.title = 'แก้แท็ก';
+  manageTags.setAttribute('aria-label', `เลือกแท็กวิชาของ ${initialTitle}`);
+  manageTags.title = 'เลือกแท็กวิชา';
   const pickerContainer = element('div', 'document-library-card__picker-container');
   pickerContainer.hidden = true;
 
@@ -281,6 +287,8 @@ function makeDocumentCard(documentItem, {
         selectedTagIds: assignment.queue.getTagIds(),
         onToggle: (tagId) => {
           assignment.queue.replace(nextDocumentTagSelection(assignment.queue.getTagIds(), tagId, getTagCatalog()));
+          pickerContainer.hidden = true;
+          manageTags.setAttribute('aria-expanded', 'false');
         },
         onCreate: async (payload) => {
           setMessage('กำลังสร้างแท็ก…');
@@ -309,6 +317,16 @@ function makeDocumentCard(documentItem, {
           assignment.queue.include(createdId);
           setMessage('แท็กใหม่ถูกเพิ่มลงในเอกสารแล้ว');
         },
+        onManage: (returnFocus) => openTagManagementDialog({
+          catalog: getTagCatalog(),
+          loadTags: refreshTagCatalog,
+          updateTag,
+          deleteTag,
+          confirmDelete: confirmTagDelete,
+          onCatalogChange: (catalog, details) => onTagCatalogChange?.(catalog, details),
+          onMessage: setMessage,
+          returnFocus,
+        }),
       });
       picker.dataset.role = 'tag-picker';
       assignment.picker = picker;
@@ -351,12 +369,15 @@ export function renderDocumentsPage({
   loadTags = listTagsRequest,
   uploadDocument = uploadDocumentRequest,
   createTag = createTagRequest,
+  updateTag = updateTagRequest,
+  deleteTag = deleteTagRequest,
   renameDocument = renameDocumentRequest,
   replaceDocumentTags = replaceDocumentTagsRequest,
   loadDocumentContent = getDocumentContentRequest,
   pdfjs,
   deleteDocument = deleteDocumentRequest,
   confirmDelete = (item) => window.confirm(`ต้องการลบ “${item.title}” หรือไม่?`),
+  confirmTagDelete = (message) => window.confirm(message),
   navigate,
 } = {}) {
   const page = element('section', 'page document-library-page');
@@ -523,9 +544,13 @@ export function renderDocumentsPage({
 
   function setTagCatalog(catalog) {
     tagCatalog = catalog && Array.isArray(catalog.tags) ? catalog : { tags: [] };
+    const availableIds = new Set(flattenTags(tagCatalog).map((tag) => Number(tag.id)));
     renderFilters();
     for (const assignment of assignments.values()) {
-      assignment.syncTagSelection(assignment.queue.getTagIds());
+      const currentIds = assignment.queue.getTagIds();
+      const validIds = currentIds.filter((id) => availableIds.has(Number(id)));
+      if (validIds.length !== currentIds.length) assignment.queue.replace(validIds);
+      assignment.syncTagSelection(validIds);
       assignment.picker?.setCatalog?.(tagCatalog);
     }
   }
@@ -573,7 +598,11 @@ export function renderDocumentsPage({
       getTagCatalog: () => tagCatalog,
       getTagAssignment,
       refreshTagCatalog: reloadTagCatalog,
+      onTagCatalogChange: setTagCatalog,
       createTag,
+      updateTag,
+      deleteTag,
+      confirmTagDelete,
       updateTitle: renameDocument,
       removeDocument: deleteDocument,
       confirmDelete,

@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 from app.ai.catalog import ModelSelection
 from app.ai.config import AISettings
 from app.ai.provider import ProviderError, ProviderQuotaExceeded
-from app.models import Quiz, QuizQuestion
+from app.models import Document, Quiz, QuizQuestion
 from app.routers.quizzes import read_upload_limited
-from app.services.document_extractor import MAX_UPLOAD_BYTES, UploadTooLargeError
+from app.services.document_extractor import UploadTooLargeError
 
 
 def _registration_payload():
@@ -308,6 +308,19 @@ def test_generate_validates_options_and_supported_file(client_factory):
     assert unsupported_file.status_code == 415
 
 
+def test_generate_rejects_docx_sources(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    storage = _MemoryStorageProvider()
+    with client_factory(quiz_provider=provider, storage_provider=storage) as client:
+        _register(client)
+        response = _generate(client, filename="lesson.docx", content=_docx_bytes())
+
+    assert response.status_code == 415
+    assert "PDF, Markdown" in response.json()["detail"]
+    assert provider.requests == []
+    assert storage.put_calls == []
+
+
 def test_authenticated_provider_catalog_lists_selectable_models(client_factory):
     with client_factory() as client:
         _register(client)
@@ -391,19 +404,131 @@ def test_generate_saves_quiz_and_questions_for_current_user(client_factory):
     assert [question.position for question in questions] == [1, 2, 3, 4, 5]
 
 
+def test_generate_can_use_an_owned_document_from_the_library(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    storage = _MemoryStorageProvider()
+    source_bytes = b"# Topic\n\nSource from the document library."
+    with client_factory(quiz_provider=provider, storage_provider=storage) as client:
+        owner = _register(client)
+        document_response = client.post(
+            "/api/documents",
+            files={"file": ("library-topic.md", source_bytes, "text/markdown")},
+            headers=_same_origin_headers(),
+        )
+        assert document_response.status_code == 201
+        document_id = document_response.json()["id"]
+
+        response = client.post(
+            "/api/quizzes/generate",
+            data={**_form_data(), "source_document_id": str(document_id)},
+            headers=_same_origin_headers(),
+        )
+        with client.app.state.session_factory() as session:
+            saved_quiz = session.scalar(select(Quiz))
+
+    assert response.status_code == 201, response.text
+    assert provider.requests[0].source_text == "# Topic\n\nSource from the document library."
+    assert saved_quiz.user_id == owner["id"]
+    assert saved_quiz.source_filename == "library-topic.md"
+    assert ("quiz-sources", saved_quiz.source_storage_key) in storage.objects
+
+
+def test_generate_rejects_a_document_owned_by_another_user(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    storage = _MemoryStorageProvider()
+    with client_factory(quiz_provider=provider, storage_provider=storage) as owner_client:
+        _register(owner_client)
+        document_response = owner_client.post(
+            "/api/documents",
+            files={"file": ("private.md", b"Private source.", "text/markdown")},
+            headers=_same_origin_headers(),
+        )
+        assert document_response.status_code == 201
+        document_id = document_response.json()["id"]
+
+    with client_factory(quiz_provider=provider, storage_provider=storage) as other_client:
+        registration = other_client.post(
+            "/api/auth/register",
+            json={**_registration_payload(), "email": "another-learner@example.com"},
+            headers=_same_origin_headers(),
+        )
+        assert registration.status_code == 201
+        response = other_client.post(
+            "/api/quizzes/generate",
+            data={**_form_data(), "source_document_id": str(document_id)},
+            headers=_same_origin_headers(),
+        )
+
+    assert response.status_code == 404
+    assert provider.requests == []
+
+
+def test_generate_requires_exactly_one_source(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        missing_source = client.post(
+            "/api/quizzes/generate",
+            data=_form_data(),
+            headers=_same_origin_headers(),
+        )
+        both_sources = client.post(
+            "/api/quizzes/generate",
+            files={"file": ("lesson.md", b"Uploaded source.", "text/markdown")},
+            data={**_form_data(), "source_document_id": "1"},
+            headers=_same_origin_headers(),
+        )
+
+    assert missing_source.status_code == 422
+    assert both_sources.status_code == 422
+    assert provider.requests == []
+
+
+def test_generate_rejects_a_docx_selected_from_the_document_library(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    storage = _MemoryStorageProvider()
+    with client_factory(quiz_provider=provider, storage_provider=storage) as client:
+        owner = _register(client)
+        document_bytes = _docx_bytes()
+        storage_key = storage.new_key(owner["id"], ".docx")
+        storage.put(
+            "documents",
+            storage_key,
+            document_bytes,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        with client.app.state.session_factory() as session:
+            document = Document(
+                user_id=owner["id"],
+                title="Legacy Word document",
+                original_filename="lesson.docx",
+                file_type="docx",
+                size_bytes=len(document_bytes),
+                storage_key=storage_key,
+            )
+            session.add(document)
+            session.commit()
+            document_id = document.id
+        response = client.post(
+            "/api/quizzes/generate",
+            data={**_form_data(), "source_document_id": str(document_id)},
+            headers=_same_origin_headers(),
+        )
+
+    assert response.status_code == 415
+    assert provider.requests == []
+
+
 @pytest.mark.parametrize(
     ("filename", "source_bytes", "expected_content_type"),
     [
         ("lesson.pdf", (Path(__file__).parent / "fixtures" / "tiny-text.pdf").read_bytes(), "application/pdf"),
         (
-            "lesson.docx",
-            _docx_bytes(),
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "lesson.md", b"# Topic\n\nOriginal text source.", "text/markdown"
         ),
-        ("lesson.md", b"# Topic\n\nOriginal text source.", "text/markdown"),
         ("lesson.txt", b"Original plain text source.", "text/plain"),
     ],
-    ids=["pdf", "docx", "markdown", "text"],
+    ids=["pdf", "markdown", "text"],
 )
 def test_generate_upload_persists_source_key_in_private_storage(
     client_factory,
@@ -486,23 +611,59 @@ def test_generate_response_never_contains_answer_key(client_factory):
     assert len(response.json()["questions"]) == 5
 
 
-def test_generate_rejects_extracted_text_over_limit_without_provider_call(client_factory):
+def test_generate_accepts_extracted_text_at_200000_char_limit(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"x" * 200_000
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, filename="large.txt", content=content)
+
+    assert response.status_code == 201, response.text
+    assert len(provider.requests) == 1
+    assert len(provider.requests[0].source_text) == 200_000
+
+
+def test_generate_rejects_extracted_text_over_200000_char_limit_without_provider_call(client_factory):
     provider = FakeProvider([_valid_quiz()])
     with client_factory(quiz_provider=provider) as client:
         _register(client)
-        response = _generate(client, filename="long.txt", content=b"x" * 20_001)
+        response = _generate(client, filename="long.txt", content=b"x" * 200_001)
 
     assert response.status_code == 422
+    assert response.json()["detail"] == "Extracted text exceeds the supported limit"
     assert provider.requests == []
 
 
-def test_generate_stops_reading_after_20mb_plus_one_byte():
-    upload = FakeUpload(b"x" * (MAX_UPLOAD_BYTES + 10_000))
+def test_generate_accepts_source_files_larger_than_the_previous_20mb_limit(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"# Topic\n" + b" " * (20_000_001 - len(b"# Topic\n"))
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, content=content)
+
+    assert response.status_code == 201, response.text
+    assert len(provider.requests) == 1
+
+
+def test_generate_rejects_source_file_over_40mb(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"# Topic\n" + b" " * (40_000_001 - len(b"# Topic\n"))
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, content=content)
+
+    assert response.status_code == 413
+    assert "40 MB" in response.json()["detail"]
+    assert provider.requests == []
+
+
+def test_generate_stops_reading_after_40mb_plus_one_byte():
+    upload = FakeUpload(b"x" * 40_010_000)
 
     with pytest.raises(UploadTooLargeError):
         asyncio.run(read_upload_limited(upload))
 
-    assert upload.bytes_read == MAX_UPLOAD_BYTES + 1
+    assert upload.bytes_read == 40_000_001
     assert all(size <= 64 * 1024 for size in upload.read_sizes)
 
 

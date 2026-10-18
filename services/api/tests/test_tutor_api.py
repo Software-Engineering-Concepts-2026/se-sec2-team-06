@@ -865,3 +865,141 @@ def test_foreign_conversation_returns_404(client_factory):
 
     assert hidden.status_code == 404
     assert "owner-only" not in hidden.text.lower()
+
+
+def test_saved_conversation_tags_can_be_replaced(client_factory):
+    with client_factory(tutor_provider=ScriptedTutorProvider()) as client:
+        _register(client, "conversation-tags-update@example.com")
+        tags = client.get("/api/tags").json()["tags"]
+        math_id = next(tag["id"] for tag in tags if tag["name"] == "คณิตศาสตร์")
+        physics_id = next(tag["id"] for tag in tags if tag["name"] == "ฟิสิกส์")
+        created = _create_conversation(
+            client,
+            message="Tag this conversation later",
+            tag_ids=[math_id],
+            request_id="conversation-tags-update",
+        )
+        conversation_id = created.json()["id"]
+
+        updated = client.put(
+            f"/api/tutor/conversations/{conversation_id}/tags",
+            json={"tag_ids": [physics_id]},
+            headers={"Origin": "http://testserver"},
+        )
+
+    assert created.status_code == 201, created.text
+    assert updated.status_code == 200, updated.text
+    assert [(tag["id"], tag["name"]) for tag in updated.json()["tags"]] == [(physics_id, "ฟิสิกส์")]
+
+
+def test_unavailable_tag_does_not_partially_change_saved_conversation(client_factory):
+    with client_factory(tutor_provider=ScriptedTutorProvider()) as client:
+        _register(client, "conversation-tags-invalid@example.com")
+        tags = client.get("/api/tags").json()["tags"]
+        math_id = next(tag["id"] for tag in tags if tag["name"] == "คณิตศาสตร์")
+        created = _create_conversation(
+            client,
+            message="Keep the existing tag",
+            tag_ids=[math_id],
+            request_id="conversation-tags-invalid",
+        )
+        conversation_id = created.json()["id"]
+
+        updated = client.put(
+            f"/api/tutor/conversations/{conversation_id}/tags",
+            json={"tag_ids": [999999]},
+            headers={"Origin": "http://testserver"},
+        )
+        unchanged = client.get(f"/api/tutor/conversations/{conversation_id}")
+
+    assert updated.status_code == 404
+    assert updated.json()["detail"] == "ไม่พบแท็กที่เลือก"
+    assert [(tag["id"], tag["name"]) for tag in unchanged.json()["tags"]] == [(math_id, "คณิตศาสตร์")]
+
+
+def test_processing_conversation_rejects_tag_edit_and_deletion(client_factory):
+    with client_factory(tutor_provider=ScriptedTutorProvider()) as client:
+        _register(client, "conversation-processing-mutations@example.com")
+        created = _create_conversation(
+            client,
+            message="Wait until this conversation is answered",
+            tag_ids=[],
+            request_id="conversation-processing-mutations",
+        )
+        conversation_id = created.json()["id"]
+        with client.app.state.session_factory() as session:
+            saved = session.get(TutorConversation, conversation_id)
+            assert saved is not None
+            saved.status = "processing"
+            session.commit()
+
+        updated = client.put(
+            f"/api/tutor/conversations/{conversation_id}/tags",
+            json={"tag_ids": []},
+            headers={"Origin": "http://testserver"},
+        )
+        deleted = client.delete(
+            f"/api/tutor/conversations/{conversation_id}",
+            headers={"Origin": "http://testserver"},
+        )
+        still_exists = client.get(f"/api/tutor/conversations/{conversation_id}")
+
+    assert updated.status_code == 409
+    assert deleted.status_code == 409
+    assert still_exists.status_code == 200
+
+
+def test_deleting_conversation_removes_its_messages_and_private_attachments(
+    client_factory, monkeypatch
+):
+    _enable_test_image_models(monkeypatch, ("openai", "gpt-5.4-mini"))
+    storage = _MemoryStorageProvider()
+    with client_factory(
+        tutor_provider=IdentifiedTutorProvider("openai", "gpt-5.4-mini"),
+        storage_provider=storage,
+    ) as client:
+        _register(client, "conversation-delete-attachments@example.com")
+        created = _create_with_image(client, request_id="conversation-delete-attachments")
+        conversation_id = created.json()["id"]
+        storage_keys = [key for bucket, key in storage.objects if bucket == "tutor-attachments"]
+        assert len(storage_keys) == 1
+
+        deleted = client.delete(
+            f"/api/tutor/conversations/{conversation_id}",
+            headers={"Origin": "http://testserver"},
+        )
+        with client.app.state.session_factory() as session:
+            conversations_left = session.query(TutorConversation).filter_by(id=conversation_id).count()
+            messages_left = session.query(TutorMessage).filter_by(conversation_id=conversation_id).count()
+            attachments_left = session.query(TutorAttachment).filter_by(conversation_id=conversation_id).count()
+
+    assert created.status_code == 201, created.text
+    assert deleted.status_code == 204
+    assert storage.delete_calls == [("tutor-attachments", storage_keys[0])]
+    assert ("tutor-attachments", storage_keys[0]) not in storage.objects
+    assert (conversations_left, messages_left, attachments_left) == (0, 0, 0)
+
+
+def test_foreign_user_cannot_delete_conversation(client_factory):
+    provider = ScriptedTutorProvider()
+    with client_factory(tutor_provider=provider) as owner, client_factory(
+        tutor_provider=provider
+    ) as another_user:
+        _register(owner, "conversation-delete-owner@example.com")
+        created = _create_conversation(
+            owner,
+            message="Keep this private chat",
+            tag_ids=[],
+            request_id="conversation-delete-owner",
+        )
+        conversation_id = created.json()["id"]
+        _register(another_user, "conversation-delete-other@example.com")
+
+        deleted = another_user.delete(
+            f"/api/tutor/conversations/{conversation_id}",
+            headers={"Origin": "http://testserver"},
+        )
+        still_owned = owner.get(f"/api/tutor/conversations/{conversation_id}")
+
+    assert deleted.status_code == 404
+    assert still_owned.status_code == 200

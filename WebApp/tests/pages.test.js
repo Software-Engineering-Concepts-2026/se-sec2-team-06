@@ -198,10 +198,9 @@ describe('Home, shared navigation, and account pages', () => {
     accountButton.click();
     expect(accountPanel.hidden).toBe(false);
     expect(accountPanel.querySelector('[href="/profile"]')).not.toBeNull();
-    expect(accountPanel.querySelector('[href="/progress"]')).not.toBeNull();
+    expect(accountPanel.querySelector('[href="/progress"]')).toBeNull();
     expect(accountPanel.querySelector('[data-action="theme-toggle"]')).not.toBeNull();
-    accountPanel.querySelector('[href="/progress"]').click();
-    expect(navigate).toHaveBeenCalledWith('/progress');
+    expect(navigate).not.toHaveBeenCalled();
     accountPanel.querySelector('[data-action="logout"]').click();
     expect(onLogout).toHaveBeenCalledOnce();
 
@@ -240,15 +239,17 @@ describe('Home, shared navigation, and account pages', () => {
     }
   });
 
-  it('uses a compact top navbar, larger brand mark, smaller profile control, and stateful red notifications', () => {
+  it('uses a compact top navbar, a smaller brand mark, and a solid, non-overlapping account menu', () => {
     const styles = readFileSync('src/styles.css', 'utf8');
 
     expect(styles).not.toMatch(/\.app-navigation\s*\{[^}]*\bwidth:/s);
     expect(styles).toMatch(/\.navbar\s*\{[^}]*width:\s*min\(calc\(100%\s*-\s*clamp\(1\.25rem,\s*5vw,\s*4rem\)\),\s*1440px\);[^}]*min-height:\s*56px/s);
     expect(styles).toMatch(/\.site-header\s*\{[^}]*border-bottom:\s*1px solid var\(--line\)/s);
     expect(styles).not.toMatch(/\.site-header\s*\{[^}]*border-radius:/s);
-    expect(styles).toMatch(/\.brand-mark\s*\{[^}]*width:\s*3\.4rem;[^}]*height:\s*3\.4rem;[^}]*object-fit:\s*cover/s);
-    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.brand-mark\s*\{[^}]*width:\s*2\.8rem;[^}]*height:\s*2\.8rem/s);
+    expect(styles).toMatch(/\.brand-mark\s*\{[^}]*width:\s*2\.8rem;[^}]*height:\s*2\.8rem;[^}]*object-fit:\s*cover/s);
+    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.brand-mark\s*\{[^}]*width:\s*2\.3rem;[^}]*height:\s*2\.3rem/s);
+    expect(styles).toMatch(/\.nav-popover\s*\{[^}]*background:\s*var\(--page\)/s);
+    expect(styles).toMatch(/\.nav-theme-menu__panel\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s);
     expect(styles).toMatch(/\.nav-account__toggle\s*\{[^}]*min-height:\s*2\.65rem/s);
     expect(styles).toMatch(/\.nav-account__portrait\s*\{[^}]*width:\s*2\.45rem;[^}]*height:\s*2\.45rem/s);
     expect(styles).toMatch(/\.nav-notifications__toggle\.button-quiet\s*\{[^}]*background:\s*var\(--error-soft\)/s);

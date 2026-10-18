@@ -238,35 +238,35 @@ def render_svg(
         '<title id="repo-contributors-title">SynapseSync team repository contributors</title>',
         f'<desc id="repo-contributors-desc">Selected team contributors to {_escape(repo)} on the default branch, generated {_escape(generated_at)}</desc>',
         '<style>'
-        '.title{font:700 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}'
-        '.subtitle{font:400 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#b9c1e7}'
-        '.section{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}'
-        '.muted{font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}'
-        '.name{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}'
-        '.stat{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#7dd8da}'
-        '.diff-added{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#4ade80}'
-        '.diff-removed{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f87171}'
-        '.diff-separator{font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#b9c1e7}'
-        '.card-commit-count{font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f7f7fb}'
-        '.card-date{font:600 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}'
-        '.label{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#9da7d5}'
+        '.title{font:700 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#ffffff}'
+        '.subtitle{font:400 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#c9c9c9}'
+        '.section{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#ffffff}'
+        '.muted{font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#a0a0a0}'
+        '.name{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#ffffff}'
+        '.stat{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#ededed}'
+        '.diff-added{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#e4e4e4}'
+        '.diff-removed{font:700 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#a0a0a0}'
+        '.diff-separator{font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#c9c9c9}'
+        '.card-commit-count{font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#ffffff}'
+        '.card-date{font:600 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#a0a0a0}'
+        '.label{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#a0a0a0}'
         '</style>',
-        '<rect width="100%" height="100%" rx="18" fill="#11183f"/>',
-        '<circle cx="1020" cy="45" r="8" fill="#7dd8da" opacity=".9"/>',
-        '<circle cx="1044" cy="45" r="8" fill="#a855f7" opacity=".9"/>',
+        '<rect width="100%" height="100%" rx="18" fill="#080808"/>',
+        '<circle cx="1020" cy="45" r="8" fill="#d9d9d9" opacity=".9"/>',
+        '<circle cx="1044" cy="45" r="8" fill="#a0a0a0" opacity=".9"/>',
         f'<text x="52" y="52" class="title">SynapseSync · Team Contributors</text>',
         f'<text x="52" y="79" class="subtitle">{_escape(repo)} · default branch · generated {_escape(generated_at)}</text>',
         f'<text x="52" y="108" class="section">Commits over time</text>',
     ]
 
     # Chart background and guide lines.
-    svg.append(f'<rect x="{chart_x}" y="{chart_y}" width="{chart_width}" height="{chart_height}" rx="14" fill="#171f4d" stroke="#2a3671"/>')
+    svg.append(f'<rect x="{chart_x}" y="{chart_y}" width="{chart_width}" height="{chart_height}" rx="14" fill="#171717" stroke="#424242"/>')
     baseline = chart_y + chart_height - 38
     usable_height = chart_height - 70
     for index in range(5):
         y = baseline - usable_height * index / 4
         value = round(max_commits * index / 4)
-        svg.append(f'<line x1="{chart_x + 18}" y1="{y:.1f}" x2="{chart_x + chart_width - 18}" y2="{y:.1f}" stroke="#344176" stroke-dasharray="3 6"/>')
+        svg.append(f'<line x1="{chart_x + 18}" y1="{y:.1f}" x2="{chart_x + chart_width - 18}" y2="{y:.1f}" stroke="#414141" stroke-dasharray="3 6"/>')
         svg.append(f'<text x="{chart_x + 28}" y="{y - 7:.1f}" class="muted">{_number(value)}</text>')
 
     if chart_weekly:
@@ -276,7 +276,7 @@ def render_svg(
             bar_height = usable_height * commits / max_commits if max_commits else 0
             x = chart_x + 58 + index * slot + (slot - bar_width) / 2
             y = baseline - bar_height
-            svg.append(_bar_svg(x, y, bar_width, bar_height, "#22d3ee", opacity=0.92))
+            svg.append(_bar_svg(x, y, bar_width, bar_height, "#d9d9d9", opacity=0.92))
             if index == 0 or index == len(chart_weekly) - 1 or index % 3 == 0:
                 svg.append(f'<text x="{x + bar_width / 2:.1f}" y="{baseline + 24}" text-anchor="middle" class="muted">{_escape(_date_label(timestamp))}</text>')
     else:
@@ -295,8 +295,8 @@ def render_svg(
             deletions = contributor["deletions"]
             svg.extend(
                 [
-                    f'<rect x="{x:.1f}" y="{y:.1f}" width="{card_width:.1f}" height="{card_height}" rx="14" fill="#171f4d" stroke="#2a3671"/>',
-                    f'<circle cx="{x + 28:.1f}" cy="{y + 31:.1f}" r="15" fill="#5959d6"/>',
+                    f'<rect x="{x:.1f}" y="{y:.1f}" width="{card_width:.1f}" height="{card_height}" rx="14" fill="#171717" stroke="#424242"/>',
+                    f'<circle cx="{x + 28:.1f}" cy="{y + 31:.1f}" r="15" fill="#6b6b6b"/>',
                     f'<text x="{x + 28:.1f}" y="{y + 36:.1f}" text-anchor="middle" class="name">{_escape(login[:1].upper())}</text>',
                     f'<text x="{x + 54:.1f}" y="{y + 30:.1f}" class="name">{_escape(login)}</text>',
                     f'<text x="{x + 54:.1f}" y="{y + 51:.1f}" class="stat">{_number(total)} commits</text>',
@@ -311,18 +311,18 @@ def render_svg(
             mini_width = card_width - 48
             mini_slot = mini_width / max(1, len(weeks_for_card))
             mini_bar_width = max(10.0, min(42.0, mini_slot * 0.55))
-            svg.append(f'<line x1="{mini_x:.1f}" y1="{mini_y:.1f}" x2="{mini_x + mini_width:.1f}" y2="{mini_y:.1f}" stroke="#344176"/>')
+            svg.append(f'<line x1="{mini_x:.1f}" y1="{mini_y:.1f}" x2="{mini_x + mini_width:.1f}" y2="{mini_y:.1f}" stroke="#414141"/>')
             for week_index, week in enumerate(weeks_for_card):
                 bar_height = 100 * week["commits"] / max_week if max_week else 0
                 bar_x = mini_x + week_index * mini_slot + (mini_slot - mini_bar_width) / 2
                 bar_y = mini_y - bar_height
-                svg.append(_bar_svg(bar_x, bar_y, mini_bar_width, bar_height, "#a855f7", opacity=0.92))
+                svg.append(_bar_svg(bar_x, bar_y, mini_bar_width, bar_height, "#bdbdbd", opacity=0.92))
                 count_y = max(y + 101, bar_y - 8)
                 svg.append(f'<text x="{bar_x + mini_bar_width / 2:.1f}" y="{count_y:.1f}" text-anchor="middle" class="card-commit-count">{_number(week["commits"])}</text>')
                 date_x = bar_x + mini_bar_width / 2
                 svg.append(f'<text x="{date_x:.1f}" y="{mini_y + 24:.1f}" text-anchor="middle" class="card-date">{_escape(_date_label(week["timestamp"]))}</text>')
     else:
-        svg.append(f'<rect x="{chart_x}" y="{cards_y}" width="{width - 2 * chart_x}" height="{card_height}" rx="14" fill="#171f4d" stroke="#2a3671"/>')
+        svg.append(f'<rect x="{chart_x}" y="{cards_y}" width="{width - 2 * chart_x}" height="{card_height}" rx="14" fill="#171717" stroke="#424242"/>')
         svg.append(f'<text x="{width / 2}" y="{cards_y + 92}" text-anchor="middle" class="subtitle">ยังไม่พบข้อมูล contributor</text>')
 
     footer_y = height - 22

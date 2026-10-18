@@ -1,10 +1,14 @@
 import {
   createDeadline as createDeadlineRequest,
+  createTag as createTagRequest,
+  deleteTag as deleteTagRequest,
   deleteDeadline as deleteDeadlineRequest,
   listTags as listTagsRequest,
   listDeadlines as listDeadlinesRequest,
+  updateTag as updateTagRequest,
   updateDeadline as updateDeadlineRequest,
 } from '../api/client.js';
+import { openTagCreationDialog, openTagEditDialog } from '../tags/tag-components.js';
 
 const PRIORITIES = [
   { id: 'high', label: 'ด่วน' },
@@ -22,6 +26,7 @@ const TASK_STATUSES = [
   { id: 'completed', label: 'เสร็จแล้ว' },
 ];
 const TASKS_PER_PAGE = 10;
+const MAX_VISIBLE_CUSTOM_TAGS = 10;
 
 function element(tagName, className, text) {
   const node = document.createElement(tagName);
@@ -144,6 +149,9 @@ function makeTaskCard(task, { onToggle, onStatusChange, onDelete, pending }) {
 export function renderDeadlinesPage({
   loadDeadlines = listDeadlinesRequest,
   loadTags = listTagsRequest,
+  createTag = createTagRequest,
+  updateTag = updateTagRequest,
+  deleteTag = deleteTagRequest,
   createDeadline = createDeadlineRequest,
   updateDeadline = updateDeadlineRequest,
   deleteDeadline = deleteDeadlineRequest,
@@ -179,24 +187,76 @@ export function renderDeadlinesPage({
   titleInput.dataset.role = 'title-input';
   titleLabel.append(titleInput);
 
-  const subjectLabel = element('label', 'deadline-field__label', 'วิชา');
-  subjectLabel.htmlFor = 'deadline-subject';
-  const subjectSelect = element('select', 'deadline-field__control themed-select');
-  subjectSelect.id = 'deadline-subject';
-  subjectSelect.required = true;
-  subjectSelect.dataset.role = 'subject-select';
-  const subjectPlaceholder = element('option', '', 'เลือกวิชา');
-  subjectPlaceholder.value = '';
-  subjectPlaceholder.disabled = true;
-  subjectPlaceholder.selected = true;
-  subjectSelect.append(subjectPlaceholder);
-  subjectSelect.disabled = true;
+  const subjectField = element('fieldset', 'deadline-subject-field');
+  const subjectLegend = element('legend', 'deadline-subject-field__legend', 'วิชา');
+  subjectLegend.id = 'deadline-subject-label';
+  const subjectOptions = element('div', 'deadline-subject-tags');
+  subjectOptions.dataset.role = 'subject-options';
+  subjectOptions.id = 'deadline-subject-options';
+  subjectOptions.setAttribute('role', 'radiogroup');
+  subjectOptions.setAttribute('aria-labelledby', subjectLegend.id);
+  subjectOptions.setAttribute('aria-required', 'true');
+  const createSubjectTagButton = element('button', 'button button-secondary deadline-subject-picker__create', '+ สร้างแท็กวิชา');
+  createSubjectTagButton.type = 'button';
+  createSubjectTagButton.dataset.action = 'create-subject-tag';
+  createSubjectTagButton.disabled = true;
+  const subjectPickerActions = element('div', 'deadline-subject-picker__actions');
+  subjectPickerActions.dataset.role = 'subject-picker-actions';
+  const manageSubjectTagsButton = element('button', 'button button-secondary deadline-subject-picker__manage', 'แก้ไขแท็ก');
+  manageSubjectTagsButton.type = 'button';
+  manageSubjectTagsButton.dataset.action = 'manage-subject-tags';
+  manageSubjectTagsButton.setAttribute('aria-expanded', 'false');
+  manageSubjectTagsButton.setAttribute('aria-haspopup', 'dialog');
+  manageSubjectTagsButton.disabled = true;
+  subjectPickerActions.append(createSubjectTagButton, manageSubjectTagsButton);
+  const subjectTagManagementLayer = element('div', 'modal-layer tag-create-layer deadline-subject-management-layer');
+  subjectTagManagementLayer.dataset.role = 'subject-tag-management-layer';
+  subjectTagManagementLayer.hidden = true;
+  const subjectTagManagement = element('section', 'deadline-subject-management');
+  subjectTagManagement.id = 'deadline-subject-tag-management';
+  subjectTagManagement.dataset.role = 'subject-tag-management';
+  subjectTagManagement.setAttribute('role', 'dialog');
+  subjectTagManagement.setAttribute('aria-modal', 'true');
+  subjectTagManagement.setAttribute('aria-labelledby', 'deadline-subject-management-title');
+  subjectTagManagement.tabIndex = -1;
+  manageSubjectTagsButton.setAttribute('aria-controls', subjectTagManagement.id);
+  const subjectTagManagementHeader = element('header', 'tag-create-dialog__header deadline-subject-management__header');
+  const subjectTagManagementTitle = element('h2', '', 'แก้ไขแท็ก');
+  subjectTagManagementTitle.id = 'deadline-subject-management-title';
+  const closeSubjectTagManagementButton = element('button', 'icon-button icon-button--danger', '×');
+  closeSubjectTagManagementButton.type = 'button';
+  closeSubjectTagManagementButton.dataset.action = 'close-subject-tag-management';
+  closeSubjectTagManagementButton.setAttribute('aria-label', 'ปิดหน้าต่างแก้ไขแท็ก');
+  subjectTagManagementHeader.append(subjectTagManagementTitle, closeSubjectTagManagementButton);
+  const subjectTagManagementHint = element('p', 'deadline-subject-management__hint', 'แก้ชื่อหรือสี และลบแท็กที่สร้างเอง');
+  const subjectTagManagementList = element('div', 'deadline-subject-management__list');
+  subjectTagManagementList.dataset.role = 'subject-tag-management-list';
+  subjectTagManagementList.dataset.visibleLimit = String(MAX_VISIBLE_CUSTOM_TAGS);
+  subjectTagManagementList.setAttribute('role', 'list');
+  subjectTagManagementList.setAttribute('aria-label', 'แท็กที่สร้างเอง');
+  const subjectTagManagementFooter = element('footer', 'deadline-subject-management__footer');
+  subjectTagManagementFooter.append(
+    element('p', 'deadline-subject-management__note', 'ลบแท็กแล้วจะถอดป้ายออกจากรายการที่ใช้ แต่ข้อมูลเดิมยังอยู่'),
+    element('button', 'button button-secondary', 'ปิด'),
+  );
+  const subjectTagManagementFooterClose = subjectTagManagementFooter.querySelector('button');
+  subjectTagManagementFooterClose.type = 'button';
+  subjectTagManagementFooterClose.dataset.action = 'close-subject-tag-management';
+  subjectTagManagement.append(
+    subjectTagManagementHeader,
+    subjectTagManagementHint,
+    subjectTagManagementList,
+    subjectTagManagementFooter,
+  );
+  subjectTagManagementLayer.append(subjectTagManagement);
+  subjectTagManagementLayer.addEventListener('click', (event) => {
+    if (event.target === subjectTagManagementLayer) closeSubjectTagManagement();
+  });
   const subjectStatus = element('span', 'deadline-field__hint', 'กำลังโหลดรายวิชา…');
   subjectStatus.dataset.role = 'subject-status';
   subjectStatus.setAttribute('role', 'status');
   subjectStatus.setAttribute('aria-live', 'polite');
-  subjectLabel.append(subjectSelect);
-  subjectLabel.append(subjectStatus);
+  subjectField.append(subjectLegend, subjectOptions, subjectPickerActions, subjectStatus);
 
   const dateLabel = element('label', 'deadline-field__label', 'วันส่ง');
   dateLabel.htmlFor = 'deadline-date';
@@ -243,7 +303,7 @@ export function renderDeadlinesPage({
   const submitButton = element('button', 'button button-primary deadline-form__submit', 'บันทึกงาน');
   submitButton.type = 'submit';
   submitButton.dataset.action = 'save-deadline';
-  form.append(titleLabel, subjectLabel, dateTimeFields, priorityLabelNode, submitButton);
+  form.append(titleLabel, subjectField, dateTimeFields, priorityLabelNode, submitButton);
   createPanel.append(form);
 
   const taskColumn = element('div', 'deadline-task-column');
@@ -275,7 +335,7 @@ export function renderDeadlinesPage({
   listPanel.append(listHeading, filterGroup, taskList);
   taskColumn.append(weekPanel, listPanel);
   layout.append(createPanel, taskColumn);
-  page.append(intro, message, layout);
+  page.append(intro, message, layout, subjectTagManagementLayer);
 
   let tasks = [];
   let currentFilter = 'all';
@@ -285,40 +345,230 @@ export function renderDeadlinesPage({
   let creating = false;
   const pendingIds = new Set();
   const availableSubjects = new Set();
+  let subjectManagementOpen = false;
+  let subjectTagsLoading = true;
+  let subjectCatalog = { tags: [] };
 
-  async function refreshSubjectTags() {
-    subjectSelect.disabled = true;
+  function syncSubjectPicker() {
+    subjectTagManagementLayer.hidden = !subjectManagementOpen;
+    manageSubjectTagsButton.setAttribute('aria-expanded', String(subjectManagementOpen));
+    createSubjectTagButton.disabled = subjectTagsLoading;
+    manageSubjectTagsButton.disabled = subjectTagsLoading;
+  }
+
+  manageSubjectTagsButton.addEventListener('click', () => {
+    if (subjectManagementOpen) return;
+    subjectManagementOpen = true;
+    syncSubjectPicker();
+    document.addEventListener('keydown', onSubjectTagManagementKeydown);
+    closeSubjectTagManagementButton.focus();
+  });
+
+  function closeSubjectTagManagement({ restoreFocus = true } = {}) {
+    if (!subjectManagementOpen) return;
+    subjectManagementOpen = false;
+    document.removeEventListener('keydown', onSubjectTagManagementKeydown);
+    syncSubjectPicker();
+    if (restoreFocus && manageSubjectTagsButton.isConnected) manageSubjectTagsButton.focus();
+  }
+
+  function onSubjectTagManagementKeydown(event) {
+    if (!subjectManagementOpen || !subjectTagManagement.contains(document.activeElement)) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSubjectTagManagement();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = [...subjectTagManagement.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+      .filter((node) => !node.hidden);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  closeSubjectTagManagementButton.addEventListener('click', () => closeSubjectTagManagement());
+  subjectTagManagementFooterClose.addEventListener('click', () => closeSubjectTagManagement());
+
+  function renderSubjectTagManagement() {
+    subjectTagManagementList.replaceChildren();
+    const customTags = subjectCatalog.tags.filter((tag) => tag.is_builtin === false);
+    if (!customTags.length) {
+      const empty = element('p', 'deadline-subject-management__empty', 'ยังไม่มีแท็กที่สร้างเอง');
+      empty.setAttribute('role', 'status');
+      subjectTagManagementList.append(empty);
+      return;
+    }
+
+    for (const tag of customTags) {
+      const row = element('div', 'deadline-subject-management__row');
+      row.setAttribute('role', 'listitem');
+      row.dataset.tagId = String(tag.id);
+      const chip = element('span', 'tag-chip deadline-subject-management__chip');
+      chip.dataset.color = tag.color || 'violet';
+      const colorSwatch = element('span', 'deadline-subject-management__swatch');
+      colorSwatch.dataset.role = 'subject-tag-color-swatch';
+      colorSwatch.dataset.color = tag.color || 'violet';
+      colorSwatch.setAttribute('aria-hidden', 'true');
+      const chipLabel = element('span', 'deadline-subject-management__chip-label', tag.name);
+      chip.append(colorSwatch, chipLabel);
+      const actions = element('div', 'deadline-subject-management__actions');
+      const editButton = element('button', 'button button-secondary deadline-subject-management__button deadline-subject-management__button--edit', 'แก้ไข');
+      editButton.type = 'button';
+      editButton.dataset.action = 'edit-subject-tag';
+      editButton.dataset.tagId = String(tag.id);
+      editButton.setAttribute('aria-label', `แก้ไขแท็ก ${tag.name}`);
+      editButton.addEventListener('click', () => openTagEditDialog({
+        tag,
+        returnFocus: closeSubjectTagManagementButton,
+        onSave: async (payload) => {
+          const saved = await updateTag(Number(tag.id), payload);
+          const updatedTag = {
+            ...tag,
+            ...saved,
+            id: Number(tag.id),
+            name: saved?.name || payload.name,
+            color: saved?.color || payload.color,
+          };
+          const selectedId = Number(form.querySelector('input[name="deadline-subject"]:checked')?.value) || null;
+          const refreshed = await refreshSubjectTags({
+            selectedTagId: selectedId,
+            fallbackTags: subjectCatalog.tags.map((current) => Number(current.id) === Number(tag.id) ? updatedTag : current),
+          });
+          if (refreshed) subjectStatus.textContent = `แก้ไขแท็ก “${updatedTag.name}” แล้ว`;
+        },
+      }));
+
+      const deleteButton = element('button', 'button button-danger deadline-subject-management__button deadline-subject-management__button--delete', 'ลบ');
+      deleteButton.type = 'button';
+      deleteButton.dataset.action = 'delete-subject-tag';
+      deleteButton.dataset.tagId = String(tag.id);
+      deleteButton.setAttribute('aria-label', `ลบแท็ก ${tag.name}`);
+      deleteButton.addEventListener('click', async () => {
+        const confirmed = confirmDelete(
+          `ยืนยันลบแท็ก “${tag.name}” หรือไม่? แท็กนี้จะถูกถอดออกจากรายการที่ใช้ทั้งหมด แต่จะไม่ลบเอกสาร ข้อสอบ บทสนทนา หรืองานกำหนดส่ง`,
+        );
+        if (!confirmed) return;
+
+        try {
+          await deleteTag(Number(tag.id));
+          const selectedId = Number(form.querySelector('input[name="deadline-subject"]:checked')?.value) || null;
+          const refreshed = await refreshSubjectTags({
+            selectedTagId: selectedId === Number(tag.id) ? null : selectedId,
+            fallbackTags: subjectCatalog.tags.filter((current) => Number(current.id) !== Number(tag.id)),
+          });
+          if (refreshed) subjectStatus.textContent = `ลบแท็ก “${tag.name}” แล้ว`;
+          manageSubjectTagsButton.focus();
+        } catch (error) {
+          subjectStatus.textContent = error?.message || 'ลบแท็กไม่สำเร็จ กรุณาลองอีกครั้ง';
+        }
+      });
+      actions.append(editButton, deleteButton);
+      row.append(chip, actions);
+      subjectTagManagementList.append(row);
+    }
+  }
+
+  function renderSubjectTags(catalog, selectedTagId = null) {
+    const subjects = Array.isArray(catalog?.tags)
+      ? catalog.tags.filter((subject) => subject
+        && Number.isSafeInteger(Number(subject.id))
+        && Number(subject.id) > 0
+        && typeof subject.name === 'string'
+        && subject.name.trim())
+      : [];
+    const seenIds = new Set();
+    subjectCatalog = { tags: [] };
+    availableSubjects.clear();
+    subjectOptions.replaceChildren();
+    for (const subject of subjects) {
+      const id = Number(subject.id);
+      const name = subject.name.trim();
+      if (seenIds.has(id)) continue;
+      seenIds.add(id);
+      availableSubjects.add(id);
+      subjectCatalog.tags.push(subject);
+      const option = element('label', 'deadline-subject-option');
+      const radio = element('input');
+      radio.type = 'radio';
+      radio.name = 'deadline-subject';
+      radio.id = `deadline-subject-${id}`;
+      radio.value = String(id);
+      radio.dataset.role = 'subject-option';
+      radio.checked = Number(selectedTagId) === id;
+      const chip = element('span', 'tag-chip deadline-subject-option__chip', name);
+      chip.dataset.color = subject.color || 'violet';
+      option.htmlFor = radio.id;
+      option.append(radio, chip);
+      subjectOptions.append(option);
+    }
+    renderSubjectTagManagement();
+    syncSubjectPicker();
+  }
+
+  async function refreshSubjectTags({ selectedTagId = null, fallbackTag = null, fallbackTags = null } = {}) {
+    subjectTagsLoading = true;
+    syncSubjectPicker();
     subjectStatus.textContent = 'กำลังโหลดรายวิชา…';
     try {
       const catalog = await loadTags();
-      const subjects = Array.isArray(catalog?.tags)
-        ? catalog.tags.filter((subject) => subject
-          && Number.isSafeInteger(Number(subject.id))
-          && Number(subject.id) > 0
-          && typeof subject.name === 'string'
-          && subject.name.trim())
-        : [];
-      availableSubjects.clear();
-      subjectSelect.replaceChildren(subjectPlaceholder);
-      for (const subject of subjects) {
-        const id = Number(subject.id);
-        const name = subject.name.trim();
-        if (availableSubjects.has(id)) continue;
-        availableSubjects.add(id);
-        const option = element('option', '', name);
-        option.value = String(id);
-        subjectSelect.append(option);
+      const tags = Array.isArray(catalog?.tags) ? [...catalog.tags] : [];
+      if (fallbackTag && !tags.some((tag) => Number(tag?.id) === Number(fallbackTag.id))) {
+        tags.push(fallbackTag);
       }
-      subjectSelect.disabled = availableSubjects.size === 0;
+      renderSubjectTags({ tags }, selectedTagId);
       subjectStatus.textContent = availableSubjects.size > 0
         ? ''
         : 'ไม่พบแท็กวิชา';
+      return true;
     } catch {
-      availableSubjects.clear();
-      subjectSelect.replaceChildren(subjectPlaceholder);
+      if (Array.isArray(fallbackTags)) {
+        renderSubjectTags({ tags: fallbackTags }, selectedTagId);
+        subjectStatus.textContent = 'บันทึกแท็กแล้ว แต่โหลดรายการวิชาล่าสุดไม่สำเร็จ';
+        return false;
+      }
+      if (fallbackTag) {
+        renderSubjectTags({ tags: [...subjectCatalog.tags, fallbackTag] }, selectedTagId);
+        subjectStatus.textContent = 'สร้างแท็กแล้ว แต่โหลดรายการวิชาล่าสุดไม่สำเร็จ';
+        return false;
+      }
+      renderSubjectTags({ tags: [] });
       subjectStatus.textContent = 'โหลดรายวิชาไม่สำเร็จ กรุณาลองใหม่';
+      return false;
+    } finally {
+      subjectTagsLoading = false;
+      syncSubjectPicker();
     }
   }
+
+  createSubjectTagButton.addEventListener('click', () => openTagCreationDialog({
+    returnFocus: createSubjectTagButton,
+    onCreate: async (payload) => {
+      const created = await createTag(payload);
+      const id = Number(created?.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        throw new Error('สร้างแท็กแล้ว แต่ไม่ได้รับรหัสแท็กที่ใช้งานได้');
+      }
+      const createdTag = {
+        ...created,
+        id,
+        name: typeof created.name === 'string' && created.name.trim() ? created.name.trim() : payload.name,
+        color: created.color || payload.color || 'violet',
+        parent_id: null,
+      };
+      const refreshed = await refreshSubjectTags({ selectedTagId: id, fallbackTag: createdTag });
+      syncSubjectPicker();
+      if (refreshed) subjectStatus.textContent = `สร้างแท็ก “${createdTag.name}” แล้วและเลือกให้แล้ว`;
+    },
+  }));
 
   function setMessage(text = '', isError = false) {
     message.textContent = text;
@@ -568,7 +818,8 @@ export function renderDeadlinesPage({
     event.preventDefault();
     if (creating) return;
     const title = titleInput.value.trim();
-    const tagId = Number(subjectSelect.value);
+    const selectedSubject = form.querySelector('input[name="deadline-subject"]:checked');
+    const tagId = Number(selectedSubject?.value);
     if (!title || !availableSubjects.has(tagId) || !dateInput.value || !timeInput.value || !prioritySelect.value) {
       setMessage('กรุณากรอกชื่องาน วิชา วันส่ง เวลา และระดับความเร่งด่วนให้ครบ', true);
       return;
@@ -596,6 +847,7 @@ export function renderDeadlinesPage({
       currentPage = 1;
       loadFailed = false;
       form.reset();
+      syncSubjectPicker();
       setMessage('เพิ่มงานลงในรายการแล้ว');
       renderTasks();
       renderWeek();

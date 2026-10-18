@@ -305,8 +305,6 @@ function createAccountMenu(user, { currentPath, navigate, onLogout, themeId, onT
   heading.textContent = displayName;
   const profile = createLink('ตั้งค่าโปรไฟล์', '/profile', navigate, 'nav-popover__link');
   if (isPathActive('/profile', currentPath)) profile.setAttribute('aria-current', 'page');
-  const progress = createLink('ความก้าวหน้า', '/progress', navigate, 'nav-popover__link');
-  if (isPathActive('/progress', currentPath)) progress.setAttribute('aria-current', 'page');
   const themeMenu = createThemeMenu(themeId, onThemeChange);
   const logout = document.createElement('button');
   logout.type = 'button';
@@ -314,7 +312,7 @@ function createAccountMenu(user, { currentPath, navigate, onLogout, themeId, onT
   logout.dataset.action = 'logout';
   logout.textContent = 'ออกจากระบบ';
   logout.addEventListener('click', () => onLogout?.());
-  panel.append(heading, profile, progress, themeMenu, logout);
+  panel.append(heading, profile, themeMenu, logout);
   button.addEventListener('click', () => {
     const expanded = button.getAttribute('aria-expanded') === 'true';
     button.setAttribute('aria-expanded', String(!expanded));

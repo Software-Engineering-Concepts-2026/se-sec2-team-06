@@ -208,6 +208,14 @@ function deadlinePathId(deadlineId) {
   return String(id);
 }
 
+function tagPathId(tagId) {
+  const id = Number(tagId);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new TypeError('tagId must be a positive safe integer');
+  }
+  return String(id);
+}
+
 function tutorConversationPathId(conversationId) {
   const id = Number(conversationId);
   if (!Number.isSafeInteger(id) || id <= 0) {
@@ -282,6 +290,14 @@ export function listTags(options) {
 
 export function createTag(payload, options) {
   return requestJson('/tags', { ...options, method: 'POST', body: payload });
+}
+
+export function updateTag(tagId, payload, options) {
+  return requestJson(`/tags/${tagPathId(tagId)}`, { ...options, method: 'PUT', body: payload });
+}
+
+export function deleteTag(tagId, options) {
+  return requestJson(`/tags/${tagPathId(tagId)}`, { ...options, method: 'DELETE' });
 }
 
 export function replaceQuizTags(quizId, payload, options) {
@@ -391,6 +407,21 @@ export function listTutorConversations({ q, tagId } = {}, options) {
 
 export function getTutorConversation(conversationId, options) {
   return requestJson(`/tutor/conversations/${tutorConversationPathId(conversationId)}`, options);
+}
+
+export function updateTutorConversationTags(conversationId, tagIds, options) {
+  return requestJson(`/tutor/conversations/${tutorConversationPathId(conversationId)}/tags`, {
+    ...options,
+    method: 'PUT',
+    body: { tag_ids: tagIds },
+  });
+}
+
+export function deleteTutorConversation(conversationId, options) {
+  return requestJson(`/tutor/conversations/${tutorConversationPathId(conversationId)}`, {
+    ...options,
+    method: 'DELETE',
+  });
 }
 
 export function getTutorAttachmentUrl(conversationId, attachmentId) {

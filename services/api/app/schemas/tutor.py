@@ -36,6 +36,12 @@ class TutorConversationCreate(TutorMessageInput):
     tag_ids: list[int] = Field(default_factory=list, max_length=10)
 
 
+class TutorConversationTagsUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    tag_ids: list[int] = Field(max_length=10)
+
+
 class TutorRetryInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

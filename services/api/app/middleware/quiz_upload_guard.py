@@ -12,11 +12,11 @@ from sqlalchemy.orm import Session
 from app.models import AuthSession, User
 from app.routers.auth import COOKIE_NAME
 from app.security import hash_session_token
-from app.services.document_extractor import MAX_UPLOAD_BYTES
+from app.services.document_extractor import MAX_QUIZ_UPLOAD_BYTES
 from app.storage.documents import MAX_DOCUMENT_BYTES
 
 MAX_MULTIPART_OVERHEAD_BYTES = 64 * 1024
-MAX_QUIZ_REQUEST_BYTES = MAX_UPLOAD_BYTES + MAX_MULTIPART_OVERHEAD_BYTES
+MAX_QUIZ_REQUEST_BYTES = MAX_QUIZ_UPLOAD_BYTES + MAX_MULTIPART_OVERHEAD_BYTES
 MAX_DOCUMENT_REQUEST_BYTES = MAX_DOCUMENT_BYTES + MAX_MULTIPART_OVERHEAD_BYTES
 UPLOAD_REQUEST_LIMITS = {
     "/api/quizzes/generate": MAX_QUIZ_REQUEST_BYTES,

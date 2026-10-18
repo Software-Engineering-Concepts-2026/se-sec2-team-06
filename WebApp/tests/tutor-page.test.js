@@ -68,6 +68,9 @@ function mount(overrides = {}) {
   const dependencies = {
     loadConversations: vi.fn().mockResolvedValue([]),
     loadConversation: vi.fn().mockResolvedValue(conversation()),
+    updateConversationTags: vi.fn().mockResolvedValue(conversation()),
+    deleteConversation: vi.fn().mockResolvedValue(null),
+    confirmConversationDelete: vi.fn().mockReturnValue(true),
     createConversation: vi.fn().mockResolvedValue(conversation()),
     createConversationWithImages: vi.fn().mockResolvedValue(conversation()),
     sendMessage: vi.fn().mockResolvedValue(conversation()),
@@ -173,6 +176,9 @@ describe('AI tutor page', () => {
     await flushPromises();
 
     expect(page.querySelector('[data-role="tutor-status"]')?.textContent).toContain('กำลังประมวลผล');
+    const thinkingIndicator = page.querySelector('[data-role="tutor-thinking-indicator"]');
+    expect(thinkingIndicator?.textContent).toContain('กำลังคิด');
+    expect(thinkingIndicator?.getAttribute('aria-live')).toBe('polite');
     expect(createConversation).toHaveBeenCalledWith(expect.objectContaining({
       message: 'เซตว่างเป็นสับเซตของทุกเซตได้อย่างไร',
       tag_ids: [],
@@ -190,6 +196,40 @@ describe('AI tutor page', () => {
 
     expect(page.querySelector('[data-role="tutor-status"]')?.textContent).toContain('รอคำตอบเพิ่มเติม');
     expect(page.querySelector('[data-role="tutor-messages"]')?.textContent).toContain('กำลังถามถึงนิยามสับเซตใช่ไหม');
+    expect(page.querySelector('[data-role="tutor-thinking-indicator"]')).toBeNull();
+  });
+
+  it('keeps the thinking indicator visible when the server reports that the conversation is still processing', async () => {
+    const createConversation = vi.fn().mockResolvedValue(conversation({
+      status: 'processing',
+      messages: [message(1, 'user', 'question', 'ช่วยอธิบายเซตว่าง')],
+    }));
+    const { page } = mount({ createConversation });
+    await flushPromises();
+
+    page.querySelector('[data-role="tutor-input"]').value = 'ช่วยอธิบายเซตว่าง';
+    submit(page.querySelector('[data-role="tutor-message-form"]'));
+    await flushPromises();
+
+    expect(page.querySelector('[data-role="tutor-status"]')?.textContent).toContain('กำลังประมวลผล');
+    expect(page.querySelector('[data-role="tutor-thinking-indicator"]')?.textContent).toContain('กำลังคิด');
+  });
+
+  it('removes the thinking indicator after the request fails', async () => {
+    let rejectRequest;
+    const pending = new Promise((_resolve, reject) => { rejectRequest = reject; });
+    const { page } = mount({ createConversation: vi.fn().mockReturnValue(pending) });
+    await flushPromises();
+
+    page.querySelector('[data-role="tutor-input"]').value = 'ช่วยอธิบายเซตว่าง';
+    submit(page.querySelector('[data-role="tutor-message-form"]'));
+    await flushPromises();
+    expect(page.querySelector('[data-role="tutor-thinking-indicator"]')).not.toBeNull();
+
+    rejectRequest(new Error('บริการ AI ไม่พร้อม'));
+    await flushPromises();
+
+    expect(page.querySelector('[data-role="tutor-thinking-indicator"]')).toBeNull();
   });
 
   it('reopens a pending clarification and sends the learner reply into the same conversation', async () => {
@@ -343,6 +383,151 @@ describe('AI tutor page', () => {
 
     expect(loadConversations).toHaveBeenLastCalledWith({ q: 'แรง', tagId: 2 });
     expect([...page.querySelectorAll('.tutor-history-card')].map((item) => item.dataset.conversationId)).toEqual(['21']);
+  });
+
+  it('adds a tag to a saved conversation and updates the history card and open chat', async () => {
+    const saved = conversation();
+    const updated = conversation({ tags: [tagCatalog.tags[0], tagCatalog.tags[2]] });
+    const { page, dependencies } = mount({
+      loadConversations: vi.fn().mockResolvedValue([saved]),
+      loadConversation: vi.fn().mockResolvedValue(saved),
+      updateConversationTags: vi.fn().mockResolvedValue(updated),
+    });
+    await flushPromises();
+
+    const history = page.querySelector('[data-role="tutor-history"]');
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    history.querySelector('[data-conversation-id="7"] [data-action="open-conversation"]').click();
+    await flushPromises();
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    history.querySelector('[data-conversation-id="7"] [data-action="edit-conversation-tags"]').click();
+
+    const dialog = page.querySelector('[data-role="tutor-tag-dialog"]');
+    expect(dialog.querySelector('[data-tag-id="1"]').getAttribute('aria-pressed')).toBe('true');
+    dialog.querySelector('[data-tag-id="2"]').click();
+    dialog.querySelector('[data-action="save-conversation-tags"]').click();
+    await flushPromises();
+
+    expect(dependencies.updateConversationTags).toHaveBeenCalledWith(7, [1, 2]);
+    expect(history.querySelector('[data-conversation-id="7"] .tag-chip').textContent).toContain('คณิตศาสตร์');
+    expect(history.querySelector('[data-conversation-id="7"] .tutor-history-card__tags').textContent).toContain('ฟิสิกส์');
+    expect(page.querySelector('.tutor-conversation__tags').textContent).toContain('ฟิสิกส์');
+  });
+
+  it('lets the composer tag picker edit tags on the currently open conversation', async () => {
+    const saved = conversation();
+    const updated = conversation({ tags: [tagCatalog.tags[0], tagCatalog.tags[2]] });
+    const { page, dependencies } = mount({
+      loadConversations: vi.fn().mockResolvedValue([saved]),
+      loadConversation: vi.fn().mockResolvedValue(saved),
+      updateConversationTags: vi.fn().mockResolvedValue(updated),
+    });
+    await flushPromises();
+
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    page.querySelector('[data-conversation-id="7"] [data-action="open-conversation"]').click();
+    await flushPromises();
+
+    page.querySelector('[data-action="open-tutor-tag-picker"]').click();
+    const dialog = page.querySelector('[data-role="tutor-tag-dialog"]');
+    expect(dialog.querySelector('.tutor-tag-dialog__content').hidden).toBe(false);
+    expect(dialog.querySelector('[data-action="save-conversation-tags"]').hidden).toBe(false);
+    dialog.querySelector('[data-tag-id="2"]').click();
+    dialog.querySelector('[data-action="save-conversation-tags"]').click();
+    await flushPromises();
+
+    expect(dependencies.updateConversationTags).toHaveBeenCalledWith(7, [1, 2]);
+    expect(page.querySelector('.tutor-conversation__tags').textContent).toContain('ฟิสิกส์');
+  });
+
+  it('cancels tag editing without changing the saved conversation', async () => {
+    const saved = conversation();
+    const { page, dependencies } = mount({
+      loadConversations: vi.fn().mockResolvedValue([saved]),
+    });
+    await flushPromises();
+
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    page.querySelector('[data-action="edit-conversation-tags"]').click();
+    page.querySelector('[data-role="tutor-tag-dialog"] [data-tag-id="2"]').click();
+    page.querySelector('[data-action="cancel-conversation-tag-edit"]').click();
+
+    expect(dependencies.updateConversationTags).not.toHaveBeenCalled();
+    expect(page.querySelector('[data-role="tutor-tag-dialog-layer"]').hidden).toBe(true);
+    expect(page.querySelector('[data-conversation-id="7"] .tutor-history-card__tags').textContent).not.toContain('ฟิสิกส์');
+  });
+
+  it('keeps conversation tag selection within the API limit', async () => {
+    const tags = Array.from({ length: 11 }, (_, index) => ({
+      id: index + 1,
+      name: `วิชา ${index + 1}`,
+      color: 'blue',
+      is_builtin: true,
+      parent_id: null,
+    }));
+    const { page } = mount({ loadTags: vi.fn().mockResolvedValue({ tags }) });
+    await flushPromises();
+
+    page.querySelector('[data-action="open-tutor-tag-picker"]').click();
+    const buttons = [...page.querySelectorAll('[data-role="tutor-tag-dialog"] .tag-picker-tag')];
+    buttons.forEach((button) => button.click());
+
+    expect(buttons.filter((button) => button.getAttribute('aria-pressed') === 'true')).toHaveLength(10);
+    expect(buttons.at(-1).getAttribute('aria-pressed')).toBe('false');
+    expect(page.querySelector('[data-role="tutor-page-message"]').textContent).toContain('10');
+
+    buttons[0].click();
+
+    expect(page.querySelector('[data-role="tutor-page-message"]').textContent).toBe('');
+  });
+
+  it('deletes a confirmed conversation and clears it when it is open', async () => {
+    const saved = conversation();
+    const { page, dependencies } = mount({
+      loadConversations: vi.fn().mockResolvedValue([saved]),
+      loadConversation: vi.fn().mockResolvedValue(saved),
+    });
+    await flushPromises();
+
+    const history = page.querySelector('[data-role="tutor-history"]');
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    history.querySelector('[data-action="open-conversation"]').click();
+    await flushPromises();
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    history.querySelector('[data-action="delete-conversation"]').click();
+    await flushPromises();
+
+    expect(dependencies.confirmConversationDelete).toHaveBeenCalledWith(expect.stringContaining(saved.title));
+    expect(dependencies.deleteConversation).toHaveBeenCalledWith(7);
+    expect(history.querySelector('[data-conversation-id="7"]')).toBeNull();
+    expect(page.querySelector('[data-role="tutor-conversation-title"]').textContent).toBe('เริ่มต้นด้วยคำถามของคุณ');
+    expect(page.querySelector('[data-role="tutor-messages"]').textContent).toContain('ถามได้ทุกเมื่อ');
+  });
+
+  it('leaves a conversation in history when deletion is canceled', async () => {
+    const { page, dependencies } = mount({
+      loadConversations: vi.fn().mockResolvedValue([conversation()]),
+      confirmConversationDelete: vi.fn().mockReturnValue(false),
+    });
+    await flushPromises();
+
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+    page.querySelector('[data-action="delete-conversation"]').click();
+
+    expect(dependencies.deleteConversation).not.toHaveBeenCalled();
+    expect(page.querySelector('[data-conversation-id="7"]')).not.toBeNull();
+  });
+
+  it('disables history mutations while a conversation is processing', async () => {
+    const { page } = mount({
+      loadConversations: vi.fn().mockResolvedValue([conversation({ status: 'processing' })]),
+    });
+    await flushPromises();
+
+    page.querySelector('[data-action="toggle-tutor-history"]').click();
+
+    expect(page.querySelector('[data-action="edit-conversation-tags"]').disabled).toBe(true);
+    expect(page.querySelector('[data-action="delete-conversation"]').disabled).toBe(true);
   });
 
   it('sends the selected provider and model with a new tutor message', async () => {
@@ -686,7 +871,9 @@ describe('AI tutor page', () => {
     expect(dialogLayer.hidden).toBe(false);
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.querySelector('.tag-picker')).not.toBeNull();
-    expect(dialog.querySelector('.tag-picker-create').hidden).toBe(true);
+    expect(dialog.querySelector('.tag-picker-create').hidden).toBe(false);
+    expect(dialog.querySelector('.tag-picker-create').textContent).toBe('+ สร้างแท็กวิชา');
+    expect(dialog.querySelector('[data-action="open-tag-management"]')?.textContent).toBe('แก้ไขแท็ก');
     expect(page.querySelector('[data-role="tutor-context-panel"]')).toBeNull();
     expect(page.ownerDocument.activeElement).toBe(dialog.querySelector('.tag-picker-search'));
 
@@ -753,7 +940,7 @@ describe('AI tutor page', () => {
     const trigger = page.querySelector('[data-action="open-tutor-tag-picker"]');
     const dialog = page.querySelector('[data-role="tutor-tag-dialog"]');
     const closeButton = dialog.querySelector('[data-action="close-tutor-tag-dialog"]');
-    const lastControl = [...dialog.querySelectorAll('.tag-picker-tag')].at(-1);
+    const lastControl = dialog.querySelector('[data-action="open-tag-management"]');
 
     trigger.click();
     closeButton.focus();

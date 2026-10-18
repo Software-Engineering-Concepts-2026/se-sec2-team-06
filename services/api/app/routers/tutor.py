@@ -25,6 +25,7 @@ from app.schemas.tutor import (
     TutorConversationCreate,
     TutorConversationDetail,
     TutorConversationSummary,
+    TutorConversationTagsUpdate,
     TutorMessageInput,
     TutorRetryInput,
 )
@@ -38,9 +39,11 @@ from app.services.tutor_conversations import (
     add_user_message,
     claim_retryable_conversation,
     create_conversation,
+    delete_conversation,
     get_owned_conversation,
     mark_retryable_error,
     save_tutor_reply,
+    update_conversation_tags,
 )
 from app.storage.providers import FileStorageProvider, StorageObjectNotFoundError, StorageProviderError
 from app.storage.tutor_attachments import (
@@ -518,6 +521,43 @@ def get_conversation(
     user: User = Depends(get_current_user),
 ) -> TutorConversation:
     return _tutor_detail_or_404(session, user.id, conversation_id)
+
+
+@router.put("/{conversation_id}/tags", response_model=TutorConversationDetail)
+def put_conversation_tags(
+    conversation_id: int,
+    payload: TutorConversationTagsUpdate,
+    request: Request,
+    session: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> TutorConversation:
+    require_same_origin(request)
+    try:
+        return update_conversation_tags(session, user.id, conversation_id, payload.tag_ids)
+    except TutorConversationNotFoundError as error:
+        raise HTTPException(status_code=404, detail="ไม่พบบทสนทนานี้") from error
+    except TutorTagUnavailableError as error:
+        raise HTTPException(status_code=404, detail="ไม่พบแท็กที่เลือก") from error
+    except TutorTurnInProgressError as error:
+        raise HTTPException(status_code=409, detail="บทสนทนานี้กำลังประมวลผล กรุณารอคำตอบก่อนแก้ไข") from error
+
+
+@router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_conversation(
+    conversation_id: int,
+    request: Request,
+    session: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Response:
+    require_same_origin(request)
+    try:
+        storage_keys = delete_conversation(session, user.id, conversation_id)
+    except TutorConversationNotFoundError as error:
+        raise HTTPException(status_code=404, detail="ไม่พบบทสนทนานี้") from error
+    except TutorTurnInProgressError as error:
+        raise HTTPException(status_code=409, detail="บทสนทนานี้กำลังประมวลผล กรุณารอคำตอบก่อนลบ") from error
+    cleanup_tutor_attachments(request.app.state.storage_provider, storage_keys)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/{conversation_id}/attachments/{attachment_id}")

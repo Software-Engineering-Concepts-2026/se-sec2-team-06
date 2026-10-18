@@ -7,6 +7,7 @@ import {
   renderTagColorPalette,
   renderTagFilter,
   renderTagPicker,
+  openTagManagementDialog,
 } from '../src/tags/tag-components.js';
 import { TAG_COLOR_PALETTE } from '../src/tags/tag-colors.js';
 import { nextDocumentTagSelection } from '../src/tags/document-tag-selection.js';
@@ -77,6 +78,32 @@ describe('reusable quiz tag controls', () => {
     expect(subject.getAttribute('aria-pressed')).toBe('false');
   });
 
+  it('does_not_select_tags_past_the_configured_limit', () => {
+    const maxSelectedTagCount = 10;
+    const onToggle = vi.fn();
+    const onSelectionLimitReached = vi.fn();
+    const picker = renderTagPicker({
+      catalog: {
+        tags: Array.from({ length: maxSelectedTagCount + 1 }, (_, index) => ({
+          id: index + 1,
+          name: `Tag ${index + 1}`,
+          color: 'blue',
+        })),
+      },
+      maxSelectedTagCount,
+      onSelectionLimitReached,
+      onToggle,
+    });
+
+    const buttons = [...picker.querySelectorAll('button[data-tag-id]')];
+    buttons.forEach((button) => button.click());
+
+    expect(buttons.filter((button) => button.getAttribute('aria-pressed') === 'true')).toHaveLength(maxSelectedTagCount);
+    expect(buttons.at(-1).getAttribute('aria-pressed')).toBe('false');
+    expect(onToggle).toHaveBeenCalledTimes(maxSelectedTagCount);
+    expect(onSelectionLimitReached).toHaveBeenCalledWith(maxSelectedTagCount);
+  });
+
   it('opens one accessible tag creation dialog from the compact picker action', () => {
     const picker = renderTagPicker({ catalog, onCreate: vi.fn() });
     document.body.append(picker);
@@ -84,7 +111,7 @@ describe('reusable quiz tag controls', () => {
 
     expect(picker.querySelectorAll('.tag-picker-create')).toHaveLength(1);
     expect(picker.querySelector('[data-action="open-tag-create"]')?.tagName).toBe('BUTTON');
-    expect(trigger.textContent).toBe('สร้างแท็ก');
+    expect(trigger.textContent).toBe('+ สร้างแท็กวิชา');
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     trigger.focus();
     trigger.click();
@@ -92,17 +119,66 @@ describe('reusable quiz tag controls', () => {
     const dialog = document.querySelector('.tag-create-dialog');
     expect(dialog?.getAttribute('role')).toBe('dialog');
     expect(dialog?.getAttribute('aria-modal')).toBe('true');
-    expect(dialog?.querySelector('h2')?.textContent).toBe('สร้างแท็กใหม่');
+    expect(dialog?.querySelector('h2')?.textContent).toBe('สร้างแท็กวิชา');
     expect(dialog?.querySelector('[aria-label="ปิดหน้าต่างสร้างแท็ก"]')?.textContent).toBe('×');
-    expect(dialog?.querySelector('.tag-create-dialog__label')?.textContent).toContain('ชื่อแท็ก');
+    expect(dialog?.querySelector('[aria-label="ปิดหน้าต่างสร้างแท็ก"]')?.classList.contains('icon-button--danger')).toBe(true);
+    expect(dialog?.querySelector('.tag-create-dialog__label')?.textContent).toContain('ชื่อแท็กวิชา');
     expect(dialog?.querySelector('[data-action="cancel-tag-create"]')?.textContent).toBe('ยกเลิก');
-    expect(dialog?.querySelector('[data-action="create-tag"]')?.textContent).toBe('เพิ่มแท็ก');
+    expect(dialog?.querySelector('[data-action="create-tag"]')?.textContent).toBe('เพิ่มแท็กวิชา');
     expect(dialog?.querySelector('[aria-label="New topic tag name"]')).not.toBeNull();
     expect(dialog?.querySelectorAll('.tag-color-option')).toHaveLength(10);
     expect(document.activeElement).toBe(dialog?.querySelector('[aria-label="New topic tag name"]'));
     dialog.querySelector('[data-action="cancel-tag-create"]').click();
     expect(document.querySelector('.tag-create-dialog')).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it('stacks nested subject-tag dialogs above the tutor tag picker', () => {
+    const stylesheet = document.createElement('style');
+    stylesheet.textContent = readFileSync('src/styles.css', 'utf8');
+    document.head.append(stylesheet);
+    const tutorLayer = document.createElement('div');
+    tutorLayer.className = 'tutor-tag-dialog-layer';
+    const picker = renderTagPicker({
+      catalog,
+      onCreate: vi.fn(),
+      onManage: (returnFocus) => openTagManagementDialog({ catalog, returnFocus }),
+    });
+    tutorLayer.append(picker);
+    document.body.append(tutorLayer);
+
+    try {
+      picker.querySelector('[data-action="open-tag-create"]').click();
+      const createLayer = document.querySelector('.modal-layer.tag-create-layer');
+      expect(Number.parseInt(getComputedStyle(createLayer).zIndex, 10))
+        .toBeGreaterThan(Number.parseInt(getComputedStyle(tutorLayer).zIndex, 10));
+      createLayer.querySelector('[data-action="cancel-tag-create"]').click();
+
+      picker.querySelector('[data-action="open-tag-management"]').click();
+      const managementLayer = document.querySelector('.modal-layer.deadline-subject-management-layer');
+      expect(Number.parseInt(getComputedStyle(managementLayer).zIndex, 10))
+        .toBeGreaterThan(Number.parseInt(getComputedStyle(tutorLayer).zIndex, 10));
+      managementLayer.querySelector('[aria-label="ปิดหน้าต่างแก้ไขแท็ก"]').click();
+    } finally {
+      document.body.replaceChildren();
+      stylesheet.remove();
+    }
+  });
+
+  it('uses shared subject-tag wording and exposes an edit-tags action when requested', () => {
+    const onManage = vi.fn();
+    const picker = renderTagPicker({ catalog, onCreate: vi.fn(), onManage });
+    const createButton = picker.querySelector('[data-action="open-tag-create"]');
+    const manageButton = picker.querySelector('[data-action="open-tag-management"]');
+
+    expect(createButton.textContent).toBe('+ สร้างแท็กวิชา');
+    expect(manageButton.textContent).toBe('แก้ไขแท็ก');
+    expect(createButton.classList.contains('button-primary')).toBe(true);
+    expect(manageButton.classList.contains('button-secondary')).toBe(true);
+
+    manageButton.click();
+
+    expect(onManage).toHaveBeenCalledWith(manageButton);
   });
 
   it('keeps Tab navigation inside the tag creation dialog', () => {
@@ -267,7 +343,7 @@ describe('reusable quiz tag controls', () => {
     await Promise.resolve();
 
     expect(onCreate).not.toHaveBeenCalled();
-    expect(dialog.querySelector('[role="status"]').textContent).toBe('กรุณากรอกชื่อแท็ก');
+    expect(dialog.querySelector('[role="status"]').textContent).toBe('กรุณากรอกชื่อแท็กวิชา');
     expect(document.querySelector('.tag-create-dialog')).toBe(dialog);
     dialog.querySelector('[data-action="cancel-tag-create"]').click();
   });
