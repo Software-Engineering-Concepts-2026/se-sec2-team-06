@@ -16,7 +16,7 @@ from app.ai.config import AISettings
 from app.ai.provider import ProviderError, ProviderQuotaExceeded
 from app.models import Quiz, QuizQuestion
 from app.routers.quizzes import read_upload_limited
-from app.services.document_extractor import MAX_UPLOAD_BYTES, UploadTooLargeError
+from app.services.document_extractor import UploadTooLargeError
 
 
 def _registration_payload():
@@ -308,6 +308,19 @@ def test_generate_validates_options_and_supported_file(client_factory):
     assert unsupported_file.status_code == 415
 
 
+def test_generate_rejects_docx_sources(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    storage = _MemoryStorageProvider()
+    with client_factory(quiz_provider=provider, storage_provider=storage) as client:
+        _register(client)
+        response = _generate(client, filename="lesson.docx", content=_docx_bytes())
+
+    assert response.status_code == 415
+    assert "PDF, Markdown" in response.json()["detail"]
+    assert provider.requests == []
+    assert storage.put_calls == []
+
+
 def test_authenticated_provider_catalog_lists_selectable_models(client_factory):
     with client_factory() as client:
         _register(client)
@@ -396,14 +409,11 @@ def test_generate_saves_quiz_and_questions_for_current_user(client_factory):
     [
         ("lesson.pdf", (Path(__file__).parent / "fixtures" / "tiny-text.pdf").read_bytes(), "application/pdf"),
         (
-            "lesson.docx",
-            _docx_bytes(),
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "lesson.md", b"# Topic\n\nOriginal text source.", "text/markdown"
         ),
-        ("lesson.md", b"# Topic\n\nOriginal text source.", "text/markdown"),
         ("lesson.txt", b"Original plain text source.", "text/plain"),
     ],
-    ids=["pdf", "docx", "markdown", "text"],
+    ids=["pdf", "markdown", "text"],
 )
 def test_generate_upload_persists_source_key_in_private_storage(
     client_factory,
@@ -486,23 +496,59 @@ def test_generate_response_never_contains_answer_key(client_factory):
     assert len(response.json()["questions"]) == 5
 
 
-def test_generate_rejects_extracted_text_over_limit_without_provider_call(client_factory):
+def test_generate_accepts_extracted_text_at_200000_char_limit(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"x" * 200_000
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, filename="large.txt", content=content)
+
+    assert response.status_code == 201, response.text
+    assert len(provider.requests) == 1
+    assert len(provider.requests[0].source_text) == 200_000
+
+
+def test_generate_rejects_extracted_text_over_200000_char_limit_without_provider_call(client_factory):
     provider = FakeProvider([_valid_quiz()])
     with client_factory(quiz_provider=provider) as client:
         _register(client)
-        response = _generate(client, filename="long.txt", content=b"x" * 20_001)
+        response = _generate(client, filename="long.txt", content=b"x" * 200_001)
 
     assert response.status_code == 422
+    assert response.json()["detail"] == "Extracted text exceeds the supported limit"
     assert provider.requests == []
 
 
-def test_generate_stops_reading_after_20mb_plus_one_byte():
-    upload = FakeUpload(b"x" * (MAX_UPLOAD_BYTES + 10_000))
+def test_generate_accepts_source_files_larger_than_the_previous_20mb_limit(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"# Topic\n" + b" " * (20_000_001 - len(b"# Topic\n"))
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, content=content)
+
+    assert response.status_code == 201, response.text
+    assert len(provider.requests) == 1
+
+
+def test_generate_rejects_source_file_over_40mb(client_factory):
+    provider = FakeProvider([_valid_quiz()])
+    content = b"# Topic\n" + b" " * (40_000_001 - len(b"# Topic\n"))
+    with client_factory(quiz_provider=provider) as client:
+        _register(client)
+        response = _generate(client, content=content)
+
+    assert response.status_code == 413
+    assert "40 MB" in response.json()["detail"]
+    assert provider.requests == []
+
+
+def test_generate_stops_reading_after_40mb_plus_one_byte():
+    upload = FakeUpload(b"x" * 40_010_000)
 
     with pytest.raises(UploadTooLargeError):
         asyncio.run(read_upload_limited(upload))
 
-    assert upload.bytes_read == MAX_UPLOAD_BYTES + 1
+    assert upload.bytes_read == 40_000_001
     assert all(size <= 64 * 1024 for size in upload.read_sizes)
 
 

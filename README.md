@@ -1,6 +1,14 @@
 <div align="center">
 
-<img src="./docs/assets/readme/synapsesync-banner-animated.gif" alt="Animated SynapseSync banner พร้อมโลโก้ ชื่อโครงการ และเครือข่ายการเรียนรู้" width="90%">
+<img src="./docs/assets/readme/synapsesync-readme-banner.gif" alt="Animated black-and-white SynapseSync banner — learn, practice, progress" width="90%">
+
+</div>
+
+---
+
+<div align="center">
+
+<a href="https://synapsesync-pyio.onrender.com"><kbd>🚀 เปิดเว็บ SynapseSync</kbd></a>
 
 </div>
 
@@ -211,6 +219,10 @@ Architecture Lab 05 ใช้ Modular Monolith เป็น implementation targe
 ### เว็บ SynapseSync ที่ออนไลน์
 
 เปิดใช้งานเว็บที่ deploy บน Render ได้ที่ **[https://synapsesync-pyio.onrender.com](https://synapsesync-pyio.onrender.com)**
+
+### บัญชีสำหรับอาจารย์ทดสอบ
+
+เพื่อความปลอดภัย ข้อมูลเข้าสู่ระบบของบัญชีทดสอบจะส่งให้อาจารย์ผ่านช่องทางส่วนตัว ไม่เผยแพร่อีเมลหรือรหัสผ่านไว้ใน repository สาธารณะ
 
 ### ทดลองเว็บทั้งระบบในเครื่อง (Docker Compose)
 
@@ -476,3 +488,27 @@ Pull Request ต้องมี reviewer อย่างน้อย 1 คน, c
 พัฒนาโดยทีม **Brainlink Co.**
 
 </div>
+
+---
+
+## License
+
+Copyright (c) 2026 Brainlink Co.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

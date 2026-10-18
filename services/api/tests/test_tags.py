@@ -9,8 +9,9 @@ from sqlalchemy.exc import IntegrityError
 from starlette.testclient import TestClient
 
 from app.database import Base, create_session_factory
-from app.models import AuthSession, Quiz, Tag, User
-from app.models.tag import quiz_tags
+from app.models import AuthSession, Deadline, Document, Quiz, Tag, TutorConversation, User
+from app.models.document import document_tags
+from app.models.tag import quiz_tags, tutor_conversation_tags
 
 
 EXPECTED_SUBJECTS = {
@@ -381,6 +382,173 @@ def test_create_flat_tag_rejects_casefold_duplicate_for_owner(client_factory):
 
     assert first.status_code == 201
     assert duplicate.status_code == 409
+
+
+def test_owner_can_update_custom_tag_name_and_color_and_duplicate_names_are_rejected(client_factory):
+    from datetime import datetime, timezone
+
+    with client_factory() as client:
+        owner = _register(client, "update-tag-owner@example.com")
+        created = client.post(
+            "/api/tags",
+            json={"name": "Algebra", "color": "blue"},
+            headers={"Origin": "http://testserver"},
+        )
+        existing = client.post(
+            "/api/tags",
+            json={"name": "Geometry", "color": "green"},
+            headers={"Origin": "http://testserver"},
+        )
+        tag_id = created.json()["id"]
+        with client.app.state.session_factory() as session:
+            deadline = Deadline(
+                user_id=owner["id"],
+                title="Use renamed subject",
+                subject="Algebra",
+                tag_id=tag_id,
+                due_at=datetime(2026, 10, 20, tzinfo=timezone.utc),
+                priority="medium",
+                status="not_started",
+                is_completed=False,
+            )
+            session.add(deadline)
+            session.commit()
+
+        updated = client.put(
+            f"/api/tags/{tag_id}",
+            json={"name": "  Linear Algebra  ", "color": "pink"},
+            headers={"Origin": "http://testserver"},
+        )
+        duplicate = client.put(
+            f"/api/tags/{tag_id}",
+            json={"name": existing.json()["name"], "color": "rose"},
+            headers={"Origin": "http://testserver"},
+        )
+        unchanged = client.get("/api/tags")
+        deadlines = client.get("/api/deadlines")
+
+    assert updated.status_code == 200
+    assert updated.json()["name"] == "Linear Algebra"
+    assert updated.json()["color"] == "pink"
+    assert duplicate.status_code == 409
+    assert next(tag for tag in unchanged.json()["tags"] if tag["id"] == tag_id)["name"] == "Linear Algebra"
+    assert deadlines.json()[0]["subject"] == "Linear Algebra"
+
+
+def test_builtin_and_foreign_tags_cannot_be_updated_or_deleted(client_factory):
+    with client_factory() as client:
+        owner = _register(client, "protected-tag-owner@example.com")
+        math_id = _subject_id(client, "math")
+        custom = client.post(
+            "/api/tags",
+            json={"name": "Private topic"},
+            headers={"Origin": "http://testserver"},
+        )
+        own_delete = client.delete(
+            f"/api/tags/{custom.json()['id']}",
+            headers={"Origin": "http://testserver"},
+        )
+        _register(client, "other-protected-tag-owner@example.com")
+        foreign = client.post(
+            "/api/tags",
+            json={"name": "Other private topic"},
+            headers={"Origin": "http://testserver"},
+        )
+        with client.app.state.session_factory() as session:
+            foreign_user = session.scalar(select(User).where(User.email == "other-protected-tag-owner@example.com"))
+            assert foreign_user is not None
+            foreign_tag = session.get(Tag, foreign.json()["id"])
+            assert foreign_tag is not None
+            assert foreign_tag.owner_id == foreign_user.id
+        login = client.post(
+            "/api/auth/login",
+            json={"email": owner["email"], "password": "studyPlan42"},
+            headers={"Origin": "http://testserver"},
+        )
+        assert login.status_code == 200
+        builtin_update = client.put(
+            f"/api/tags/{math_id}",
+            json={"name": "Changed built-in", "color": "rose"},
+            headers={"Origin": "http://testserver"},
+        )
+        builtin_delete = client.delete(f"/api/tags/{math_id}", headers={"Origin": "http://testserver"})
+        foreign_update = client.put(
+            f"/api/tags/{foreign.json()['id']}",
+            json={"name": "Hijack", "color": "rose"},
+            headers={"Origin": "http://testserver"},
+        )
+        foreign_delete = client.delete(
+            f"/api/tags/{foreign.json()['id']}",
+            headers={"Origin": "http://testserver"},
+        )
+    assert [builtin_update.status_code, builtin_delete.status_code] == [404, 404]
+    assert [foreign_update.status_code, foreign_delete.status_code] == [404, 404]
+    assert own_delete.status_code == 204
+
+
+def test_deleting_custom_tag_detaches_all_items_without_deleting_them(client_factory):
+    from datetime import datetime, timezone
+
+    with client_factory() as client:
+        owner = _register(client, "delete-tag-owner@example.com")
+        created = client.post(
+            "/api/tags",
+            json={"name": "Old subject", "color": "cyan"},
+            headers={"Origin": "http://testserver"},
+        )
+        tag_id = created.json()["id"]
+
+        with client.app.state.session_factory() as session:
+            tag = session.get(Tag, tag_id)
+            assert tag is not None
+            quiz = _new_quiz(owner["id"])
+            document = Document(
+                user_id=owner["id"],
+                title="Keep document",
+                original_filename="keep.md",
+                file_type="md",
+                size_bytes=10,
+                storage_key="a" * 64,
+            )
+            conversation = TutorConversation(
+                user_id=owner["id"],
+                title="Keep conversation",
+                status="answered",
+                create_request_id="delete-tag-test-request",
+            )
+            deadline = Deadline(
+                user_id=owner["id"],
+                title="Keep deadline",
+                subject="Old subject",
+                tag_id=tag_id,
+                due_at=datetime(2026, 10, 20, tzinfo=timezone.utc),
+                priority="medium",
+                status="not_started",
+                is_completed=False,
+            )
+            quiz.tags.append(tag)
+            document.tags.append(tag)
+            conversation.tags.append(tag)
+            session.add_all([quiz, document, conversation, deadline])
+            session.commit()
+            quiz_id, document_id = quiz.id, document.id
+            conversation_id, deadline_id = conversation.id, deadline.id
+
+        deleted = client.delete(f"/api/tags/{tag_id}", headers={"Origin": "http://testserver"})
+
+        with client.app.state.session_factory() as session:
+            saved_quiz = session.get(Quiz, quiz_id)
+            saved_document = session.get(Document, document_id)
+            saved_conversation = session.get(TutorConversation, conversation_id)
+            saved_deadline = session.get(Deadline, deadline_id)
+            assert saved_quiz is not None and saved_quiz.tags == []
+            assert saved_document is not None and saved_document.tags == []
+            assert saved_conversation is not None and saved_conversation.tags == []
+            assert saved_deadline is not None
+            assert saved_deadline.subject == "Old subject"
+            assert saved_deadline.tag_id is None
+
+    assert deleted.status_code == 204
 
 
 def test_create_flat_tag_allows_same_name_for_other_owner(client_factory):

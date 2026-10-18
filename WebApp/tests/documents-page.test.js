@@ -144,16 +144,25 @@ describe('document library page', () => {
     const page = renderPage({ loadDocuments: async () => [{ ...documentItem }], replaceDocumentTags: saveTags });
     document.body.append(page);
     await flushPromises();
-    page.querySelector('[data-action="manage-tags"]').click();
+    const manageTags = page.querySelector('[data-action="manage-tags"]');
+    manageTags.click();
 
     const picker = page.querySelector('[data-role="tag-picker"]');
     picker.querySelector('button[data-tag-id="1"]').click();
     await flushPromises();
+    expect(page.querySelector('.document-library-card__picker-container').hidden).toBe(true);
+    expect(manageTags.getAttribute('aria-expanded')).toBe('false');
+
+    manageTags.click();
+    expect(page.querySelector('.document-library-card__picker-container').hidden).toBe(false);
+    expect(picker.querySelector('button[data-tag-id="1"]').getAttribute('aria-pressed')).toBe('true');
     picker.querySelector('button[data-tag-id="8"]').click();
     await flushPromises();
 
     expect(saveTags).toHaveBeenNthCalledWith(1, 4, { tag_ids: [1] });
     expect(saveTags).toHaveBeenNthCalledWith(2, 4, { tag_ids: [1, 8] });
+    expect(page.querySelector('.document-library-card__picker-container').hidden).toBe(true);
+    expect(manageTags.getAttribute('aria-expanded')).toBe('false');
     expect(page.querySelector('[data-role="tag-summary"]').textContent).toContain('คณิตศาสตร์');
     expect(page.querySelector('[data-role="tag-summary"]').textContent).toContain('เซต');
     expect(picker.querySelector('button[data-tag-id="1"]').getAttribute('aria-pressed')).toBe('true');
@@ -453,7 +462,7 @@ describe('document library page', () => {
     styles.remove();
   });
 
-  it('uses a plus control for tag management and omits the added date from document cards', async () => {
+  it('uses a plus control to choose tags and exposes the shared subject-tag actions', async () => {
     const page = renderPage({ loadDocuments: async () => [{ ...documentItem }] });
     document.body.append(page);
     await flushPromises();
@@ -461,7 +470,11 @@ describe('document library page', () => {
     const card = page.querySelector('[data-document-id="4"]');
     const manageTags = card.querySelector('[data-action="manage-tags"]');
     expect(manageTags.textContent).toBe('+');
-    expect(manageTags.getAttribute('aria-label')).toBe('แก้แท็กของ ทฤษฎีเซต');
+    expect(manageTags.getAttribute('aria-label')).toBe('เลือกแท็กวิชาของ ทฤษฎีเซต');
+    manageTags.click();
+    const picker = card.querySelector('[data-role="tag-picker"]');
+    expect(picker.querySelector('[data-action="open-tag-create"]')?.textContent).toBe('+ สร้างแท็กวิชา');
+    expect(picker.querySelector('[data-action="open-tag-management"]')?.textContent).toBe('แก้ไขแท็ก');
     expect(card.textContent).not.toContain('เพิ่มเมื่อ');
   });
 

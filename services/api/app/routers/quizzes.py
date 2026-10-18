@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile, status
@@ -35,6 +36,7 @@ from app.schemas.quiz import (
 from app.services.document_extractor import (
     EmptyDocumentError,
     InvalidDocumentError,
+    MAX_QUIZ_UPLOAD_BYTES,
     SourceTextTooLongError,
     UnsupportedDocumentError,
     UploadTooLargeError,
@@ -56,16 +58,16 @@ from app.tags.service import (
 UPLOAD_CHUNK_BYTES = 64 * 1024
 _QUIZ_SOURCE_TYPES = {
     "pdf": (".pdf", "application/pdf"),
-    "docx": (".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
     "md": (".md", "text/markdown"),
     "txt": (".txt", "text/plain"),
 }
+_QUIZ_SOURCE_SUFFIXES = {suffix for suffix, _content_type in _QUIZ_SOURCE_TYPES.values()}
 _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
 
-async def read_upload_limited(upload: UploadFile, max_bytes: int = 20_000_000) -> bytes:
+async def read_upload_limited(upload: UploadFile, max_bytes: int = MAX_QUIZ_UPLOAD_BYTES) -> bytes:
     if max_bytes < 0:
         raise ValueError("max_bytes must not be negative")
     content = bytearray()
@@ -222,6 +224,13 @@ async def generate_quiz(
     user: User = Depends(get_current_user),
 ) -> QuizInProgress:
     require_same_origin(request)
+    safe_filename = _safe_source_filename(file.filename)
+    if Path(safe_filename).suffix.lower() not in _QUIZ_SOURCE_SUFFIXES:
+        await file.close()
+        raise HTTPException(
+            status_code=415,
+            detail="รองรับเฉพาะไฟล์ PDF, Markdown (.md) และ TXT (.txt)",
+        )
     try:
         selection = resolve_model_selection(
             provider,
@@ -247,17 +256,21 @@ async def generate_quiz(
         raise HTTPException(status_code=422, detail="ตัวเลือกแบบทดสอบไม่ถูกต้อง") from error
 
     try:
-        content = await read_upload_limited(file)
+        content = await read_upload_limited(file, max_bytes=MAX_QUIZ_UPLOAD_BYTES)
     except UploadTooLargeError as error:
-        raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 20 MB") from error
+        raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 40 MB") from error
     finally:
         await file.close()
 
-    safe_filename = _safe_source_filename(file.filename)
     try:
-        source = extract_document(safe_filename, content, file.content_type)
+        source = extract_document(
+            safe_filename,
+            content,
+            file.content_type,
+            max_bytes=MAX_QUIZ_UPLOAD_BYTES,
+        )
     except UploadTooLargeError as error:
-        raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 20 MB") from error
+        raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 40 MB") from error
     except (UnsupportedDocumentError, InvalidDocumentError) as error:
         raise HTTPException(status_code=415, detail=str(error)) from error
     except (EmptyDocumentError, SourceTextTooLongError) as error:

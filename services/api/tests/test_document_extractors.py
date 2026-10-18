@@ -7,6 +7,7 @@ import pytest
 
 from app.services.document_extractor import (
     EmptyDocumentError,
+    MAX_SOURCE_CHARS,
     SourceTextTooLongError,
     UnsupportedDocumentError,
     extract_document,
@@ -131,9 +132,16 @@ def test_rejects_file_over_20mb_before_parsing():
         extract_document("lesson.md", b"x" * (MAX_UPLOAD_BYTES + 1))
 
 
-def test_rejects_text_over_20000_chars_without_truncation():
+def test_accepts_text_at_200000_char_limit():
+    assert MAX_SOURCE_CHARS == 200_000
+    result = extract_document("lesson.txt", ("x" * 200_000).encode())
+
+    assert len(result.text) == 200_000
+
+
+def test_rejects_text_over_200000_chars_without_truncation():
     with pytest.raises(SourceTextTooLongError):
-        extract_document("lesson.txt", ("x" * 20_001).encode())
+        extract_document("lesson.txt", ("x" * 200_001).encode())
 
 
 def _append_xml_text(parent, text: str) -> None:

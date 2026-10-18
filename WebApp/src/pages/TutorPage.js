@@ -1,6 +1,9 @@
 import {
   createTutorConversation as createTutorConversationRequest,
   createTutorConversationWithImages as createTutorConversationWithImagesRequest,
+  createTag as createTagRequest,
+  deleteTutorConversation as deleteTutorConversationRequest,
+  deleteTag as deleteTagRequest,
   getAiProviders as getAiProvidersRequest,
   getTutorAttachmentUrl as getTutorAttachmentUrlRequest,
   getTutorConversation as getTutorConversationRequest,
@@ -9,8 +12,12 @@ import {
   retryTutorMessage as retryTutorMessageRequest,
   sendTutorMessage as sendTutorMessageRequest,
   sendTutorMessageWithImages as sendTutorMessageWithImagesRequest,
+  updateTag as updateTagRequest,
+  updateTutorConversationTags as updateTutorConversationTagsRequest,
 } from '../api/client.js';
-import { renderTagChips, renderTagFilter, renderTagPicker } from '../tags/tag-components.js';
+import { openTagManagementDialog, renderTagChips, renderTagFilter, renderTagPicker } from '../tags/tag-components.js';
+
+const MAX_TUTOR_TAGS = 10;
 
 const STATUS_LABELS = {
   processing: 'กำลังประมวลผล',
@@ -98,7 +105,7 @@ function setTutorRailButton(button, iconName, label) {
   button.removeAttribute('title');
 }
 
-function renderConversationCard(item, onOpen) {
+function renderConversationCard(item, onOpen, onEditTags, onDelete, isMutating = false) {
   const card = element('article', 'tutor-history-card');
   card.dataset.conversationId = String(item.id);
   const open = element('button', 'tutor-history-card__open');
@@ -112,7 +119,21 @@ function renderConversationCard(item, onOpen) {
   open.addEventListener('click', () => onOpen(item.id));
   const tags = renderTagChips(item.tags || []);
   tags.classList.add('tutor-history-card__tags');
-  card.append(open, tags);
+  const actions = element('div', 'tutor-history-card__actions');
+  const editTags = element('button', 'button button-secondary tutor-history-card__edit-tags', 'แก้ไขแท็ก');
+  editTags.type = 'button';
+  editTags.dataset.action = 'edit-conversation-tags';
+  editTags.disabled = item.status === 'processing' || isMutating;
+  editTags.setAttribute('aria-label', `แก้ไขแท็ก ${item.title || 'แชตนี้'}`);
+  editTags.addEventListener('click', () => onEditTags(item, editTags));
+  const deleteButton = element('button', 'button button-danger tutor-history-card__delete', 'ลบแชต');
+  deleteButton.type = 'button';
+  deleteButton.dataset.action = 'delete-conversation';
+  deleteButton.disabled = item.status === 'processing' || isMutating;
+  deleteButton.setAttribute('aria-label', `ลบแชต ${item.title || 'แชตนี้'}`);
+  deleteButton.addEventListener('click', () => onDelete(item));
+  actions.append(editTags, deleteButton);
+  card.append(open, tags, actions);
   return card;
 }
 
@@ -150,6 +171,21 @@ function renderTutorMessage(item, catalog, conversationId, onReuseAttachment, ge
   return row;
 }
 
+function renderTutorThinkingIndicator() {
+  const row = element('article', 'tutor-message tutor-message--assistant tutor-message--thinking');
+  row.dataset.role = 'tutor-thinking-indicator';
+  row.setAttribute('role', 'status');
+  row.setAttribute('aria-live', 'polite');
+  row.setAttribute('aria-atomic', 'true');
+  row.append(element('span', 'tutor-message__author', 'AI ติวเตอร์'));
+  const content = element('p', 'tutor-message__content', 'กำลังคิด');
+  const dots = element('span', 'tutor-thinking-indicator__dots', '...');
+  dots.setAttribute('aria-hidden', 'true');
+  content.append(dots);
+  row.append(content);
+  return row;
+}
+
 function emptyState(title, description) {
   const state = element('section', 'tutor-empty-state');
   state.append(element('h3', '', title), element('p', '', description));
@@ -159,6 +195,9 @@ function emptyState(title, description) {
 export function renderTutorPage({
   loadConversations = listTutorConversationsRequest,
   loadConversation = getTutorConversationRequest,
+  updateConversationTags = updateTutorConversationTagsRequest,
+  deleteConversation = deleteTutorConversationRequest,
+  confirmConversationDelete = (message) => window.confirm(message),
   createConversation = createTutorConversationRequest,
   createConversationWithImages = createTutorConversationWithImagesRequest,
   sendMessage = sendTutorMessageRequest,
@@ -166,6 +205,10 @@ export function renderTutorPage({
   retryMessage = retryTutorMessageRequest,
   loadProviders = getAiProvidersRequest,
   loadTags = listTagsRequest,
+  createTag = createTagRequest,
+  updateTag = updateTagRequest,
+  deleteTag = deleteTagRequest,
+  confirmTagDelete = (message) => window.confirm(message),
   getAttachmentUrl = getTutorAttachmentUrlRequest,
   navigate,
 } = {}) {
@@ -348,6 +391,9 @@ export function renderTutorPage({
   input.dataset.role = 'tutor-input';
   inputLabel.htmlFor = input.id;
   const selectedTagIds = new Set();
+  const editingTagIds = new Set();
+  let editingConversationId = null;
+  let tagDialogReturnFocus = null;
   let tagPicker;
   const tagDialogLayer = element('div', 'tutor-tag-dialog-layer');
   tagDialogLayer.hidden = true;
@@ -369,12 +415,79 @@ export function renderTutorPage({
   const tagDialogHint = element('p', 'tutor-tag-dialog__hint', 'เลือกแท็กที่ต้องการใช้กับคำถามใหม่');
   tagDialogHint.hidden = true;
   const tagPickerContainer = element('div', 'tutor-tag-dialog__content');
+  const tagDialogActions = element('div', 'tutor-tag-dialog__actions');
+  tagDialogActions.hidden = true;
+  const tagDialogCancel = element('button', 'button button-secondary', 'ยกเลิก');
+  tagDialogCancel.type = 'button';
+  tagDialogCancel.dataset.action = 'cancel-conversation-tag-edit';
+  const tagDialogSave = element('button', 'button button-primary', 'บันทึกแท็ก');
+  tagDialogSave.type = 'button';
+  tagDialogSave.dataset.action = 'save-conversation-tags';
+  tagDialogActions.append(tagDialogCancel, tagDialogSave);
+  const selectedTagsForDialog = () => (editingConversationId === null ? selectedTagIds : editingTagIds);
   tagPicker = renderTagPicker({
     catalog: tagCatalog,
+    maxSelectedTagCount: MAX_TUTOR_TAGS,
+    onSelectionLimitReached: () => setPageMessage(`เลือกได้ไม่เกิน ${MAX_TUTOR_TAGS} แท็กต่อแชต`, true),
     onToggle: (id, selected) => {
-      if (selected) selectedTagIds.add(id);
-      else selectedTagIds.delete(id);
+      const selection = selectedTagsForDialog();
+      if (selected) selection.add(id);
+      else selection.delete(id);
+      clearTagSelectionLimitMessage();
     },
+    onCreate: async (payload) => {
+      const created = await createTag(payload);
+      const id = Number(created?.id);
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        throw new Error('สร้างแท็กวิชาแล้ว แต่ไม่ได้รับรหัสแท็กที่ใช้งานได้');
+      }
+      const createdTag = {
+        ...created,
+        id,
+        name: typeof created.name === 'string' && created.name.trim() ? created.name.trim() : payload.name,
+        color: created.color || payload.color || 'violet',
+        is_builtin: false,
+        parent_id: null,
+      };
+      try {
+        await reloadTagCatalog();
+      } catch {
+        applyTagCatalog({ tags: [...tagCatalog.tags, createdTag] });
+      }
+      const selection = selectedTagsForDialog();
+      if (!selection.has(id) && selection.size >= MAX_TUTOR_TAGS) {
+        tagPicker.setSelectedTagIds([...selection]);
+        setPageMessage(
+          `สร้างแท็กวิชา “${createdTag.name}” แล้ว แต่เลือกได้ไม่เกิน ${MAX_TUTOR_TAGS} แท็กต่อแชต`,
+          true,
+        );
+        return;
+      }
+      selection.add(id);
+      tagPicker.setSelectedTagIds([...selection]);
+      setPageMessage(`สร้างแท็กวิชา “${createdTag.name}” แล้วและเลือกให้แล้ว`);
+    },
+    onManage: (returnFocus) => openTagManagementDialog({
+      catalog: tagCatalog,
+      loadTags: reloadTagCatalog,
+      updateTag,
+      deleteTag,
+      confirmDelete: confirmTagDelete,
+      onCatalogChange: (catalog, details) => {
+        applyTagCatalog(catalog);
+        if (details?.action === 'delete') {
+          selectedTagIds.delete(Number(details.tag?.id));
+          editingTagIds.delete(Number(details.tag?.id));
+          tagPicker.setSelectedTagIds([...selectedTagsForDialog()]);
+          if (Number(selectedFilterTagId) === Number(details.tag?.id)) {
+            selectedFilterTagId = null;
+            tagFilter.value = '';
+          }
+        }
+      },
+      onMessage: setPageMessage,
+      returnFocus,
+    }),
   });
   const tagPickerSearch = tagPicker.querySelector('.tag-picker-search');
   if (tagPickerSearch) {
@@ -387,10 +500,8 @@ export function renderTutorPage({
     tagPickerList.setAttribute('role', 'group');
     tagPickerList.setAttribute('aria-label', 'รายการวิชาและหัวข้อ');
   }
-  const tagCreateButton = tagPicker.querySelector('.tag-picker-create');
-  if (tagCreateButton) tagCreateButton.hidden = true;
   tagPickerContainer.append(tagPicker);
-  tagDialog.append(tagDialogHeader, tagDialogHint, tagPickerContainer);
+  tagDialog.append(tagDialogHeader, tagDialogHint, tagPickerContainer, tagDialogActions);
   tagDialogLayer.append(tagDialog);
   const attachmentControls = element('div', 'tutor-attachment-controls');
   const attachmentInput = element('input', 'tutor-attachment-input');
@@ -448,6 +559,22 @@ export function renderTutorPage({
   composer.append(modelPicker, inputLabel, input, attachmentPreviews, imageCapability, composerControls);
 
   function openTagDialog() {
+    if (activeConversationId !== null && activeConversation) {
+      openConversationTagEditor(activeConversation, contextTrigger);
+      return;
+    }
+    editingConversationId = null;
+    editingTagIds.clear();
+    tagDialogTitle.textContent = 'เลือกวิชาและหัวข้อ';
+    tagDialogHint.textContent = 'เลือกแท็กที่ต้องการใช้กับคำถามใหม่';
+    tagDialogActions.hidden = true;
+    tagDialogSave.disabled = false;
+    tagDialogCancel.disabled = false;
+    tagDialogClose.disabled = false;
+    tagPicker.setSelectedTagIds([...selectedTagIds]);
+    tagPickerContainer.hidden = Boolean(activeConversationId);
+    tagDialogHint.hidden = !activeConversationId;
+    tagDialogReturnFocus = contextTrigger;
     if (!modelPicker.hidden) closeModelPicker();
     tagDialogLayer.hidden = false;
     contextTrigger.setAttribute('aria-expanded', 'true');
@@ -457,11 +584,130 @@ export function renderTutorPage({
     firstControl?.focus();
   }
 
+  function openConversationTagEditor(item, returnFocus) {
+    const conversationId = Number(item?.id);
+    if (!Number.isSafeInteger(conversationId) || conversationId <= 0
+      || item.status === 'processing' || mutatingConversationIds.has(conversationId) || isBusy) return;
+    if (!modelPicker.hidden) closeModelPicker();
+    editingConversationId = conversationId;
+    editingTagIds.clear();
+    for (const tag of item.tags || []) {
+      const id = Number(tag.id);
+      if (Number.isSafeInteger(id) && id > 0) editingTagIds.add(id);
+    }
+    tagPicker.setSelectedTagIds([...editingTagIds]);
+    tagDialogTitle.textContent = 'แก้ไขแท็กแชต';
+    tagDialogHint.textContent = 'เลือกแท็กที่ต้องการกำหนดให้แชตนี้';
+    tagDialogHint.hidden = false;
+    tagPickerContainer.hidden = false;
+    tagDialogActions.hidden = false;
+    tagDialogSave.disabled = false;
+    tagDialogCancel.disabled = false;
+    tagDialogClose.disabled = false;
+    tagDialogReturnFocus = returnFocus;
+    contextTrigger.setAttribute('aria-expanded', String(returnFocus === contextTrigger));
+    tagDialogLayer.hidden = false;
+    tagPicker.querySelector('.tag-picker-search')?.focus();
+  }
+
   function closeTagDialog({ returnFocus = false } = {}) {
     if (tagDialogLayer.hidden) return;
+    const returnTarget = tagDialogReturnFocus || contextTrigger;
     tagDialogLayer.hidden = true;
     contextTrigger.setAttribute('aria-expanded', 'false');
-    if (returnFocus) contextTrigger.focus();
+    tagDialogReturnFocus = null;
+    editingConversationId = null;
+    editingTagIds.clear();
+    tagDialogTitle.textContent = 'เลือกวิชาและหัวข้อ';
+    tagDialogHint.textContent = 'เลือกแท็กที่ต้องการใช้กับคำถามใหม่';
+    tagDialogActions.hidden = true;
+    tagDialogSave.disabled = false;
+    tagDialogCancel.disabled = false;
+    tagDialogClose.disabled = false;
+    tagPicker.setSelectedTagIds([...selectedTagIds]);
+    tagPickerContainer.hidden = Boolean(activeConversationId);
+    tagDialogHint.hidden = !activeConversationId;
+    if (returnFocus && returnTarget?.isConnected) returnTarget.focus();
+  }
+
+  async function saveConversationTags() {
+    const conversationId = editingConversationId;
+    if (conversationId === null || isBusy || mutatingConversationIds.has(conversationId)) return;
+    const item = conversations.find((conversation) => Number(conversation.id) === conversationId);
+    if (!item || item.status === 'processing') return;
+
+    const tagIds = [...editingTagIds];
+    mutatingConversationIds.add(conversationId);
+    tagDialogSave.disabled = true;
+    tagDialogCancel.disabled = true;
+    tagDialogClose.disabled = true;
+    renderHistory();
+    try {
+      const updated = await updateConversationTags(conversationId, tagIds);
+      const updatedTags = Array.isArray(updated?.tags)
+        ? updated.tags
+        : tagCatalog.tags.filter((tag) => tagIds.includes(Number(tag.id)));
+      conversations = conversations.map((conversation) => (
+        Number(conversation.id) === conversationId
+          ? { ...conversation, tags: updatedTags }
+          : conversation
+      ));
+      if (activeConversationId === conversationId && activeConversation) {
+        activeConversation = { ...activeConversation, tags: updatedTags };
+      }
+      closeTagDialog();
+      renderHistory();
+      if (activeConversationId === conversationId) renderConversation();
+      setPageMessage('บันทึกแท็กของแชตแล้ว');
+      historyList.querySelector(`[data-conversation-id="${conversationId}"] [data-action="edit-conversation-tags"]`)?.focus();
+    } catch (error) {
+      setPageMessage(error?.message || 'บันทึกแท็กไม่สำเร็จ กรุณาลองอีกครั้ง', true);
+    } finally {
+      mutatingConversationIds.delete(conversationId);
+      renderHistory();
+      if (!tagDialogLayer.hidden) {
+        tagDialogSave.disabled = false;
+        tagDialogCancel.disabled = false;
+        tagDialogClose.disabled = false;
+      }
+    }
+  }
+
+  async function removeConversationFromHistory(item) {
+    const conversationId = Number(item?.id);
+    if (!Number.isSafeInteger(conversationId) || conversationId <= 0
+      || item.status === 'processing' || mutatingConversationIds.has(conversationId) || isBusy) return;
+    const title = item.title || 'แชตนี้';
+    if (!confirmConversationDelete(`ต้องการลบ “${title}” หรือไม่? ข้อความและไฟล์แนบในแชตนี้จะถูกลบด้วย`)) return;
+
+    mutatingConversationIds.add(conversationId);
+    renderHistory();
+    setPageMessage('กำลังลบแชต…');
+    try {
+      await deleteConversation(conversationId);
+      conversations = conversations.filter((conversation) => Number(conversation.id) !== conversationId);
+      if (editingConversationId === conversationId) closeTagDialog();
+      if (activeConversationId === conversationId) {
+        activeConversationId = null;
+        activeConversation = null;
+        isThinking = false;
+        pendingSubmission = null;
+        selectedResponseLanguage = 'th';
+        responseLanguageSelect.value = selectedResponseLanguage;
+        selectedTagIds.clear();
+        tagPicker.setSelectedTagIds([]);
+        tagPickerContainer.hidden = false;
+        tagDialogHint.hidden = true;
+        clearSelectedAttachments();
+        renderConversation();
+      }
+      setPageMessage('ลบแชตแล้ว');
+    } catch (error) {
+      setPageMessage(error?.message || 'ลบแชตไม่สำเร็จ กรุณาลองอีกครั้ง', true);
+    } finally {
+      mutatingConversationIds.delete(conversationId);
+      renderHistory();
+    }
   }
 
   function closeHistoryPanel({ focusConversation = false, returnFocus = false } = {}) {
@@ -524,9 +770,11 @@ export function renderTutorPage({
   let conversations = [];
   let activeConversation = null;
   let activeConversationId = null;
+  const mutatingConversationIds = new Set();
   let isLoadingHistory = false;
   let historyError = '';
   let isBusy = false;
+  let isThinking = false;
   let pendingSubmission = null;
   let aiCatalog = { providers: [], default_selection: null };
   let selectedProviderId = '';
@@ -791,6 +1039,15 @@ export function renderTutorPage({
     else delete pageMessage.dataset.state;
   }
 
+  function clearTagSelectionLimitMessage() {
+    if (
+      pageMessage.dataset.state === 'error'
+      && pageMessage.textContent.includes(`ไม่เกิน ${MAX_TUTOR_TAGS} แท็กต่อแชต`)
+    ) {
+      setPageMessage('');
+    }
+  }
+
   function renderHistory() {
     historyList.replaceChildren();
     if (isLoadingHistory) {
@@ -810,7 +1067,13 @@ export function renderTutorPage({
       ));
       return;
     }
-    historyList.append(...conversations.map((item) => renderConversationCard(item, openConversation)));
+    historyList.append(...conversations.map((item) => renderConversationCard(
+      item,
+      openConversation,
+      openConversationTagEditor,
+      removeConversationFromHistory,
+      mutatingConversationIds.has(Number(item.id)),
+    )));
   }
 
   function renderConversation() {
@@ -846,6 +1109,7 @@ export function renderTutorPage({
     } else {
       messages.append(emptyState('ถามได้ทุกเมื่อ', 'พิมพ์คำถามไว้ด้านล่าง แล้ว AI จะช่วยอธิบายหรือถามกลับหากต้องการบริบทเพิ่ม'));
     }
+    if (isThinking) messages.append(renderTutorThinkingIndicator());
 
     const awaitingClarification = statusValue === 'awaiting_clarification';
     inputLabel.textContent = awaitingClarification ? 'คำตอบเพิ่มเติม' : 'คำถามหรือข้อความเพิ่มเติม';
@@ -853,6 +1117,9 @@ export function renderTutorPage({
       ? 'ตอบคำถามเพิ่มเติมเพื่อให้ AI อธิบายได้ตรงจุด…'
       : 'พิมพ์สิ่งที่สงสัย หรือให้บริบทเพิ่มเติม…';
     input.disabled = isBusy;
+    contextTrigger.setAttribute('aria-label', activeConversationId
+      ? 'แก้ไขแท็กของแชตปัจจุบัน'
+      : 'เลือกวิชาและหัวข้อสำหรับคำถามใหม่');
     retryButton.hidden = !pendingSubmission || isBusy;
     retryButton.disabled = isBusy;
     providerSelect.disabled = isBusy || aiCatalog.providers.length === 0;
@@ -889,8 +1156,7 @@ export function renderTutorPage({
     }
   }
 
-  async function reloadTagCatalog() {
-    const catalog = await loadTags();
+  function applyTagCatalog(catalog) {
     tagCatalog = catalog && Array.isArray(catalog.tags) ? catalog : { tags: [] };
     tagPicker.setCatalog(tagCatalog);
     const replacement = renderTagFilter(tagCatalog, selectedFilterTagId, (id) => {
@@ -902,8 +1168,15 @@ export function renderTutorPage({
     tagFilter = replacement;
   }
 
+  async function reloadTagCatalog() {
+    const catalog = await loadTags();
+    applyTagCatalog(catalog);
+    return tagCatalog;
+  }
+
   async function openConversation(id) {
-    if (isBusy) return;
+    if (isBusy || mutatingConversationIds.has(Number(id))) return;
+    isThinking = false;
     setPageMessage('กำลังเปิดบทสนทนา…');
     try {
       const detail = await loadConversation(id);
@@ -911,6 +1184,7 @@ export function renderTutorPage({
       if (!Number.isSafeInteger(numericId) || numericId <= 0) throw new Error('ข้อมูลบทสนทนาไม่ถูกต้อง');
       activeConversationId = numericId;
       activeConversation = detail;
+      isThinking = detail.status === 'processing';
       const latestUserMessage = [...(detail.messages || [])].reverse().find((item) => item.role === 'user');
       selectedResponseLanguage = latestUserMessage?.response_language === 'en' ? 'en' : 'th';
       responseLanguageSelect.value = selectedResponseLanguage;
@@ -939,6 +1213,7 @@ export function renderTutorPage({
 
   function setOptimisticSubmission(submission) {
     pendingSubmission = submission;
+    isThinking = true;
     const existing = activeConversation?.messages || [];
     activeConversation = {
       id: activeConversationId,
@@ -992,6 +1267,7 @@ export function renderTutorPage({
       if (!Number.isSafeInteger(resultId) || resultId <= 0) throw new Error('ระบบไม่ได้ส่งข้อมูลบทสนทนากลับมา');
       activeConversationId = resultId;
       activeConversation = result;
+      isThinking = result.status === 'processing';
       pendingSubmission = result?.status === 'retryable_error' || result?.status === 'processing'
         ? {
           ...submission,
@@ -1010,6 +1286,7 @@ export function renderTutorPage({
       renderConversation();
       await refreshHistory();
     } catch (error) {
+      isThinking = false;
       const failedConversationId = Number(error?.detail?.conversation_id);
       const usableConversationId = Number.isSafeInteger(failedConversationId) && failedConversationId > 0
         ? failedConversationId
@@ -1080,6 +1357,7 @@ export function renderTutorPage({
     }
     activeConversationId = null;
     activeConversation = null;
+    isThinking = false;
     pendingSubmission = null;
     clearSelectedAttachments();
     selectedResponseLanguage = 'th';
@@ -1133,6 +1411,8 @@ export function renderTutorPage({
   modelPickerClose.addEventListener('click', () => closeModelPicker({ returnFocus: true }));
   contextTrigger.addEventListener('click', openTagDialog);
   tagDialogClose.addEventListener('click', () => closeTagDialog({ returnFocus: true }));
+  tagDialogCancel.addEventListener('click', () => closeTagDialog({ returnFocus: true }));
+  tagDialogSave.addEventListener('click', () => { void saveConversationTags(); });
   tagDialogLayer.addEventListener('click', (event) => {
     if (event.target === tagDialogLayer) closeTagDialog({ returnFocus: true });
   });

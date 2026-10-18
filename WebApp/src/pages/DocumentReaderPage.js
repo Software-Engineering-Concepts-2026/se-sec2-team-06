@@ -307,9 +307,10 @@ export function renderDocumentReaderPage({
     chips.setAttribute('aria-label', 'แท็กเอกสาร');
     if (!documentItem.tags?.length) chips.append(element('span', 'document-reader__untagged', 'ยังไม่ได้เลือกวิชา'));
     tagSummary.append(chips);
-    const manageTags = element('button', 'button button-secondary', 'จัดการแท็ก');
+    const manageTags = element('button', 'button button-secondary', 'เลือกแท็ก');
     manageTags.type = 'button';
     manageTags.dataset.action = 'manage-tags';
+    manageTags.setAttribute('aria-label', 'เลือกแท็กวิชา');
     manageTags.setAttribute('aria-expanded', 'false');
     const pickerContainer = element('div', 'document-reader__picker-container');
     pickerContainer.hidden = true;

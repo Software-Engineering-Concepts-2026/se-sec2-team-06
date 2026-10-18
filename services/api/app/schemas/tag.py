@@ -50,3 +50,7 @@ class TagCreate(BaseModel):
         if not value or not value.isprintable():
             raise ValueError("Tag name must contain printable characters")
         return value
+
+
+class TagUpdate(TagCreate):
+    """Replace the editable name and color of an owned custom tag."""

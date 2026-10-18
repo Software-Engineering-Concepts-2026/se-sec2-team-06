@@ -226,12 +226,12 @@ describe('resolveRoute', () => {
     expect(signedIn.querySelector('a[href="/tutor"]')?.textContent).toBe('AI ติวเตอร์');
   });
 
-  it('shows the Progress link only to signed-in users', () => {
+  it('keeps the Progress page out of the shared account menu', () => {
     const signedOut = renderNavbar(null);
     const signedIn = renderNavbar({ id: 4, display_name: 'Learner' });
 
     expect(signedOut.querySelector('a[href="/progress"]')).toBeNull();
-    expect(signedIn.querySelector('a[href="/progress"]')?.textContent).toBe('ความก้าวหน้า');
+    expect(signedIn.querySelector('a[href="/progress"]')).toBeNull();
   });
 
   it('normalizes trailing slashes and unknown routes to Home', () => {

@@ -219,6 +219,32 @@ describe('quiz tag API client', () => {
     }));
   });
 
+  it('updates a flat tag with its selected name and color', async () => {
+    const tag = { id: 8, name: 'Linear Algebra', color: 'pink', parent_id: null, is_builtin: false };
+    const payload = { name: 'Linear Algebra', color: 'pink' };
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => tag });
+
+    expect(apiClient.updateTag).toBeTypeOf('function');
+    await expect(apiClient.updateTag(8, payload, { fetchImpl })).resolves.toEqual(tag);
+    expect(fetchImpl).toHaveBeenCalledWith('/api/tags/8', expect.objectContaining({
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(payload),
+    }));
+  });
+
+  it('deletes a flat tag with a same-origin request', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({ ok: true, status: 204 });
+
+    expect(apiClient.deleteTag).toBeTypeOf('function');
+    await expect(apiClient.deleteTag(8, { fetchImpl })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledWith('/api/tags/8', expect.objectContaining({
+      method: 'DELETE',
+      credentials: 'same-origin',
+    }));
+  });
+
   it('replaces quiz tags with a same-origin JSON request', async () => {
     const item = { id: 42, title: 'Sets', tags: [{ id: 1, name: 'Mathematics' }] };
     const payload = { tag_ids: [1, 8] };
@@ -496,6 +522,24 @@ describe('AI tutor API client', () => {
       '/api/tutor/conversations?q=%E0%B9%80%E0%B8%8B%E0%B8%95+%26+%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%AA%E0%B8%B1%E0%B8%A1%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B8%98%E0%B9%8C&tag_id=8',
       expect.objectContaining({ method: 'GET', credentials: 'same-origin' }),
     );
+  });
+
+  it('updates saved conversation tags and deletes a saved conversation', async () => {
+    const updated = { ...conversation, tags: [{ id: 2, name: 'ฟิสิกส์', color: 'cyan', parent_id: null, is_builtin: true }] };
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => updated })
+      .mockResolvedValueOnce({ ok: true, status: 204 });
+
+    expect(apiClient.updateTutorConversationTags).toBeTypeOf('function');
+    expect(apiClient.deleteTutorConversation).toBeTypeOf('function');
+    await expect(apiClient.updateTutorConversationTags(23, [2], { fetchImpl })).resolves.toEqual(updated);
+    expect(fetchImpl).toHaveBeenLastCalledWith('/api/tutor/conversations/23/tags', expect.objectContaining({
+      method: 'PUT', credentials: 'same-origin', body: JSON.stringify({ tag_ids: [2] }),
+    }));
+    await expect(apiClient.deleteTutorConversation(23, { fetchImpl })).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenLastCalledWith('/api/tutor/conversations/23', expect.objectContaining({
+      method: 'DELETE', credentials: 'same-origin',
+    }));
   });
 
   it('loads the authenticated AI provider and model catalog', async () => {

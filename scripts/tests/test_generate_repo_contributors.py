@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -202,7 +203,7 @@ def test_render_svg_is_repo_scoped_and_contains_contributor_cards():
     assert "ghchart.rshah.org" not in svg
 
 
-def test_render_svg_styles_additions_and_deletions_as_large_colored_stats():
+def test_render_svg_styles_additions_and_deletions_as_distinct_stats():
     contributors = normalize_contributors(_payload(), max_contributors=10, weeks=12)
     svg = render_svg(
         repo="Software-Engineering-Concepts-2026/se-sec2-team-06",
@@ -214,6 +215,19 @@ def test_render_svg_styles_additions_and_deletions_as_large_colored_stats():
     assert ".diff-removed{font:700 15px" in svg
     assert '<tspan class="diff-added">+20</tspan>' in svg
     assert '<tspan class="diff-removed">−3</tspan>' in svg
+
+
+def test_render_svg_uses_only_grayscale_colors():
+    svg = render_svg(
+        repo="owner/repository",
+        contributors=normalize_contributors(_payload(), max_contributors=10, weeks=12),
+        generated_at="2026-08-31T00:00:00Z",
+    )
+
+    colors = re.findall(r"#([0-9a-fA-F]{6})", svg)
+
+    assert colors
+    assert all(color[0:2] == color[2:4] == color[4:6] for color in colors)
 
 
 def test_render_svg_stacks_contributor_cards_one_per_row():
@@ -228,8 +242,8 @@ def test_render_svg_stacks_contributor_cards_one_per_row():
     cards = [
         element
         for element in root.iter("{http://www.w3.org/2000/svg}rect")
-        if element.attrib.get("fill") == "#171f4d"
-        and element.attrib.get("stroke") == "#2a3671"
+        if element.attrib.get("fill") == "#171717"
+        and element.attrib.get("stroke") == "#424242"
         and float(element.attrib.get("width", 0)) > 900
         and float(element.attrib.get("y", 0)) >= 400
     ]

@@ -226,6 +226,67 @@ def get_owned_conversation(
     )
 
 
+def _claim_mutable_conversation(
+    session: Session,
+    user_id: int,
+    conversation_id: int,
+) -> TutorConversation:
+    # An UPDATE acquires the database row lock before returning. Keeping this
+    # transaction open through the mutation serializes it with message/retry
+    # claims, which use a conditional UPDATE on the same conversation row.
+    claimed = session.execute(
+        update(TutorConversation)
+        .where(
+            TutorConversation.id == conversation_id,
+            TutorConversation.user_id == user_id,
+            TutorConversation.status != "processing",
+        )
+        .values(updated_at=datetime.now(timezone.utc))
+        .execution_options(synchronize_session=False)
+    )
+    if claimed.rowcount != 1:
+        conversation = get_owned_conversation(session, user_id, conversation_id)
+        if conversation is None:
+            raise TutorConversationNotFoundError("The conversation is not available")
+        raise TutorTurnInProgressError("The conversation needs its current turn to finish first")
+
+    conversation = get_owned_conversation(session, user_id, conversation_id)
+    if conversation is None:
+        raise TutorConversationNotFoundError("The conversation is not available")
+    return conversation
+
+
+def update_conversation_tags(
+    session: Session,
+    user_id: int,
+    conversation_id: int,
+    tag_ids: list[int],
+) -> TutorConversation:
+    conversation = _claim_mutable_conversation(session, user_id, conversation_id)
+    conversation.tags = _accessible_tags(session, user_id, tag_ids)
+    session.commit()
+    updated = get_owned_conversation(session, user_id, conversation_id)
+    if updated is None:
+        raise RuntimeError("The tutoring conversation could not be loaded after updating its tags")
+    return updated
+
+
+def delete_conversation(
+    session: Session,
+    user_id: int,
+    conversation_id: int,
+) -> list[str]:
+    conversation = _claim_mutable_conversation(session, user_id, conversation_id)
+    storage_keys = sorted({
+        attachment.storage_key
+        for message in conversation.messages
+        for attachment in message.attachments
+    })
+    session.delete(conversation)
+    session.commit()
+    return storage_keys
+
+
 def add_user_message(
     session: Session,
     user_id: int,

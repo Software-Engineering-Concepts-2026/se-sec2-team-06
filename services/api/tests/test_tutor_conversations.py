@@ -24,6 +24,7 @@ from app.services.tutor_conversations import (
     mark_retryable_error,
     save_tutor_reply,
 )
+from app.services import tutor_conversations as tutor_conversation_service
 from app.tags.catalog import seed_builtin_subjects
 
 
@@ -811,6 +812,51 @@ def test_add_user_message_recovers_from_concurrent_commit_conflicts(
             assert created is False
             assert message.content == "Same question"
             assert len(replay.messages) == 2
+
+
+@pytest.mark.parametrize("mutation", ["update_tags", "delete"])
+def test_conversation_mutation_rejects_when_processing_claim_wins_race(
+    session_factory, monkeypatch, mutation
+):
+    with session_factory() as session:
+        user = _user(f"mutation-race-{mutation}@example.test")
+        session.add(user)
+        session.commit()
+        conversation = _conversation(session, user, status="answered")
+        conversation_id = conversation.id
+        math_id = session.scalar(select(Tag.id).where(Tag.name == "คณิตศาสตร์"))
+        original_claim = getattr(tutor_conversation_service, "_claim_mutable_conversation", None)
+
+        def processing_claim_wins(current_session, user_id, current_conversation_id):
+            with session_factory() as competing_session:
+                competing = competing_session.get(TutorConversation, current_conversation_id)
+                assert competing is not None
+                competing.status = "processing"
+                competing_session.commit()
+            return original_claim(current_session, user_id, current_conversation_id)
+
+        monkeypatch.setattr(
+            tutor_conversation_service,
+            "_claim_mutable_conversation",
+            processing_claim_wins,
+            raising=False,
+        )
+
+        if mutation == "update_tags":
+            with pytest.raises(TutorTurnInProgressError):
+                tutor_conversation_service.update_conversation_tags(
+                    session, user.id, conversation_id, [math_id]
+                )
+        else:
+            with pytest.raises(TutorTurnInProgressError):
+                tutor_conversation_service.delete_conversation(
+                    session, user.id, conversation_id
+                )
+
+        current = get_owned_conversation(session, user.id, conversation_id)
+        assert current is not None
+        assert current.status == "processing"
+        assert current.tags == []
 
 
 def test_create_conversation_propagates_integrity_error_without_a_winning_request(

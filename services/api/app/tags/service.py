@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, delete, or_, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Document, Quiz, Tag
+from app.models import Deadline, Document, Quiz, Tag
+from app.models.document import document_tags
+from app.models.tag import quiz_tags, tutor_conversation_tags
 
 
 class DuplicateTagNameError(ValueError):
@@ -25,6 +27,14 @@ class DocumentOrTagNotFoundError(LookupError):
 
 class DocumentTagAssignmentPersistenceError(RuntimeError):
     """Raised when a document-tag replacement cannot be committed."""
+
+
+class TagNotFoundError(LookupError):
+    """Raised when a tag is not an editable custom tag owned by the user."""
+
+
+class TagHasChildrenError(ValueError):
+    """Raised when deleting a tag would orphan its child tags."""
 
 
 def list_tag_catalog(session: Session, user_id: int) -> dict[str, list[dict[str, object]]]:
@@ -87,6 +97,70 @@ def create_tag(
         raise DuplicateTagNameError("A tag with this name already exists") from error
     session.refresh(tag)
     return tag
+
+
+def _owned_custom_tag(session: Session, user_id: int, tag_id: int) -> Tag:
+    tag = session.scalar(
+        select(Tag).where(
+            Tag.id == tag_id,
+            Tag.is_builtin.is_(False),
+            Tag.owner_id == user_id,
+        )
+    )
+    if tag is None:
+        raise TagNotFoundError("ไม่พบแท็กที่แก้ไขได้")
+    return tag
+
+
+def update_tag(
+    session: Session,
+    user_id: int,
+    tag_id: int,
+    name: str,
+    color: str,
+) -> Tag:
+    tag = _owned_custom_tag(session, user_id, tag_id)
+    normalized_name = name.strip().casefold()
+    duplicate_id = session.scalar(
+        select(Tag.id).where(
+            Tag.owner_id == user_id,
+            Tag.parent_id.is_(tag.parent_id) if tag.parent_id is None else Tag.parent_id == tag.parent_id,
+            Tag.name_key == normalized_name,
+            Tag.id != tag_id,
+        )
+    )
+    if duplicate_id is not None:
+        raise DuplicateTagNameError("A tag with this name already exists")
+
+    tag.name = name.strip()
+    tag.name_key = normalized_name
+    tag.color = color
+    session.execute(
+        update(Deadline)
+        .where(Deadline.tag_id == tag_id)
+        .values(subject=tag.name)
+    )
+    try:
+        session.commit()
+    except IntegrityError as error:
+        session.rollback()
+        raise DuplicateTagNameError("A tag with this name already exists") from error
+    session.refresh(tag)
+    return tag
+
+
+def delete_tag(session: Session, user_id: int, tag_id: int) -> None:
+    tag = _owned_custom_tag(session, user_id, tag_id)
+    child_id = session.scalar(select(Tag.id).where(Tag.parent_id == tag_id).limit(1))
+    if child_id is not None:
+        raise TagHasChildrenError("ลบแท็กนี้ไม่ได้ เพราะยังมีแท็กย่อยอยู่")
+
+    session.execute(delete(quiz_tags).where(quiz_tags.c.tag_id == tag_id))
+    session.execute(delete(document_tags).where(document_tags.c.tag_id == tag_id))
+    session.execute(delete(tutor_conversation_tags).where(tutor_conversation_tags.c.tag_id == tag_id))
+    session.execute(update(Deadline).where(Deadline.tag_id == tag_id).values(tag_id=None))
+    session.delete(tag)
+    session.commit()
 
 
 def replace_quiz_tags(

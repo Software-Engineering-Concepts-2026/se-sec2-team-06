@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Literal
 
 MAX_UPLOAD_BYTES = 20_000_000
-MAX_SOURCE_CHARS = 20_000
+MAX_QUIZ_UPLOAD_BYTES = 40_000_000
+MAX_SOURCE_CHARS = 200_000
 
 
 class DocumentExtractionError(ValueError):
@@ -54,13 +55,15 @@ def extract_document(
     filename: str,
     content: bytes,
     content_type: str | None = None,
+    *,
+    max_bytes: int = MAX_UPLOAD_BYTES,
 ) -> ExtractedDocument:
     """Extract bounded, normalized text without retaining the uploaded bytes."""
     del content_type  # Extension selects a parser; MIME headers are user-controlled.
     if not isinstance(content, bytes):
         raise InvalidDocumentError("Uploaded document must be bytes")
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise UploadTooLargeError(f"Upload exceeds {MAX_UPLOAD_BYTES} bytes")
+    if len(content) > max_bytes:
+        raise UploadTooLargeError(f"Upload exceeds {max_bytes} bytes")
 
     extension = Path(filename).suffix.lower()
     if extension == ".doc":
@@ -111,8 +114,6 @@ def extract_document(
     if not text:
         raise EmptyDocumentError("No usable text was found in the document")
     if len(text) > MAX_SOURCE_CHARS:
-        raise SourceTextTooLongError(
-            f"Extracted text contains {len(text)} characters; limit is {MAX_SOURCE_CHARS}"
-        )
+        raise SourceTextTooLongError("Extracted text exceeds the supported limit")
 
     return ExtractedDocument(source_type=source_type, text=text, locators=locators)

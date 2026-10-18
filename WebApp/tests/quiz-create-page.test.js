@@ -3,12 +3,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderQuizCreatePage } from '../src/pages/QuizCreatePage.js';
 
+function chooseDropdownOption(page, selectId, optionLabel) {
+  const trigger = page.querySelector(`#${selectId}-trigger`);
+  trigger.click();
+  const option = [...page.querySelectorAll(`#${selectId}-options [role="option"]`)]
+    .find((item) => item.textContent.trim() === optionLabel);
+  expect(option).toBeDefined();
+  option.click();
+}
+
 describe('quiz creation page', () => {
   beforeEach(() => {
     document.body.replaceChildren();
   });
 
-  it('test_quiz_create_selects_keep_labels_and_selected_values', async () => {
+  it('shows a floating, accessible dropdown for every quiz select', async () => {
     const page = renderQuizCreatePage({
       loadProviders: vi.fn().mockResolvedValue({
         providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }],
@@ -23,8 +32,65 @@ describe('quiz creation page', () => {
       expect(select.tagName).toBe('SELECT');
       expect(select.classList.contains('themed-select')).toBe(true);
       expect(select.labels[0]?.textContent.trim()).not.toBe('');
+      const trigger = page.querySelector(`#${select.id}-trigger`);
+      expect(trigger?.getAttribute('aria-haspopup')).toBe('listbox');
+      expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+      expect(page.querySelector(`#${select.id}-options`)?.hidden).toBe(true);
     }
     expect(selects.map(({ value }) => value)).toEqual(['openai', 'gpt-5-mini', 'th', 'intermediate']);
+
+    chooseDropdownOption(page, 'quiz-language', 'English');
+    chooseDropdownOption(page, 'quiz-difficulty', 'ขั้นสูง');
+    expect(page.querySelector('#quiz-language').value).toBe('en');
+    expect(page.querySelector('#quiz-difficulty').value).toBe('advanced');
+  });
+
+  it('only offers PDF, Markdown and TXT files with a 40 MB limit', () => {
+    const page = renderQuizCreatePage({ loadProviders: vi.fn().mockResolvedValue({ providers: [] }) });
+    const fileInput = page.querySelector('#quiz-source-file');
+    const fileHint = fileInput.parentElement.querySelector('small').textContent;
+
+    expect(fileInput.accept).toBe('.md,.txt,.pdf,text/markdown,text/plain,application/pdf');
+    expect(fileHint).toContain('Markdown, TXT และ PDF');
+    expect(fileHint).toContain('40 MB');
+    expect(fileHint).not.toContain('DOCX');
+  });
+
+  it('rejects DOCX files before sending them to quiz generation', async () => {
+    const submitQuiz = vi.fn();
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({ providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }] }),
+      submitQuiz,
+    });
+    document.body.append(page);
+    const fileInput = page.querySelector('#quiz-source-file');
+    Object.defineProperty(fileInput, 'files', {
+      configurable: true,
+      value: [new File(['word document'], 'lesson.docx')],
+    });
+
+    page.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => expect(page.querySelector('[data-quiz-message]').textContent).toContain('PDF, Markdown หรือ TXT'));
+
+    expect(submitQuiz).not.toHaveBeenCalled();
+  });
+
+  it('rejects quiz source files larger than 40 MB before upload', async () => {
+    const submitQuiz = vi.fn();
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({ providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }] }),
+      submitQuiz,
+    });
+    document.body.append(page);
+    const fileInput = page.querySelector('#quiz-source-file');
+    const oversizedFile = new File(['x'], 'large.md', { type: 'text/markdown' });
+    Object.defineProperty(oversizedFile, 'size', { configurable: true, value: 40_000_001 });
+    Object.defineProperty(fileInput, 'files', { configurable: true, value: [oversizedFile] });
+
+    page.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await vi.waitFor(() => expect(page.querySelector('[data-quiz-message]').textContent).toContain('40 MB'));
+
+    expect(submitQuiz).not.toHaveBeenCalled();
   });
 
   it('lets a learner choose a provider/model and submits the quiz options', async () => {
@@ -45,16 +111,18 @@ describe('quiz creation page', () => {
     expect(provider.value).toBe('gemini');
     expect(model.options[0].value).toBe('gemini-2.5-flash-lite');
 
-    provider.value = 'claude';
-    provider.dispatchEvent(new Event('change', { bubbles: true }));
+    chooseDropdownOption(page, 'quiz-provider', 'Claude');
     expect(model.options[0].value).toBe('claude-sonnet-5');
+    expect(page.querySelector('#quiz-provider-trigger').textContent).toContain('Claude');
+    expect(page.querySelector('#quiz-provider-options').hidden).toBe(true);
 
     const fileInput = page.querySelector('#quiz-source-file');
     const file = new File(['course notes'], 'notes.md', { type: 'text/markdown' });
     Object.defineProperty(fileInput, 'files', { configurable: true, value: [file] });
     page.querySelector('#quiz-question-count').value = '5';
-    page.querySelector('#quiz-language').value = 'en';
-    page.querySelector('#quiz-difficulty').value = 'advanced';
+    chooseDropdownOption(page, 'quiz-language', 'English');
+    chooseDropdownOption(page, 'quiz-difficulty', 'ขั้นสูง');
+    page.querySelector('[name="question_types"][value="true_false"]').click();
 
     page.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     await vi.waitFor(() => expect(submitQuiz).toHaveBeenCalledOnce());
@@ -66,6 +134,7 @@ describe('quiz creation page', () => {
     expect(submitted.get('question_count')).toBe('5');
     expect(submitted.get('language')).toBe('en');
     expect(submitted.get('difficulty')).toBe('advanced');
+    expect(submitted.getAll('question_types')).toEqual(['true_false']);
     expect(page.querySelector('[data-quiz-result]').textContent).toContain('Network Security');
     expect(page.querySelector('[data-quiz-result]').textContent).toContain('5');
     const startLink = page.querySelector('[data-route="/quizzes/12/take"]');

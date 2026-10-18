@@ -25,6 +25,8 @@ import {
   deleteDocument,
   listDeadlines,
   createDeadline,
+  updateTag,
+  deleteTag,
   updateDeadline,
   deleteDeadline,
   listTutorConversations,
@@ -202,6 +204,9 @@ function render() {
     page = renderDeadlinesPage({
       loadDeadlines: listDeadlines,
       loadTags: listTags,
+      createTag,
+      updateTag,
+      deleteTag,
       createDeadline,
       updateDeadline,
       deleteDeadline,
@@ -216,6 +221,9 @@ function render() {
       retryMessage: retryTutorMessage,
       loadProviders: getAiProviders,
       loadTags: listTags,
+      createTag,
+      updateTag,
+      deleteTag,
       navigate,
     });
   } else if (route.page === 'progress') {

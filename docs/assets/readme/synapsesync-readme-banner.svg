@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="480" viewBox="0 0 1600 480" role="img" aria-labelledby="title description">
+  <title id="title">SynapseSync — Learn, Practice, Progress</title>
+  <desc id="description">A monochrome SynapseSync banner. A soft light sweep and network node move in the animated GIF generated from this artwork.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#050505"/>
+      <stop offset="0.55" stop-color="#171717"/>
+      <stop offset="1" stop-color="#080808"/>
+    </linearGradient>
+    <radialGradient id="softGlow" cx="0.2" cy="0.44" r="0.8">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lightSweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="480" rx="32" fill="url(#background)"/>
+  <rect width="1600" height="480" rx="32" fill="url(#softGlow)"/>
+
+  <g fill="none" stroke="#dedede" stroke-opacity="0.13" stroke-width="2">
+    <path d="M980 86 C1090 28 1170 160 1272 94 S1450 84 1545 144"/>
+    <path d="M1008 368 C1112 300 1214 416 1310 344 S1472 328 1560 376"/>
+    <path d="M1172 102 L1224 156 L1320 136 L1392 202 L1512 176"/>
+  </g>
+  <g fill="#d9d9d9" fill-opacity="0.5">
+    <circle cx="1172" cy="102" r="5"/>
+    <circle cx="1224" cy="156" r="4"/>
+    <circle cx="1320" cy="136" r="6"/>
+    <circle cx="1392" cy="202" r="4"/>
+    <circle cx="1512" cy="176" r="5"/>
+    <circle cx="1088" cy="332" r="4"/>
+    <circle cx="1244" cy="386" r="5"/>
+    <circle cx="1468" cy="328" r="4"/>
+  </g>
+  <circle id="travelling-node-halo" cx="1172" cy="102" r="16" fill="#ffffff" fill-opacity="0.12"/>
+  <circle id="travelling-node" cx="1172" cy="102" r="6" fill="#ffffff"/>
+
+  <rect x="96" y="96" width="288" height="288" rx="38" fill="#ffffff" fill-opacity="0.08" stroke="#e4e4e4" stroke-opacity="0.48" stroke-width="2"/>
+  <image href="./synapsesync-readme-mark.png" x="112" y="112" width="256" height="256" preserveAspectRatio="xMidYMid meet"/>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="456" y="155" fill="#c9c9c9" font-size="20" font-weight="700" letter-spacing="5">YOUR AI-POWERED STUDY COMPANION</text>
+    <text x="450" y="250" fill="#ffffff" font-size="76" font-weight="800" letter-spacing="2">SYNAPSESYNC</text>
+    <rect x="458" y="276" width="528" height="4" rx="2" fill="#ffffff" fill-opacity="0.28"/>
+    <rect id="light-sweep" x="458" y="276" width="150" height="4" rx="2" fill="url(#lightSweep)"/>
+    <text x="458" y="324" fill="#ededed" font-size="26" font-weight="600" letter-spacing="2">LEARN  •  PRACTICE  •  PROGRESS</text>
+    <text x="458" y="374" fill="#bdbdbd" font-size="20">A connected learning space for questions, explanations, and practice</text>
+  </g>
+
+  <rect x="2" y="2" width="1596" height="476" rx="30" fill="none" stroke="#f0f0f0" stroke-opacity="0.24" stroke-width="3"/>
+</svg>

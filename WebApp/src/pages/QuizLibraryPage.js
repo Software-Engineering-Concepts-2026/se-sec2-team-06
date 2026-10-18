@@ -1,12 +1,14 @@
 import {
   createTag as createTagRequest,
   deleteQuiz as deleteQuizRequest,
+  deleteTag as deleteTagRequest,
   listQuizzes,
   listTags,
   renameQuiz,
   replaceQuizTags,
+  updateTag as updateTagRequest,
 } from '../api/client.js';
-import { renderTagChips, renderTagFilter, renderTagPicker } from '../tags/tag-components.js';
+import { openTagManagementDialog, renderTagChips, renderTagFilter, renderTagPicker } from '../tags/tag-components.js';
 import { createTagAssignmentQueue } from '../tags/tag-assignment-queue.js';
 
 const SOURCE_LABELS = { md: 'Markdown', txt: 'Text', docx: 'DOCX', pdf: 'PDF' };
@@ -127,7 +129,11 @@ function createQuizCard(quiz, {
   setMessage,
   getTagCatalog,
   reloadTagCatalog,
+  onTagCatalogChange,
   createTag,
+  updateTag,
+  deleteTag,
+  confirmTagDelete,
   getTagAssignment,
   registerTagPicker,
   refreshTagPickers,
@@ -253,10 +259,10 @@ function createQuizCard(quiz, {
   const tagSummary = element('div', 'quiz-library-card__tag-summary');
   tagSummary.dataset.role = 'tag-summary';
   tagSummary.append(renderTagChips(quiz.tags ?? []));
-  const manageTagsButton = element('button', 'button button-quiet', 'จัดการแท็ก');
+  const manageTagsButton = element('button', 'button button-quiet', 'เลือกแท็ก');
   manageTagsButton.type = 'button';
   manageTagsButton.dataset.action = 'manage-tags';
-  manageTagsButton.setAttribute('aria-label', `จัดการแท็ก ${quiz.title || 'ข้อสอบ'}`);
+  manageTagsButton.setAttribute('aria-label', `เลือกแท็ก ${quiz.title || 'ข้อสอบ'}`);
   manageTagsButton.setAttribute('aria-expanded', 'false');
   const tagPickerContainer = element('div', 'quiz-library-card__picker-container');
   tagPickerContainer.hidden = true;
@@ -287,7 +293,11 @@ function createQuizCard(quiz, {
     tagPicker = renderTagPicker({
       catalog: getTagCatalog(),
       selectedTagIds: tagQueue.getTagIds(),
-      onToggle: (tagId) => tagQueue.toggle(tagId),
+      onToggle: (tagId) => {
+        tagQueue.toggle(tagId);
+        tagPickerContainer.hidden = true;
+        manageTagsButton.setAttribute('aria-expanded', 'false');
+      },
       onCreate: async (payload) => {
         setMessage('กำลังสร้างแท็ก…');
         let created;
@@ -320,6 +330,16 @@ function createQuizCard(quiz, {
         setMessage('สร้างแท็กแล้ว กำลังเพิ่มลงในข้อสอบ…');
         tagQueue.include(createdId);
       },
+      onManage: (returnFocus) => openTagManagementDialog({
+        catalog: getTagCatalog(),
+        loadTags: reloadTagCatalog,
+        updateTag,
+        deleteTag,
+        confirmDelete: confirmTagDelete,
+        onCatalogChange: (catalog, details) => onTagCatalogChange?.(catalog, details),
+        onMessage: setMessage,
+        returnFocus,
+      }),
     });
     tagPicker.dataset.role = 'tag-picker';
     tagPickerContainer.replaceChildren(tagPicker);
@@ -348,6 +368,9 @@ export function renderQuizLibraryPage({
   loadQuizzes = listQuizzes,
   loadTags = listTags,
   createTag = createTagRequest,
+  updateTag = updateTagRequest,
+  deleteTag = deleteTagRequest,
+  confirmTagDelete = (message) => window.confirm(message),
   saveQuizTags = replaceQuizTags,
   updateTitle = renameQuiz,
   deleteQuiz = deleteQuizRequest,
@@ -498,6 +521,7 @@ export function renderQuizLibraryPage({
 
   function setTagCatalog(catalog) {
     tagCatalog = catalog && Array.isArray(catalog.tags) ? catalog : { tags: [] };
+    const availableIds = new Set(tagCatalog.tags.map((tag) => Number(tag.id)));
     const replacement = renderTagFilter(tagCatalog, selectedTagId, (value) => {
       selectedTagId = value;
     });
@@ -505,7 +529,10 @@ export function renderQuizLibraryPage({
     tagFilter.replaceWith(replacement);
     tagFilter = replacement;
     for (const assignment of tagAssignments.values()) {
-      assignment.onChange?.(assignment.queue.getTagIds());
+      const currentIds = assignment.queue.getTagIds();
+      const validIds = currentIds.filter((id) => availableIds.has(Number(id)));
+      if (validIds.length !== currentIds.length) assignment.queue.replace(validIds);
+      assignment.onChange?.(validIds);
     }
     refreshTagPickers();
   }
@@ -596,7 +623,11 @@ export function renderQuizLibraryPage({
         setMessage,
         getTagCatalog: () => tagCatalog,
         reloadTagCatalog,
+        onTagCatalogChange: setTagCatalog,
         createTag,
+        updateTag,
+        deleteTag,
+        confirmTagDelete,
         saveQuizTags,
         getTagAssignment,
         registerTagPicker: (picker) => mountedTagPickers.add(picker),
