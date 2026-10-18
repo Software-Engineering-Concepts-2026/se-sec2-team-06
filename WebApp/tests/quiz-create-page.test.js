@@ -17,6 +17,24 @@ describe('quiz creation page', () => {
     document.body.replaceChildren();
   });
 
+  it('keeps the source dialog outside the form so its fixed backdrop spans the page', () => {
+    const page = renderQuizCreatePage({ loadProviders: vi.fn().mockResolvedValue({ providers: [] }) });
+    const form = page.querySelector('form');
+    const sourceDialog = page.querySelector('[data-quiz-source-dialog]');
+
+    expect(sourceDialog.parentElement).toBe(page);
+    expect(form.contains(sourceDialog)).toBe(false);
+  });
+
+  it('uses a CSS caret instead of a text glyph for the source selector icon', () => {
+    const page = renderQuizCreatePage({ loadProviders: vi.fn().mockResolvedValue({ providers: [] }) });
+    const caret = page.querySelector('.quiz-source-trigger__icon');
+
+    expect(caret).not.toBeNull();
+    expect(caret.textContent.trim()).toBe('');
+    expect(caret.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('shows a floating, accessible dropdown for every quiz select', async () => {
     const page = renderQuizCreatePage({
       loadProviders: vi.fn().mockResolvedValue({
@@ -54,6 +72,166 @@ describe('quiz creation page', () => {
     expect(fileHint).toContain('Markdown, TXT และ PDF');
     expect(fileHint).toContain('40 MB');
     expect(fileHint).not.toContain('DOCX');
+  });
+
+  it('opens the device file picker from the upload choice and shows the selected file name', async () => {
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({
+        providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }],
+      }),
+    });
+    document.body.append(page);
+    await vi.waitFor(() => expect(page.querySelector('#quiz-provider').options).toHaveLength(1));
+
+    const fileInput = page.querySelector('#quiz-source-file');
+    const devicePicker = vi.spyOn(fileInput, 'click').mockImplementation(() => {});
+    page.querySelector('[data-action="open-source-dialog"]').click();
+    page.querySelector('[data-action="choose-upload"]').click();
+
+    expect(devicePicker).toHaveBeenCalledOnce();
+    expect(page.querySelector('[data-quiz-source-dialog]').hidden).toBe(true);
+    expect(page.querySelector('[data-selected-document]').hidden).toBe(true);
+
+    Object.defineProperty(fileInput, 'files', {
+      configurable: true,
+      value: [new File(['notes'], 'lecture.pdf', { type: 'application/pdf' })],
+    });
+    fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(page.querySelector('[data-selected-file]').textContent).toContain('lecture.pdf');
+  });
+
+  it('opens a source dialog and creates a quiz from one supported library document', async () => {
+    const loadDocuments = vi.fn().mockResolvedValue([
+      {
+        id: 41,
+        title: 'บทเรียนเรื่องเซต',
+        original_filename: 'sets.md',
+        file_type: 'md',
+        size_bytes: 1024,
+      },
+      {
+        id: 42,
+        title: 'เอกสาร Word',
+        original_filename: 'lesson.docx',
+        file_type: 'docx',
+        size_bytes: 2048,
+      },
+    ]);
+    const submitQuiz = vi.fn().mockResolvedValue({ id: 31, title: 'แบบทดสอบเรื่องเซต', question_count: 5 });
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({
+        providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }],
+      }),
+      loadDocuments,
+      submitQuiz,
+    });
+    document.body.append(page);
+    await vi.waitFor(() => expect(page.querySelector('#quiz-provider').options).toHaveLength(1));
+
+    const openSourceDialog = page.querySelector('[data-action="open-source-dialog"]');
+    expect(openSourceDialog).not.toBeNull();
+    expect(loadDocuments).not.toHaveBeenCalled();
+
+    openSourceDialog.click();
+    const sourceDialog = page.querySelector('[data-quiz-source-dialog]');
+    expect(sourceDialog.hidden).toBe(false);
+    const chooseLibrary = page.querySelector('[data-action="choose-library"]');
+    expect(chooseLibrary).not.toBeNull();
+    chooseLibrary.click();
+    await vi.waitFor(() => expect(loadDocuments).toHaveBeenCalledOnce());
+    const libraryPanel = page.querySelector('[data-quiz-document-picker]');
+    expect(libraryPanel.hidden).toBe(false);
+    expect(libraryPanel.textContent).toContain('บทเรียนเรื่องเซต');
+    expect(libraryPanel.textContent).not.toContain('เอกสาร Word');
+
+    page.querySelector('[data-document-id="41"]').click();
+    expect(page.querySelector('[data-selected-document]').textContent).toContain('บทเรียนเรื่องเซต');
+    expect(sourceDialog.hidden).toBe(true);
+    page.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => expect(submitQuiz).toHaveBeenCalledOnce());
+    const submitted = submitQuiz.mock.calls[0][0];
+    expect(submitted.get('source_document_id')).toBe('41');
+    expect(submitted.get('file')).toBeNull();
+    expect(page.querySelector('[data-quiz-result]').textContent).toContain('แบบทดสอบเรื่องเซต');
+  });
+
+  it('searches the document library and reports when no supported documents are available', async () => {
+    const loadDocuments = vi.fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { id: 43, title: 'Lecture notes', original_filename: 'lecture.txt', file_type: 'txt', size_bytes: 128 },
+      ]);
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({
+        providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }],
+      }),
+      loadDocuments,
+    });
+    document.body.append(page);
+    await vi.waitFor(() => expect(page.querySelector('#quiz-provider').options).toHaveLength(1));
+
+    const openSourceDialog = page.querySelector('[data-action="open-source-dialog"]');
+    expect(openSourceDialog).not.toBeNull();
+    openSourceDialog.click();
+    const chooseLibrary = page.querySelector('[data-action="choose-library"]');
+    expect(chooseLibrary).not.toBeNull();
+    chooseLibrary.click();
+    await vi.waitFor(() => expect(loadDocuments).toHaveBeenCalledOnce());
+    expect(page.querySelector('[data-document-message]').textContent).toContain('ไม่พบเอกสาร');
+
+    const searchInput = page.querySelector('#quiz-document-search');
+    searchInput.value = 'lecture';
+    page.querySelector('[data-action="search-documents"]').click();
+    await vi.waitFor(() => expect(loadDocuments).toHaveBeenCalledTimes(2));
+
+    expect(loadDocuments).toHaveBeenLastCalledWith({ limit: 11, offset: 0, q: 'lecture' });
+    expect(page.querySelector('[data-document-id="43"]')?.textContent).toContain('Lecture notes');
+  });
+
+  it('shows at most ten library files at once and loads more when the list is scrolled', async () => {
+    const documents = Array.from({ length: 12 }, (_, index) => ({
+      id: index + 51,
+      title: `บทเรียน ${index + 1}`,
+      original_filename: `lesson-${index + 1}.txt`,
+      file_type: 'txt',
+      size_bytes: 128,
+    }));
+    const loadDocuments = vi.fn()
+      .mockResolvedValueOnce(documents.slice(0, 11))
+      .mockResolvedValueOnce(documents.slice(10, 12));
+    const page = renderQuizCreatePage({
+      loadProviders: vi.fn().mockResolvedValue({
+        providers: [{ id: 'openai', name: 'OpenAI', models: [{ id: 'gpt-5-mini', name: 'GPT 5 Mini' }] }],
+      }),
+      loadDocuments,
+    });
+    document.body.append(page);
+    await vi.waitFor(() => expect(page.querySelector('#quiz-provider').options).toHaveLength(1));
+
+    const openSourceDialog = page.querySelector('[data-action="open-source-dialog"]');
+    expect(openSourceDialog).not.toBeNull();
+    openSourceDialog.click();
+    const chooseLibrary = page.querySelector('[data-action="choose-library"]');
+    expect(chooseLibrary).not.toBeNull();
+    chooseLibrary.click();
+    await vi.waitFor(() => expect(page.querySelectorAll('[data-document-id]')).toHaveLength(10));
+
+    const search = page.querySelector('#quiz-document-search');
+    const list = page.querySelector('[data-document-list]');
+    expect(search.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(loadDocuments).toHaveBeenLastCalledWith({ limit: 11, offset: 0, q: '' });
+
+    Object.defineProperties(list, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 200 },
+      scrollTop: { configurable: true, value: 150 },
+    });
+    list.dispatchEvent(new Event('scroll'));
+    await vi.waitFor(() => expect(page.querySelectorAll('[data-document-id]')).toHaveLength(12));
+
+    expect(loadDocuments).toHaveBeenLastCalledWith({ limit: 11, offset: 10, q: '' });
+    expect(page.querySelector('[data-document-id="62"]')?.textContent).toContain('บทเรียน 12');
   });
 
   it('rejects DOCX files before sending them to quiz generation', async () => {

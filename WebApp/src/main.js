@@ -151,7 +151,7 @@ function render() {
       },
     });
   } else if (route.page === 'quiz-create') {
-    page = renderQuizCreatePage({ navigate });
+    page = renderQuizCreatePage({ loadDocuments: listDocuments, navigate });
   } else if (route.page === 'quiz-library') {
     page = renderQuizLibraryPage({ loadQuizzes: listQuizzes, updateTitle: renameQuiz, deleteQuiz, navigate });
   } else if (route.page === 'quiz-detail') {

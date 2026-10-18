@@ -18,7 +18,7 @@ from app.ai.provider import (
     ProviderQuotaExceeded,
     QuizProvider,
 )
-from app.models import Quiz, QuizAnswer, QuizAttempt, Tag, User
+from app.models import Document, Quiz, QuizAnswer, QuizAttempt, Tag, User
 from app.routers.auth import get_current_user, get_db, require_same_origin
 from app.schemas.quiz import (
     QuizAttemptReview,
@@ -48,7 +48,7 @@ from app.services.quiz_generator import (
     generate_and_save_quiz,
 )
 from app.services.quiz_grader import grade_answers
-from app.storage.providers import FileStorageProvider
+from app.storage.providers import FileStorageProvider, StorageProviderError
 from app.tags.service import (
     QuizOrTagNotFoundError,
     TagAssignmentPersistenceError,
@@ -213,24 +213,54 @@ def list_quiz_providers(
 @router.post("/generate", response_model=QuizInProgress, status_code=status.HTTP_201_CREATED)
 async def generate_quiz(
     request: Request,
-    file: Annotated[UploadFile, File(...)],
+    file: Annotated[UploadFile | None, File()] = None,
     question_count: Annotated[int, Form()] = 10,
     language: Annotated[str, Form()] = "th",
     difficulty: Annotated[str, Form()] = "intermediate",
     question_types: Annotated[list[str], Form()] = ["multiple_choice"],
     provider: Annotated[str | None, Form()] = None,
     model: Annotated[str | None, Form()] = None,
+    source_document_id: Annotated[int | None, Form(gt=0)] = None,
     session: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> QuizInProgress:
     require_same_origin(request)
-    safe_filename = _safe_source_filename(file.filename)
-    if Path(safe_filename).suffix.lower() not in _QUIZ_SOURCE_SUFFIXES:
-        await file.close()
-        raise HTTPException(
-            status_code=415,
-            detail="รองรับเฉพาะไฟล์ PDF, Markdown (.md) และ TXT (.txt)",
+    if (file is None) == (source_document_id is None):
+        if file is not None:
+            await file.close()
+        raise HTTPException(status_code=422, detail="เลือกไฟล์ หรือเอกสารจากคลังอย่างใดอย่างหนึ่ง")
+
+    storage: FileStorageProvider = request.app.state.storage_provider
+    library_document: Document | None = None
+    library_content_type: str | None = None
+    if file is not None:
+        source_filename = _safe_source_filename(file.filename)
+        safe_filename = source_filename
+        if Path(safe_filename).suffix.lower() not in _QUIZ_SOURCE_SUFFIXES:
+            await file.close()
+            raise HTTPException(
+                status_code=415,
+                detail="รองรับเฉพาะไฟล์ PDF, Markdown (.md) และ TXT (.txt)",
+            )
+    else:
+        library_document = session.scalar(
+            select(Document).where(
+                Document.id == source_document_id,
+                Document.user_id == user.id,
+            )
         )
+        if library_document is None:
+            raise HTTPException(status_code=404, detail="ไม่พบเอกสารนี้ในคลังของคุณ")
+        source_options = _QUIZ_SOURCE_TYPES.get(library_document.file_type)
+        if source_options is None:
+            raise HTTPException(
+                status_code=415,
+                detail="รองรับเอกสารจากคลังเฉพาะ PDF, Markdown และ TXT",
+            )
+        source_suffix, library_content_type = source_options
+        source_filename = _safe_source_filename(library_document.original_filename)
+        safe_filename = f"{Path(source_filename).stem}{source_suffix}"
+
     try:
         selection = resolve_model_selection(
             provider,
@@ -255,18 +285,30 @@ async def generate_quiz(
     except ValidationError as error:
         raise HTTPException(status_code=422, detail="ตัวเลือกแบบทดสอบไม่ถูกต้อง") from error
 
-    try:
-        content = await read_upload_limited(file, max_bytes=MAX_QUIZ_UPLOAD_BYTES)
-    except UploadTooLargeError as error:
-        raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 40 MB") from error
-    finally:
-        await file.close()
+    if file is not None:
+        try:
+            content = await read_upload_limited(file, max_bytes=MAX_QUIZ_UPLOAD_BYTES)
+        except UploadTooLargeError as error:
+            raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 40 MB") from error
+        finally:
+            await file.close()
+        source_content_type = file.content_type
+    else:
+        try:
+            content = storage.read("documents", library_document.storage_key)
+        except FileNotFoundError as error:
+            raise HTTPException(status_code=404, detail="ไม่พบไฟล์เอกสารนี้ในคลัง") from error
+        except (StorageProviderError, OSError) as error:
+            raise HTTPException(status_code=503, detail="ไม่สามารถโหลดเอกสารจากคลังได้ชั่วคราว") from error
+        if len(content) > MAX_QUIZ_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="ไฟล์มีขนาดเกิน 40 MB")
+        source_content_type = library_content_type
 
     try:
         source = extract_document(
             safe_filename,
             content,
-            file.content_type,
+            source_content_type,
             max_bytes=MAX_QUIZ_UPLOAD_BYTES,
         )
     except UploadTooLargeError as error:
@@ -277,7 +319,6 @@ async def generate_quiz(
         raise HTTPException(status_code=422, detail=str(error)) from error
 
     source_suffix, source_content_type = _QUIZ_SOURCE_TYPES[source.source_type]
-    storage = request.app.state.storage_provider
     source_storage_key: str | None = None
     try:
         source_storage_key = storage.new_key(user.id, source_suffix)
