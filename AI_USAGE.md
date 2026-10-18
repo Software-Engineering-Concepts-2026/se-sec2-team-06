@@ -1172,3 +1172,46 @@ Verify
 - Ruleset `Protect main - Lab 12B` ถูกเปิดใช้งานกับ `main`; หลักฐานแสดง require pull request, approval อย่างน้อย 1 คน และ required checks `lint`/`test`.
 - หลังบันทึกภาพ blocked ได้นำ assertion ที่ทำให้ fail ชั่วคราวออกจาก test file แล้ว; ผล GitHub Actions สำหรับ commit cleanup หลัง push ยัง pending และต้องตรวจจาก run ใหม่ก่อนสรุปว่า remote กลับมาเขียว
 - Post-quiz 12 draft เพิ่มใน `reflect.md`; ผู้จัดทำควรทบทวนและแก้ให้สะท้อนความเข้าใจของตนก่อนส่ง
+
+---
+
+## Final Update — SynapseSync Web App, Deployment, and Lab 15
+
+> ส่วนนี้เสริมบันทึกการใช้ AI ในงานเว็บและการ deploy ช่วงท้ายของโครงการ รวมถึงการเตรียม Final Reflection โดยอิงจาก commit, PR, เอกสาร และประวัติการทำงานที่ตรวจสอบได้ ไม่ระบุ prompt รายสัปดาห์ย้อนหลังในกรณีที่ไม่มีหลักฐานรองรับ
+
+### Tools Used
+
+- OpenAI Codex — ใช้เป็นผู้ช่วยวิเคราะห์ ออกแบบ ปรับปรุง และตรวจทาน SynapseSync WebApp/API, ชุดทดสอบ, เอกสาร deploy และร่าง Final Reflection
+
+### Prompt Purposes
+
+- แบ่งงานเว็บเป็น flow ที่ผู้เรียนใช้จริง เช่น dashboard, คลัง/อ่านเอกสาร, แบบทดสอบ, กำหนดส่งงาน, โปรไฟล์ และ AI Tutor
+- ปรับ UI จาก feedback และภาพตัวอย่าง โดยคงข้อกำหนดที่ผู้ใช้ระบุ เช่น รักษากราฟเดิม อ่านตัวเลขและข้อความให้ง่าย และใช้สีช่วยแยกวิชาหรือ tag งาน
+- ไล่ตรวจความต่างระหว่าง local กับ Render รวมถึงกรณีอัปโหลด/อ่านไฟล์ และวางแนวทางตรวจ branch, commit, environment, storage และ log ก่อนสรุปสาเหตุ
+- ช่วยจัดโครงสร้างเอกสารสำหรับการใช้งาน local/เว็บที่ deploy และสรุปหลักฐานให้เชื่อมกับ PR/commit
+- ช่วยจัดร่าง Final Reflection ให้ตอบครบ 8 ข้อ พร้อมบทเรียนและแผนที่นำไปใช้ต่อได้ โดยยึดข้อเท็จจริงจาก project artifacts และประสบการณ์ที่ผู้จัดทำเคยบันทึก
+
+### AI-assisted Content Accepted After Review
+
+- ข้อเสนอและการแก้ไขโค้ด/ชุดทดสอบที่เกี่ยวกับ UI, API, document reader, quizzes, deadlines, profile และ tutor ในงาน WebApp
+- ข้อเสนอด้านการแยก module, การจัดเก็บไฟล์และการตั้งค่า deploy รวมถึงถ้อยคำใน README และเอกสารประกอบ
+
+### AI-assisted Reflection Writing Support
+
+- Codex ช่วยเรียบเรียง `docs/final-reflection-67026023.md` จากประวัติ PR ของผู้จัดทำ ให้เห็นงานจริงตั้งแต่ prototype, architecture, Docker/FastAPI, tests/CI จนถึง WebApp และช่วยปรับภาษาไทยให้เป็นธรรมชาติ
+- รายละเอียดสถานะ PR และหลักฐานถูกเทียบกับหน้า PR ที่อ้างอิง โดยไม่กล่าวว่า PR #76 merge หรือ deploy แล้ว และไม่สรุปสาเหตุของปัญหา local/Render ที่ยังไม่มีหลักฐานยืนยัน
+- ข้อสรุปส่วนตัว เช่น สิ่งที่ภูมิใจ บทเรียน และแผนที่จะนำไปใช้ต่อ ควรตรงกับประสบการณ์และความคิดของผู้จัดทำก่อนส่ง
+
+### Human Review and Decisions
+
+- ผมเป็นผู้กำหนดขอบเขตและลำดับความสำคัญของฟีเจอร์ รูปแบบ UI ที่ต้องการ เงื่อนไขการเก็บไฟล์ และสิ่งที่ต้องคงไว้หรือห้ามเปลี่ยน
+- ผมใช้ภาพหน้าจอ, diff, repository artifacts และผลทดสอบที่มีเพื่อตรวจข้อเสนอ ไม่ถือว่าคำตอบหรือโค้ดจาก AI ถูกต้องโดยอัตโนมัติ
+- การตัดสินใจเชิงผลิตภัณฑ์/สถาปัตยกรรมและการยืนยันว่าข้อความ Reflection เป็นประสบการณ์ของผมเองเป็นความรับผิดชอบของผู้จัดทำ ไม่ใช่ของ AI
+- เอกสารนี้ไม่บันทึกค่า API key, secret, password หรือ connection string
+
+### Verification and Limitations
+
+- งาน WebApp และ README มีหลักฐานใน [PR #76](https://github.com/Software-Engineering-Concepts-2026/se-sec2-team-06/pull/76), commit `caa539c` (implementation) และ `eb1ff2e` (README/deployment and local usage); README ระบุเว็บ Render ที่ใช้เป็น demo
+- ภาพ PR #76 ที่ตรวจพบแสดง required checks เป็น failed แต่ภาพไม่ได้ยืนยันสาเหตุจาก log จึงไม่สรุปว่าเป็นปัญหาโค้ด, billing หรือสาเหตุใดโดยไม่มี log รองรับ
+- ภาพ local/Render แสดงผลไม่ตรงกันและ Render แจ้ง `PDF could not be parsed`; ยังไม่มีหลักฐานในภาพที่ยืนยัน root cause หรือยืนยันว่าการแก้ไขสุดท้ายผ่าน production smoke test แล้ว จึงไม่บันทึกว่าแก้สำเร็จ
+- Final Reflection เป็นร่างที่ AI ช่วยจัดถ้อยคำ ผู้จัดทำต้องตรวจตัวอย่าง ความรู้สึก และแผนในข้อ 5/8 ให้เป็นความจริงและเป็นเสียงของตนเองก่อนส่ง
