@@ -139,3 +139,75 @@ def test_read_tutor_attachment_rejects_path_traversal(tmp_path: Path) -> None:
 
     with pytest.raises(storage.InvalidTutorAttachmentError):
         storage.read_tutor_attachment("../outside.png", provider)
+
+
+def test_store_tutor_attachment_rejects_empty_and_non_image_uploads(tmp_path: Path) -> None:
+    from PIL import Image
+
+    storage = import_module("app.storage.tutor_attachments")
+    provider = _local_provider(tmp_path)
+    empty = _upload(b"", "image/png")
+    gif_stream = BytesIO()
+    Image.new("RGB", (2, 2), color=(10, 20, 30)).save(gif_stream, format="GIF")
+
+    with pytest.raises(storage.InvalidTutorAttachmentError):
+        storage.store_tutor_attachment(empty, provider, owner_id=17)
+    with pytest.raises(storage.InvalidTutorAttachmentError, match="JPEG, PNG"):
+        storage.store_tutor_attachment(
+            _upload(gif_stream.getvalue(), "image/gif"), provider, owner_id=17
+        )
+
+
+@pytest.mark.parametrize("declared_mime", ["IMAGE/PNG", "image/png; charset=binary"])
+def test_tutor_attachment_accepts_normalized_image_content_type(
+    tmp_path: Path, declared_mime: str
+) -> None:
+    storage = import_module("app.storage.tutor_attachments")
+    provider = _local_provider(tmp_path)
+
+    stored = storage.store_tutor_attachment(
+        _upload(_image_bytes(), declared_mime), provider, owner_id=17
+    )
+
+    assert stored.mime_type == "image/png"
+    assert stored.storage_key.endswith(".png")
+
+
+def test_store_tutor_attachment_cleans_up_after_provider_upload_failure(tmp_path: Path) -> None:
+    storage = import_module("app.storage.tutor_attachments")
+    provider = _MemoryStorageProvider()
+
+    def failed_put(_bucket, _key, _content, _content_type):
+        raise RuntimeError("temporary storage outage")
+
+    provider.put = failed_put
+    with pytest.raises(RuntimeError, match="storage outage"):
+        storage.store_tutor_attachment(
+            _upload(_image_bytes(), "image/png"), provider, owner_id=17
+        )
+
+    assert provider.delete_calls == [("tutor-attachments", f"17/{'x' * 43}.png")]
+
+
+def test_read_tutor_attachment_rejects_oversized_stored_object() -> None:
+    storage = import_module("app.storage.tutor_attachments")
+    provider = _MemoryStorageProvider()
+    key = f"17/{'x' * 43}.png"
+    provider.put("tutor-attachments", key, b"x" * (5 * 1024 * 1024 + 1), "image/png")
+
+    with pytest.raises(storage.InvalidTutorAttachmentError):
+        storage.read_tutor_attachment(key, provider)
+
+
+def test_cleanup_logs_and_suppresses_provider_delete_errors(caplog) -> None:
+    storage = import_module("app.storage.tutor_attachments")
+    provider = _MemoryStorageProvider()
+
+    def failed_delete(_bucket, _key):
+        raise RuntimeError("secret provider detail")
+
+    provider.delete = failed_delete
+    storage.cleanup_tutor_attachments(provider, ["17/private-key"])
+
+    assert "Could not remove a Tutor attachment" in caplog.text
+    assert "secret provider detail" not in caplog.text

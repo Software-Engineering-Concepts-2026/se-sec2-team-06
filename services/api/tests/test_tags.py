@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+from typing import get_args
 
 import pytest
 from sqlalchemy import insert, inspect, select
@@ -32,6 +33,15 @@ def _register(client, email: str) -> dict[str, object]:
     )
     assert response.status_code == 201
     return response.json()
+
+
+def test_shared_tag_color_palette_matches_api_schema():
+    from app.schemas.tag import TagColor
+    from app.tags.colors import DEFAULT_TAG_COLOR, TAG_COLOR_KEYS
+
+    assert len(TAG_COLOR_KEYS) == len(set(TAG_COLOR_KEYS))
+    assert set(TAG_COLOR_KEYS) == set(get_args(TagColor))
+    assert DEFAULT_TAG_COLOR in TAG_COLOR_KEYS
 
 
 def _subject_id(client, slug: str) -> int:

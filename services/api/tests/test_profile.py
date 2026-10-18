@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import struct
 import zlib
+from io import BytesIO
 
 import pytest
+from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+from starlette.datastructures import Headers, UploadFile
 
 from conftest import registration_payload, same_origin_headers
 
@@ -309,3 +312,62 @@ def test_avatar_upload_rejects_payloads_over_five_megabytes(client_factory) -> N
         )
 
     assert response.status_code == 413
+
+
+@pytest.mark.parametrize(
+    ("image_format", "content_type", "suffix"),
+    [
+        ("PNG", "image/png; charset=binary", ".png"),
+        ("JPEG", "IMAGE/JPEG", ".jpg"),
+        ("WEBP", "image/webp", ".webp"),
+    ],
+)
+def test_profile_image_validator_accepts_supported_formats_and_local_store(
+    tmp_path, image_format, content_type, suffix
+) -> None:
+    from app.storage.profile_images import validate_and_store_avatar, validate_avatar_upload
+
+    stream = BytesIO()
+    Image.new("RGB", (3, 2), color=(34, 91, 177)).save(stream, format=image_format)
+    payload = stream.getvalue()
+    upload = UploadFile(
+        file=BytesIO(payload),
+        filename="untrusted-name.bin",
+        headers=Headers({"content-type": content_type}),
+    )
+
+    validated = validate_avatar_upload(upload)
+    stored_key = validate_and_store_avatar(
+        UploadFile(
+            file=BytesIO(payload),
+            filename="untrusted-name.bin",
+            headers=Headers({"content-type": content_type}),
+        ),
+        tmp_path / "avatars",
+    )
+
+    assert validated.content == payload
+    assert validated.content_type == content_type.split(";", 1)[0].lower()
+    assert validated.suffix == suffix
+    assert stored_key.endswith(suffix)
+    assert (tmp_path / "avatars" / stored_key).read_bytes() == payload
+
+
+def test_profile_image_validator_rejects_empty_and_unsupported_image_formats() -> None:
+    from app.storage.profile_images import InvalidAvatarError, validate_avatar_upload
+
+    gif_stream = BytesIO()
+    Image.new("RGB", (2, 2), color=(10, 20, 30)).save(gif_stream, format="GIF")
+
+    with pytest.raises(InvalidAvatarError):
+        validate_avatar_upload(
+            UploadFile(file=BytesIO(b""), filename="empty.png", headers=Headers())
+        )
+    with pytest.raises(InvalidAvatarError, match="JPEG, PNG"):
+        validate_avatar_upload(
+            UploadFile(
+                file=BytesIO(gif_stream.getvalue()),
+                filename="image.gif",
+                headers=Headers({"content-type": "image/gif"}),
+            )
+        )

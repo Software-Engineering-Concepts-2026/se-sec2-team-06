@@ -371,3 +371,137 @@ def test_storage_provider_selects_supabase_when_both_cloud_settings_exist(tmp_pa
 
     assert isinstance(provider, provider_type)
     provider.close()
+
+
+def test_local_storage_provider_validates_owner_suffix_bucket_and_key(tmp_path) -> None:
+    module = _provider_module()
+    assert module is not None
+    provider = module.LocalStorageProvider(
+        image_storage_dir=tmp_path / "profile-images",
+        document_storage_dir=tmp_path / "documents",
+    )
+
+    with pytest.raises(ValueError, match="owner_id must be positive"):
+        provider.new_key(owner_id=0)
+    with pytest.raises(ValueError, match="suffix is unsupported"):
+        provider.new_key(owner_id=17, suffix=".exe")
+    with pytest.raises(ValueError, match="bucket is not configured"):
+        provider.read("unknown", "x" * 43)
+    with pytest.raises(ValueError, match="storage key is invalid"):
+        provider.read("documents", None)
+
+
+def test_local_storage_provider_uses_default_directories_for_optional_buckets(tmp_path) -> None:
+    provider_type = _local_provider_type()
+    provider = provider_type(
+        image_storage_dir=tmp_path / "profile-images",
+        document_storage_dir=tmp_path / "documents",
+    )
+
+    for bucket, filename in (
+        ("tutor-attachments", "tutor-attachments"),
+        ("quiz-sources", "quiz-sources"),
+    ):
+        key = provider.new_key(owner_id=17, suffix=".txt")
+        provider.put(bucket, key, b"stored bytes", "text/plain")
+        assert provider.read(bucket, key) == b"stored bytes"
+        assert (tmp_path / filename / key).read_bytes() == b"stored bytes"
+
+
+@pytest.mark.parametrize(
+    ("backend", "is_render", "expected_error"),
+    [
+        ("unknown", False, "STORAGE_BACKEND"),
+        ("local", True, "Render requires STORAGE_BACKEND=supabase"),
+    ],
+)
+def test_storage_provider_rejects_unsupported_backend_combinations(
+    tmp_path, backend, is_render, expected_error
+):
+    module = _provider_module()
+    assert module is not None
+
+    with pytest.raises(module.StorageConfigurationError, match=expected_error):
+        module.create_storage_provider(
+            image_storage_dir=tmp_path / "profile-images",
+            document_storage_dir=tmp_path / "documents",
+            supabase_url=None,
+            supabase_secret_key=None,
+            storage_backend=backend,
+            is_render=is_render,
+        )
+
+
+def test_explicit_supabase_backend_requires_both_cloud_credentials(tmp_path) -> None:
+    module = _provider_module()
+    assert module is not None
+
+    with pytest.raises(module.StorageConfigurationError, match="SUPABASE_URL.*SUPABASE_SECRET_KEY"):
+        module.create_storage_provider(
+            image_storage_dir=tmp_path / "profile-images",
+            document_storage_dir=tmp_path / "documents",
+            supabase_url=None,
+            supabase_secret_key=None,
+            storage_backend="supabase",
+        )
+
+
+@pytest.mark.parametrize("url", ["http://project.supabase.co", "https:///missing-host", "https://project.supabase.co?key=x", "https://project.supabase.co#fragment"])
+def test_supabase_provider_rejects_non_project_urls(url) -> None:
+    provider_type = _supabase_provider_type()
+
+    with pytest.raises(ValueError, match="HTTPS project URL"):
+        provider_type(url, "sb_secret_test_key")
+
+
+def test_supabase_provider_rejects_blank_secret_and_invalid_object_keys() -> None:
+    provider_type = _supabase_provider_type()
+    with pytest.raises(ValueError, match="SUPABASE_SECRET_KEY"):
+        provider_type("https://project.supabase.co", "  ")
+
+    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200))) as client:
+        provider = provider_type("https://project.supabase.co", "sb_secret_test_key", client=client)
+        for key in ("../escape" + "x" * 40, "17/short", "17/" + "x" * 41 + ".exe", "17/a/b" + "x" * 40):
+            with pytest.raises(ValueError, match="storage key is invalid"):
+                provider.read("documents", key)
+        with pytest.raises(ValueError, match="bucket is not configured"):
+            provider.read("unknown", "17/" + "x" * 43)
+        provider.close()
+
+
+def test_supabase_provider_delete_is_idempotent_for_missing_remote_object() -> None:
+    provider_type = _supabase_provider_type()
+
+    def respond(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, text="object does not exist")
+
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        provider = provider_type("https://project.supabase.co", "sb_secret_test_key", client=client)
+        provider.delete("documents", "17/" + "x" * 43)
+
+
+def test_supabase_provider_removes_stale_authorization_from_injected_client() -> None:
+    provider_type = _supabase_provider_type()
+    requests: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, content=b"file bytes")
+
+    with httpx.Client(transport=httpx.MockTransport(respond), headers={"Authorization": "Bearer stale"}) as client:
+        provider = provider_type("https://project.supabase.co", "sb_secret_test_key", client=client)
+        provider.read("documents", "17/" + "x" * 43)
+        provider.close()
+        assert not client.is_closed
+
+    assert "authorization" not in requests[0].headers
+
+
+def test_supabase_provider_close_closes_only_the_client_it_created() -> None:
+    provider_type = _supabase_provider_type()
+    provider = provider_type("https://project.supabase.co", "sb_secret_test_key")
+    client = provider._client
+
+    provider.close()
+
+    assert client.is_closed

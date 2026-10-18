@@ -134,3 +134,156 @@ def test_rejects_file_over_20mb_before_parsing():
 def test_rejects_text_over_20000_chars_without_truncation():
     with pytest.raises(SourceTextTooLongError):
         extract_document("lesson.txt", ("x" * 20_001).encode())
+
+
+def _append_xml_text(parent, text: str) -> None:
+    from docx.oxml import OxmlElement
+
+    run = OxmlElement("w:r")
+    text_element = OxmlElement("w:t")
+    text_element.text = text
+    run.append(text_element)
+    parent.append(run)
+
+
+def _append_wrapped_paragraph(parent, text: str, *, structured: bool = False) -> None:
+    from docx.oxml import OxmlElement
+
+    container = parent
+    if structured:
+        content = OxmlElement("w:sdtContent")
+        parent.append(content)
+        container = content
+    paragraph = OxmlElement("w:p")
+    _append_xml_text(paragraph, text)
+    container.append(paragraph)
+
+
+def test_docx_extracts_paragraphs_inside_word_block_wrappers():
+    from docx import Document
+    from docx.oxml import OxmlElement
+
+    from app.services.extractors.docx import extract_docx
+
+    document = Document()
+    body = document.element.body
+    for tag, text in (
+        ("w:customXml", "custom xml text"),
+        ("w:ins", "inserted text"),
+        ("w:sdt", "content control text"),
+        ("w:smartTag", "smart tag text"),
+    ):
+        wrapper = OxmlElement(tag)
+        _append_wrapped_paragraph(wrapper, text, structured=tag == "w:sdt")
+        body.insert(len(body) - 1, wrapper)
+
+    # An incomplete content control should be ignored instead of breaking extraction.
+    body.insert(len(body) - 1, OxmlElement("w:sdt"))
+    data = BytesIO()
+    document.save(data)
+
+    text = extract_docx(data.getvalue())
+
+    assert text.split("\n\n") == [
+        "custom xml text",
+        "inserted text",
+        "content control text",
+        "smart tag text",
+    ]
+
+
+def test_docx_extracts_inline_wrappers_hyperlinks_and_field_text():
+    from docx import Document
+    from docx.oxml import OxmlElement
+
+    from app.services.extractors.docx import extract_docx
+
+    document = Document()
+    paragraph = document.add_paragraph("Before ")
+    structured = OxmlElement("w:sdt")
+    content = OxmlElement("w:sdtContent")
+    structured.append(content)
+    _append_xml_text(content, "inside ")
+    paragraph._p.append(structured)
+
+    inserted = OxmlElement("w:ins")
+    _append_xml_text(inserted, "inserted ")
+    paragraph._p.append(inserted)
+
+    hyperlink = OxmlElement("w:hyperlink")
+    _append_xml_text(hyperlink, "linked ")
+    paragraph._p.append(hyperlink)
+
+    field = OxmlElement("w:fldSimple")
+    _append_xml_text(field, "field text")
+    paragraph._p.append(field)
+    data = BytesIO()
+    document.save(data)
+
+    assert extract_docx(data.getvalue()) == "Before inside inserted linked field text"
+
+
+def test_docx_extracts_nested_table_cells_and_skips_empty_rows():
+    from docx import Document
+
+    from app.services.extractors.docx import extract_docx
+
+    document = Document()
+    table = document.add_table(rows=3, cols=2)
+    table.cell(0, 0).text = "  Top left  "
+    table.cell(0, 1).text = "Top right"
+    nested = table.cell(1, 0).add_table(rows=1, cols=1)
+    nested.cell(0, 0).text = "Nested cell"
+    table.cell(1, 1).text = "Outer cell"
+    data = BytesIO()
+    document.save(data)
+
+    text = extract_docx(data.getvalue())
+
+    assert text.split("\n\n") == ["Top left | Top right", "Nested cell | Outer cell"]
+
+
+def test_markdown_removes_multiline_comments_but_keeps_text_after_closing_marker():
+    from app.services.extractors.markdown import extract_markdown
+
+    text, locators = extract_markdown(
+        b"Visible before <!-- hidden across lines\ncontinued hidden --> visible after"
+    )
+
+    assert text == "Visible before \n visible after"
+    assert locators == [("Section 1", 0, len(text))]
+
+
+def test_markdown_fences_close_only_with_matching_marker_and_length():
+    from app.services.extractors.markdown import extract_markdown
+
+    text, _locators = extract_markdown(
+        b"~~~python\n<!-- kept in code -->\n```\n<!-- also kept -->\n~~~~\n<!-- removed -->\nVisible"
+    )
+
+    assert "<!-- kept in code -->" in text
+    assert "<!-- also kept -->" in text
+    assert "<!-- removed -->" not in text
+    assert text.endswith("Visible")
+
+
+def test_markdown_preserves_unmatched_inline_code_marker_while_removing_comments():
+    from app.services.extractors.markdown import extract_markdown
+
+    text, _locators = extract_markdown(b"Literal ` marker <!-- hidden --> and visible")
+
+    assert text == "Literal ` marker  and visible"
+
+
+def test_markdown_heading_locators_cover_sections_and_plain_text_fallback():
+    from app.services.extractors.markdown import extract_markdown
+
+    text, locators = extract_markdown(b"# First ##")
+    plain_text, plain_locators = extract_markdown(b"No headings here")
+    empty_text, empty_locators = extract_markdown(b"")
+
+    assert [(label, text[start:end]) for label, start, end in locators] == [("Heading: First", "# First ##")]
+    assert plain_text == "No headings here"
+    assert plain_locators == [("Section 1", 0, len(plain_text))]
+    assert empty_text == ""
+    assert empty_locators == []
