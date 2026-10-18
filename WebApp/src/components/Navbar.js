@@ -1,4 +1,4 @@
-import { getTheme, getThemes } from '../theme/theme-config.js';
+import { DEFAULT_THEME_ID, getTheme, getThemes } from '../theme/theme-config.js';
 
 const NOTIFICATION_WINDOW_MS = 5 * 24 * 60 * 60 * 1000;
 
@@ -325,7 +325,7 @@ function createAccountMenu(user, { currentPath, navigate, onLogout, themeId, onT
 export function renderNavbar(user, {
   navigate,
   onLogout,
-  themeId = 'dark',
+  themeId = DEFAULT_THEME_ID,
   onThemeChange,
   loadDeadlines = async () => [],
   now = () => new Date(),

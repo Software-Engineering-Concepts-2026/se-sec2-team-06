@@ -669,10 +669,12 @@ describe('deadline planner page', () => {
     const managementDialogStyles = readFileSync('src/styles.css', 'utf8')
       .match(/\.deadline-subject-management\s*\{([^}]*)\}/s)?.[1] ?? '';
     expect(managementDialogStyles).toMatch(/border:\s*1px solid var\(--line-strong\)/);
-    expect(managementDialogStyles).toMatch(/--ink:\s*#20212a/i);
-    expect(managementDialogStyles).toMatch(/--muted:\s*#4f545e/i);
-    expect(managementDialogStyles).toMatch(/background:\s*#c9cad0/i);
+    expect(managementDialogStyles).toMatch(/color:\s*var\(--ink\)/);
+    expect(managementDialogStyles).toMatch(/background:\s*var\(--glass\)/);
+    expect(managementDialogStyles).not.toMatch(/--ink:\s*#20212a|--muted:\s*#4f545e|background:\s*#c9cad0/i);
     expect(managementDialogStyles).toMatch(/box-shadow:\s*var\(--shadow\)/);
+    expect(readFileSync('src/styles.css', 'utf8')).toMatch(/\.deadline-subject-management__row\s*\{[^}]*background:\s*var\(--surface-raised\)/s);
+    expect(readFileSync('src/styles.css', 'utf8')).toMatch(/\.deadline-subject-management__row:hover\s*\{[^}]*var\(--surface-raised\)/s);
     expect(readFileSync('src/styles.css', 'utf8')).toMatch(/\.icon-button--danger\s*\{[^}]*color:\s*var\(--error\)[^}]*background:\s*var\(--error-soft\)/s);
     styles.remove();
   });

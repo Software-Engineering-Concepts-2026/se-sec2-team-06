@@ -13,6 +13,8 @@ const REQUIRED_TOKENS = [
   '--line',
   '--line-strong',
   '--nav-surface',
+  '--nav-ink',
+  '--nav-muted',
   '--surface',
   '--surface-raised',
   '--surface-input',
@@ -86,15 +88,48 @@ describe('shared theme configuration and manager', () => {
     window.localStorage.clear();
   });
 
-  it('offers the three named palettes with every shared semantic token', () => {
+  it('offers five named palettes with every shared semantic token', () => {
     const themes = getThemes();
-    expect(themes.map(({ id }) => id)).toEqual(['dark', 'light', 'purple']);
-    expect(themes.map(({ label }) => label)).toEqual(['มืด', 'สว่าง', 'ม่วงเข้ม']);
+    expect(themes.map(({ id }) => id)).toEqual(['monochrome', 'dark', 'light', 'purple', 'black-aura']);
+    expect(themes.map(({ label }) => label)).toEqual(['ขาวดำ', 'มืด', 'สว่าง', 'ม่วงเข้ม', 'ดำออร่า']);
     for (const theme of themes) {
       for (const token of REQUIRED_TOKENS) {
         expect(theme.tokens[token], `${theme.id} is missing ${token}`).toBeTruthy();
       }
     }
+  });
+
+  it('uses a grayscale interface palette while retaining the existing chart colors', () => {
+    const theme = getTheme('monochrome');
+
+    expect(theme.id).toBe('monochrome');
+    expect(theme.colorScheme).toBe('light');
+    expect(theme.tokens['--page']).toBe('#f5f5f5');
+    expect(theme.tokens['--ink']).toBe('#1c1c1c');
+    expect(theme.tokens['--accent']).toBe('#262626');
+    expect(relativeLuminance(theme.tokens['--nav-surface']))
+      .toBeLessThan(relativeLuminance(theme.tokens['--page']));
+    expect(contrastRatio(theme.tokens['--nav-ink'], theme.tokens['--nav-surface']))
+      .toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(theme.tokens['--nav-surface'], theme.tokens['--page']))
+      .toBeGreaterThanOrEqual(7);
+    expect([
+      theme.tokens['--chart-1'],
+      theme.tokens['--chart-2'],
+      theme.tokens['--chart-3'],
+      theme.tokens['--chart-4'],
+      theme.tokens['--chart-5'],
+    ]).toEqual(['#c4b5fd', '#93c5fd', '#5eead4', '#fcd34d', '#fda4af']);
+  });
+
+  it('applies and persists the black aura theme with its black surface and red accent', () => {
+    const storage = memoryStorage();
+
+    expect(setTheme('black-aura', { storage })).toBe('black-aura');
+    expect(document.documentElement.dataset.theme).toBe('black-aura');
+    expect(document.documentElement.style.getPropertyValue('--page')).toBe('#070707');
+    expect(document.documentElement.style.getPropertyValue('--accent')).toBe('#dc2626');
+    expect(storage.getItem('synapsesync-theme')).toBe('black-aura');
   });
 
   it('keeps small text and status markers readable at WCAG AA contrast', () => {
@@ -148,17 +183,23 @@ describe('shared theme configuration and manager', () => {
     }
   });
 
-  it('returns the dark definition for an unknown theme ID', () => {
-    expect(getTheme('not-a-theme').id).toBe('dark');
+  it('returns the black aura definition for an unknown theme ID', () => {
+    expect(getTheme('not-a-theme').id).toBe('black-aura');
   });
 
-  it('uses dark when no theme has been saved', () => {
-    expect(initializeTheme({ storage: memoryStorage() })).toBe('dark');
-    expect(document.documentElement.dataset.theme).toBe('dark');
+  it('uses the black aura theme when no theme has been saved', () => {
+    expect(initializeTheme({ storage: memoryStorage() })).toBe('black-aura');
+    expect(document.documentElement.dataset.theme).toBe('black-aura');
   });
 
-  it('uses dark when the saved theme ID is unknown', () => {
+  it('uses the black aura theme when the saved theme ID is unknown', () => {
     expect(initializeTheme({ storage: memoryStorage({ 'synapsesync-theme': 'neon' }) }))
+      .toBe('black-aura');
+    expect(document.documentElement.dataset.theme).toBe('black-aura');
+  });
+
+  it('preserves an explicitly saved dark theme', () => {
+    expect(initializeTheme({ storage: memoryStorage({ 'synapsesync-theme': 'dark' }) }))
       .toBe('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
   });
@@ -191,7 +232,7 @@ describe('shared theme configuration and manager', () => {
     const storage = { getItem() { throw new Error('storage unavailable'); } };
 
     expect(() => initializeTheme({ storage })).not.toThrow();
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBe('black-aura');
   });
 
   it('keeps the selected theme active for this session when persistence fails', () => {
@@ -213,7 +254,7 @@ describe('shared theme configuration and manager', () => {
 
     try {
       expect(() => initializeTheme()).not.toThrow();
-      expect(document.documentElement.dataset.theme).toBe('dark');
+      expect(document.documentElement.dataset.theme).toBe('black-aura');
     } finally {
       if (descriptor) Object.defineProperty(window, 'localStorage', descriptor);
     }

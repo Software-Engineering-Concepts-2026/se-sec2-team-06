@@ -73,7 +73,13 @@ describe('Home, shared navigation, and account pages', () => {
     expect(signedOutLabel.textContent).toContain('ธีม');
     expect(signedOutSelect?.value).toBe('light');
     expect([...signedOutSelect.options].map(({ value, textContent }) => [value, textContent]))
-      .toEqual([['dark', 'มืด'], ['light', 'สว่าง'], ['purple', 'ม่วงเข้ม']]);
+      .toEqual([
+        ['monochrome', 'ขาวดำ'],
+        ['dark', 'มืด'],
+        ['light', 'สว่าง'],
+        ['purple', 'ม่วงเข้ม'],
+        ['black-aura', 'ดำออร่า'],
+      ]);
 
     signedOutSelect.value = 'purple';
     signedOutSelect.dispatchEvent(new Event('change', { bubbles: true }));
@@ -92,10 +98,15 @@ describe('Home, shared navigation, and account pages', () => {
     expect(themeToggle.getAttribute('aria-expanded')).toBe('true');
     expect(themePanel.hidden).toBe(false);
     expect([...themePanel.querySelectorAll('[data-theme-id]')].map((option) => option.dataset.themeId))
-      .toEqual(['dark', 'light', 'purple']);
+      .toEqual(['monochrome', 'dark', 'light', 'purple', 'black-aura']);
     expect(themePanel.querySelector('[data-theme-id="purple"]')?.getAttribute('aria-pressed')).toBe('true');
     themePanel.querySelector('[data-theme-id="light"]').click();
     expect(onThemeChange).toHaveBeenLastCalledWith('light');
+
+    const blackAuraOption = themePanel.querySelector('[data-theme-id="black-aura"]');
+    expect(blackAuraOption).not.toBeNull();
+    blackAuraOption.click();
+    expect(onThemeChange).toHaveBeenLastCalledWith('black-aura');
     expect(accountPanel.querySelector('[data-action="logout"]')).toBe(accountPanel.lastElementChild);
   });
 
@@ -107,7 +118,14 @@ describe('Home, shared navigation, and account pages', () => {
     expect(select.classList.contains('themed-select')).toBe(true);
     expect(select.labels[0]?.textContent.trim()).toContain('ธีม');
     expect(select.value).toBe('light');
-    expect([...select.options].map(({ value }) => value)).toEqual(['dark', 'light', 'purple']);
+    expect([...select.options].map(({ value }) => value))
+      .toEqual(['monochrome', 'dark', 'light', 'purple', 'black-aura']);
+  });
+
+  it('uses the black aura theme in the navigation selector by default', () => {
+    const navbar = renderNavbar(null);
+
+    expect(navbar.querySelector('[data-action="theme-select"]')?.value).toBe('black-aura');
   });
 
   it('renders signed-out and signed-in navigation states', () => {
@@ -213,11 +231,23 @@ describe('Home, shared navigation, and account pages', () => {
     expect(imageNavbar.querySelector('.nav-account__initial').hidden).toBe(false);
   });
 
-  it('keeps the overlapping navbar portrait vertically centered with a scale-only hover', () => {
+  it('reverses monochrome navbar colors while keeping the account name readable', () => {
     const styles = readFileSync('src/styles.css', 'utf8');
+
+    expect(styles).toMatch(/\[data-theme="monochrome"\] \.site-header\s*\{[^}]*border-bottom-color:\s*rgba\(0,\s*0,\s*0,\s*0\.24\)/s);
+    expect(styles).toMatch(/\[data-theme="monochrome"\] \.site-header \.nav-account__toggle\s*\{[^}]*border-color:\s*rgba\(255,\s*255,\s*255,\s*0\.28\);[^}]*color:\s*#ffffff;[^}]*background:\s*#111111/s);
+    expect(styles).toMatch(/\[data-theme="monochrome"\] \.site-header \.nav-account__name\s*\{[^}]*color:\s*#ffffff/s);
+    expect(styles).toMatch(/\[data-theme="monochrome"\] \.site-header \.nav-cta\s*\{[^}]*border-color:\s*#ffffff;[^}]*color:\s*#1c1c1c;[^}]*background:\s*#ffffff/s);
+  });
+
+  it('uses one outer portrait ring and expands the profile image to fill it', () => {
+    const styles = readFileSync('src/styles.css', 'utf8');
+    expect(styles).toMatch(/\.nav-account__portrait\s*\{[^}]*width:\s*2\.5rem;[^}]*height:\s*2\.5rem;[^}]*border:\s*0;[^}]*padding:\s*0;[^}]*box-shadow:\s*0 0 0 2px #ffffff;/s);
+    expect(styles).toMatch(/\.nav-account__avatar,\s*\.nav-account__initial\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border-radius:\s*50%/s);
     expect(styles).toMatch(/\.nav-account__portrait\s*\{[^}]*transform:\s*none/s);
     expect(styles).toMatch(/\.nav-account__toggle:hover \.nav-account__portrait\s*\{[^}]*transform:\s*scale\(1\.05\)/s);
     expect(styles).not.toMatch(/\.nav-account__portrait\s*\{[^}]*translateY\(1rem\)/s);
+    expect(styles).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*?\.nav-account__portrait\s*\{[^}]*width:\s*2\.3rem;[^}]*height:\s*2\.3rem/s);
   });
 
   it('keeps the top navbar sticky outside its short header wrapper', () => {
@@ -239,6 +269,30 @@ describe('Home, shared navigation, and account pages', () => {
     }
   });
 
+  it('keeps the top navbar at the same height before and after login', () => {
+    const styles = document.createElement('style');
+    styles.textContent = readFileSync('src/styles.css', 'utf8');
+    document.head.append(styles);
+
+    const signedOutNavbar = renderNavbar(null);
+    const signedInNavbar = renderNavbar({ display_name: 'Learner', avatar_url: '/avatar.png' });
+    document.body.append(signedOutNavbar, signedInNavbar);
+
+    try {
+      const signedOutBar = signedOutNavbar.querySelector('.navbar');
+      const signedInBar = signedInNavbar.querySelector('.navbar');
+
+      expect(getComputedStyle(signedOutBar).height).toBe('56px');
+      expect(getComputedStyle(signedInBar).height).toBe('56px');
+      expect(getComputedStyle(signedInNavbar.querySelector('.nav-account__toggle')).paddingTop).toBe('0px');
+      expect(getComputedStyle(signedInNavbar.querySelector('.nav-account__toggle')).paddingBottom).toBe('0px');
+    } finally {
+      signedOutNavbar.remove();
+      signedInNavbar.remove();
+      styles.remove();
+    }
+  });
+
   it('uses a compact top navbar, a smaller brand mark, and a solid, non-overlapping account menu', () => {
     const styles = readFileSync('src/styles.css', 'utf8');
 
@@ -251,7 +305,7 @@ describe('Home, shared navigation, and account pages', () => {
     expect(styles).toMatch(/\.nav-popover\s*\{[^}]*background:\s*var\(--page\)/s);
     expect(styles).toMatch(/\.nav-theme-menu__panel\s*\{[^}]*display:\s*grid;[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s);
     expect(styles).toMatch(/\.nav-account__toggle\s*\{[^}]*min-height:\s*2\.65rem/s);
-    expect(styles).toMatch(/\.nav-account__portrait\s*\{[^}]*width:\s*2\.45rem;[^}]*height:\s*2\.45rem/s);
+    expect(styles).toMatch(/\.nav-account__portrait\s*\{[^}]*width:\s*2\.5rem;[^}]*height:\s*2\.5rem/s);
     expect(styles).toMatch(/\.nav-notifications__toggle\.button-quiet\s*\{[^}]*background:\s*var\(--error-soft\)/s);
     expect(styles).toMatch(/\.nav-notifications__toggle\.button-quiet\[data-has-notifications="true"\]\s*\{[^}]*color:\s*#fff;[^}]*background:\s*#dc2626/s);
     expect(styles).toMatch(/\.nav-notifications__count\s*\{[^}]*background:\s*#b91c1c/s);
